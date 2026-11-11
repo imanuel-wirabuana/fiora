@@ -1,24 +1,24 @@
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card"
+import { Item, ItemContent, ItemHeader, ItemTitle } from "../ui/item"
 
 function YourMood() {
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle>You</CardTitle>
-      </CardHeader>
-      <CardContent>test</CardContent>
-    </Card>
+    <Item variant="outline" className="w-full flex-col items-start gap-2">
+      <ItemHeader>
+        <ItemTitle>You</ItemTitle>
+      </ItemHeader>
+      <ItemContent>test</ItemContent>
+    </Item>
   )
 }
 
 function PartnerMood() {
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle>Partner</CardTitle>
-      </CardHeader>
-      <CardContent>test</CardContent>
-    </Card>
+    <Item variant="outline" className="w-full flex-col items-start gap-2">
+      <ItemHeader>
+        <ItemTitle>Partner</ItemTitle>
+      </ItemHeader>
+      <ItemContent>test</ItemContent>
+    </Item>
   )
 }
 

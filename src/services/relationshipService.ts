@@ -188,15 +188,112 @@ export const relationshipService = {
       throw new Error(joinError.message)
     }
 
+    // 4. Once partner successfully joins, set invite_code to null
+    await supabase
+      .from("relationships")
+      .update({ invite_code: null })
+      .eq("id", relationship.id)
+
     const currentMember = newMemberData as RelationshipMember
     const partnerMember = membersList.find((m) => m.user_id !== userId) || null
 
     return {
-      relationship,
+      relationship: {
+        ...relationship,
+        invite_code: null,
+      },
       currentMember,
       partnerMember,
       members: [...membersList, currentMember],
     }
+  },
+
+  async regenerateInviteCode(relationshipId: number): Promise<string> {
+    const newCode = String(Math.floor(10000 + Math.random() * 90000))
+    const { error } = await supabase
+      .from("relationships")
+      .update({ invite_code: newCode })
+      .eq("id", relationshipId)
+
+    if (error) {
+      throw new Error(error.message)
+    }
+
+    return newCode
+  },
+
+  async updateRelationshipContent(
+    relationshipId: number,
+    content: Partial<Relationship["content"]>
+  ): Promise<Relationship> {
+    // 1. Get current content
+    const { data: currentData, error: fetchError } = await supabase
+      .from("relationships")
+      .select("content")
+      .eq("id", relationshipId)
+      .single()
+
+    if (fetchError) {
+      throw new Error(fetchError.message)
+    }
+
+    const mergedContent = {
+      ...(currentData?.content || {}),
+      ...content,
+    }
+
+    const { data: updatedData, error: updateError } = await supabase
+      .from("relationships")
+      .update({
+        content: mergedContent,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", relationshipId)
+      .select()
+      .single()
+
+    if (updateError) {
+      throw new Error(updateError.message)
+    }
+
+    return updatedData as Relationship
+  },
+
+  async updateMemberContent(
+    memberId: number,
+    content: Partial<RelationshipMemberContent>
+  ): Promise<RelationshipMember> {
+    // 1. Get current member content
+    const { data: currentData, error: fetchError } = await supabase
+      .from("relationship_members")
+      .select("content")
+      .eq("id", memberId)
+      .single()
+
+    if (fetchError) {
+      throw new Error(fetchError.message)
+    }
+
+    const mergedContent = {
+      ...(currentData?.content || {}),
+      ...content,
+    }
+
+    const { data: updatedData, error: updateError } = await supabase
+      .from("relationship_members")
+      .update({
+        content: mergedContent,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", memberId)
+      .select()
+      .single()
+
+    if (updateError) {
+      throw new Error(updateError.message)
+    }
+
+    return updatedData as RelationshipMember
   },
 
   subscribeToRelationshipChanges(

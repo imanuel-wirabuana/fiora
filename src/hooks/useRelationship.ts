@@ -89,6 +89,41 @@ export function useRelationship() {
     },
   })
 
+  const regenerateInviteCodeMutation = useMutation<string, Error, number>({
+    mutationFn: (relationshipId) =>
+      relationshipService.regenerateInviteCode(relationshipId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: relationshipKeys.byUser(userId) })
+      queryClient.invalidateQueries({ queryKey: relationshipKeys.all })
+    },
+  })
+
+  const updateRelationshipContentMutation = useMutation<
+    Relationship,
+    Error,
+    { relationshipId: number; content: Partial<Relationship["content"]> }
+  >({
+    mutationFn: ({ relationshipId, content }) =>
+      relationshipService.updateRelationshipContent(relationshipId, content),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: relationshipKeys.byUser(userId) })
+      queryClient.invalidateQueries({ queryKey: relationshipKeys.all })
+    },
+  })
+
+  const updateMemberContentMutation = useMutation<
+    RelationshipMember,
+    Error,
+    { memberId: number; content: Partial<RelationshipMemberContent> }
+  >({
+    mutationFn: ({ memberId, content }) =>
+      relationshipService.updateMemberContent(memberId, content),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: relationshipKeys.byUser(userId) })
+      queryClient.invalidateQueries({ queryKey: relationshipKeys.all })
+    },
+  })
+
   return {
     relationshipData,
     relationship,
@@ -108,5 +143,8 @@ export function useRelationship() {
     createRelationshipMutation,
     joinRelationship: joinRelationshipMutation.mutateAsync,
     joinRelationshipMutation,
+    regenerateInviteCodeMutation,
+    updateRelationshipContentMutation,
+    updateMemberContentMutation,
   }
 }

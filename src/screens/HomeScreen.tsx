@@ -1,5 +1,5 @@
 import { PartnerMood, YourMood } from "@/components/home/CoupleMoodTracker"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Item, ItemContent, ItemHeader, ItemTitle } from "@/components/ui/item"
 
 export function HomeScreen() {
   return (
@@ -11,20 +11,20 @@ export function HomeScreen() {
       </div>
 
       {/* nudge */}
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>Nudge</CardTitle>
-        </CardHeader>
-        <CardContent>test</CardContent>
-      </Card>
+      <Item variant="outline" className="w-full flex-col items-start gap-2">
+        <ItemHeader>
+          <ItemTitle>Nudge</ItemTitle>
+        </ItemHeader>
+        <ItemContent>test</ItemContent>
+      </Item>
 
       {/* quiz */}
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>Daily Quiz</CardTitle>
-        </CardHeader>
-        <CardContent>test</CardContent>
-      </Card>
+      <Item variant="outline" className="w-full flex-col items-start gap-2">
+        <ItemHeader>
+          <ItemTitle>Daily Quiz</ItemTitle>
+        </ItemHeader>
+        <ItemContent>test</ItemContent>
+      </Item>
     </section>
   )
 }
