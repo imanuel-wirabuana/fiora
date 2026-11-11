@@ -34,8 +34,25 @@ export function useAuth() {
     },
   })
 
-  const signOutMutation = useMutation<void, Error, void>({
+  const signOutMutation = useMutation<
+    void,
+    Error,
+    void,
+    { previousSession: ReturnType<typeof useAuthStore.getState>["session"] }
+  >({
     mutationFn: () => authService.signOut(),
+    onMutate: async () => {
+      const previousSession = useAuthStore.getState().session
+      // Immediately clear local session store to transition screens instantly
+      setSession(null)
+      queryClient.clear()
+      return { previousSession }
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previousSession) {
+        setSession(context.previousSession)
+      }
+    },
     onSuccess: () => {
       setSession(null)
       queryClient.clear()

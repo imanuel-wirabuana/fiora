@@ -209,8 +209,8 @@ export const relationshipService = {
     }
   },
 
-  async regenerateInviteCode(relationshipId: number): Promise<string> {
-    const newCode = String(Math.floor(10000 + Math.random() * 90000))
+  async regenerateInviteCode(relationshipId: number, customCode?: string): Promise<string> {
+    const newCode = customCode || String(Math.floor(10000 + Math.random() * 90000))
     const { error } = await supabase
       .from("relationships")
       .update({ invite_code: newCode })

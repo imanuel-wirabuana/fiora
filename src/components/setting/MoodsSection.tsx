@@ -9,7 +9,6 @@ import {
   ItemHeader,
   ItemTitle,
 } from "@/components/ui/item"
-import { Spinner } from "@/components/ui/spinner"
 import { useRelationship } from "@/hooks/useRelationship"
 import { DEFAULT_MOOD_OPTIONS } from "@/lib/relationship"
 import type { MoodOption } from "@/types/relationship"
@@ -32,7 +31,6 @@ export function MoodsSection() {
     return null
   }
 
-  const isPending = updateRelationshipContentMutation.isPending
   const isMaxReached = moodOptions.length >= MAX_MOODS
 
   const handleSaveMoods = (updatedMoods: MoodOption[]) => {
@@ -87,7 +85,6 @@ export function MoodsSection() {
             variant="ghost"
             size="icon-xs"
             onClick={handleResetDefaults}
-            disabled={isPending}
             title="Reset to default moods"
             className="h-6 w-6 text-muted-foreground hover:text-foreground"
           >
@@ -98,7 +95,7 @@ export function MoodsSection() {
             variant="outline"
             size="xs"
             onClick={() => setIsAdding(!isAdding)}
-            disabled={isPending || (isMaxReached && !isAdding)}
+            disabled={isMaxReached && !isAdding}
             className="h-6 gap-1 px-2 text-[11px]"
           >
             <Plus className="size-3" />
@@ -125,7 +122,6 @@ export function MoodsSection() {
                 <button
                   type="button"
                   onClick={() => handleRemoveMood(idx)}
-                  disabled={isPending}
                   className="-mr-0.5 ml-0.5 rounded p-0.5 text-muted-foreground transition hover:bg-destructive/20 hover:text-destructive"
                   title="Remove mood"
                 >
@@ -163,14 +159,13 @@ export function MoodsSection() {
               type="submit"
               size="xs"
               disabled={
-                isPending ||
                 isMaxReached ||
                 !newEmoji.trim() ||
                 !newLabel.trim()
               }
               className="h-7 gap-1 px-2.5 text-[11px]"
             >
-              {isPending ? <Spinner className="size-3" /> : "Save"}
+              Save
             </Button>
             <Button
               type="button"

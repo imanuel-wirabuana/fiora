@@ -3,7 +3,6 @@ import { formatDistanceToNow } from "date-fns"
 import { Send } from "lucide-react"
 import { Button } from "../ui/button"
 import { Item, ItemContent, ItemDescription, ItemHeader, ItemTitle } from "../ui/item"
-import { Spinner } from "../ui/spinner"
 import { useActivities } from "../../hooks/useActivities"
 import { useRelationship } from "../../hooks/useRelationship"
 import { useAuth } from "../../hooks/useAuth"
@@ -11,24 +10,25 @@ import type { NudgeOption } from "../../types/relationship"
 
 export function NudgeSection() {
   const { nudgeOptions, partnerMember } = useRelationship()
-  const { latestNudge, sendNudge, createActivityMutation } = useActivities()
+  const { latestNudge, sendNudge } = useActivities()
   const { user } = useAuth()
-  const [sendingLabel, setSendingLabel] = useState<string | null>(null)
+  const [justSentLabel, setJustSentLabel] = useState<string | null>(null)
 
-  const isPending = createActivityMutation.isPending
   const partnerName = partnerMember?.content?.name || "Partner"
 
-  const handleSendNudge = async (nudge: NudgeOption) => {
+  const handleSendNudge = (nudge: NudgeOption) => {
     if (!partnerMember) return
-    setSendingLabel(nudge.label)
-    try {
-      await sendNudge({
-        emoji: nudge.emoji,
-        label: nudge.label,
-      })
-    } finally {
-      setSendingLabel(null)
-    }
+    setJustSentLabel(nudge.label)
+    sendNudge({
+      emoji: nudge.emoji,
+      label: nudge.label,
+    }).catch(() => {
+      // Handled by TanStack Query rollback
+    })
+
+    setTimeout(() => {
+      setJustSentLabel(null)
+    }, 1200)
   }
 
   const isSentByMe = latestNudge?.user_id === user?.id
@@ -69,24 +69,22 @@ export function NudgeSection() {
         {/* Nudge Buttons */}
         <div className="grid grid-cols-2 gap-2">
           {nudgeOptions.map((nudge, idx) => {
-            const isThisSending = isPending && sendingLabel === nudge.label
+            const isJustSent = justSentLabel === nudge.label
             return (
               <Button
                 key={`${nudge.label}-${idx}`}
                 type="button"
                 variant="outline"
                 size="sm"
-                disabled={!partnerMember || isPending}
+                disabled={!partnerMember}
                 onClick={() => handleSendNudge(nudge)}
                 className="h-9 justify-start gap-2 px-2.5 text-xs font-normal transition active:scale-95"
               >
                 <span className="shrink-0 text-base">{nudge.emoji}</span>
-                <span className="truncate flex-1 text-left">{nudge.label}</span>
-                {isThisSending ? (
-                  <Spinner className="size-3 shrink-0" />
-                ) : (
-                  <Send className="size-3 shrink-0 opacity-40" />
-                )}
+                <span className="truncate flex-1 text-left">
+                  {isJustSent ? "Sent! 💌" : nudge.label}
+                </span>
+                <Send className="size-3 shrink-0 opacity-40" />
               </Button>
             )
           })}

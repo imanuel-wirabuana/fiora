@@ -2,12 +2,7 @@ import { differenceInCalendarDays, format, parseISO } from "date-fns"
 import { Calendar as CalendarIcon, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
-import {
-  Item,
-  ItemContent,
-  ItemHeader,
-  ItemTitle,
-} from "@/components/ui/item"
+import { Item, ItemContent, ItemHeader, ItemTitle } from "@/components/ui/item"
 import {
   Popover,
   PopoverContent,
@@ -15,6 +10,7 @@ import {
 } from "@/components/ui/popover"
 import { useRelationship } from "@/hooks/useRelationship"
 import { cn } from "@/lib/utils"
+import { useState } from "react"
 
 export function AnniversarySection() {
   const {
@@ -24,11 +20,12 @@ export function AnniversarySection() {
     updateRelationshipContentMutation,
   } = useRelationship()
 
+  const [open, setOpen] = useState(false)
+
   if (!hasRelationship || !relationship) {
     return null
   }
 
-  const isPending = updateRelationshipContentMutation.isPending
   const selectedDate = anniversary ? parseISO(anniversary) : undefined
 
   // Calculate days together if anniversary exists
@@ -37,6 +34,7 @@ export function AnniversarySection() {
     : null
 
   const handleDateChange = (date: Date | undefined) => {
+    setOpen(false)
     const formatted = date ? format(date, "yyyy-MM-dd") : null
     updateRelationshipContentMutation.mutate({
       relationshipId: relationship.id,
@@ -52,32 +50,36 @@ export function AnniversarySection() {
   }
 
   return (
-    <Item variant="outline" className="w-full flex-col items-start gap-2.5 p-3.5">
+    <Item
+      variant="outline"
+      className="w-full flex-col items-start gap-2.5 p-3.5"
+    >
       <ItemHeader className="w-full flex-row items-center justify-between space-y-0">
         <ItemTitle className="text-sm font-semibold">Anniversary</ItemTitle>
         {daysTogether !== null && (
           <span className="inline-flex items-center gap-1 rounded-full bg-rose-500/10 px-2 py-0.5 text-[11px] font-semibold text-rose-600 dark:text-rose-400">
-            {daysTogether === 0 ? "Today is Day 1!" : `${daysTogether} days together`}
+            {daysTogether === 0
+              ? "Today is Day 1!"
+              : `${daysTogether} days together`}
           </span>
         )}
       </ItemHeader>
 
       <ItemContent className="w-full space-y-2">
-        <div className="flex items-center gap-2 w-full">
-          <Popover>
+        <div className="flex w-full items-center gap-2">
+          <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger
               render={
                 <button
                   type="button"
-                  disabled={isPending}
                   className={cn(
-                    "flex h-8 flex-1 items-center justify-start gap-2 rounded-xl border border-input bg-background px-2.5 text-left text-xs transition-colors hover:bg-muted/40 outline-none focus:border-primary",
+                    "flex h-8 flex-1 items-center justify-start gap-2 rounded-xl border border-input bg-background px-2.5 text-left text-xs transition-colors outline-none hover:bg-muted/40 focus:border-primary",
                     !anniversary && "text-muted-foreground"
                   )}
                 />
               }
             >
-              <CalendarIcon className="size-3.5 text-muted-foreground shrink-0" />
+              <CalendarIcon className="size-3.5 shrink-0 text-muted-foreground" />
               <span className="truncate">
                 {selectedDate
                   ? format(selectedDate, "MMM d, yyyy")
@@ -105,9 +107,8 @@ export function AnniversarySection() {
               variant="ghost"
               size="icon-xs"
               onClick={handleClear}
-              disabled={isPending}
               title="Remove anniversary date"
-              className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0"
+              className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
             >
               <X className="size-3.5" />
             </Button>
@@ -117,4 +118,3 @@ export function AnniversarySection() {
     </Item>
   )
 }
-

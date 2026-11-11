@@ -141,7 +141,7 @@ export function useActivities() {
     Activity,
     Error,
     { type: ActivityType; content: ActivityContent },
-    { previousActivities?: Activity[] }
+    { previousActivities?: Activity[]; optimisticId?: number }
   >({
     mutationFn: ({ type, content }) => {
       if (!relationshipId) throw new Error("No active relationship found.")
@@ -163,8 +163,9 @@ export function useActivities() {
           activityKeys.byRelationship(relationshipId)
         ) || []
 
+      const optimisticId = -Date.now()
       const optimisticActivity: Activity = {
-        id: -Date.now(),
+        id: optimisticId,
         relationship_id: relationshipId,
         user_id: currentUserId,
         type: newActivity.type,
@@ -178,7 +179,20 @@ export function useActivities() {
         [optimisticActivity, ...previousActivities]
       )
 
-      return { previousActivities }
+      return { previousActivities, optimisticId }
+    },
+    onSuccess: (savedActivity, _variables, context) => {
+      if (!relationshipId) return
+      const current = queryClient.getQueryData<Activity[]>(
+        activityKeys.byRelationship(relationshipId)
+      )
+      if (current && context?.optimisticId) {
+        // Swap out the negative placeholder ID with the actual saved record from Supabase
+        queryClient.setQueryData<Activity[]>(
+          activityKeys.byRelationship(relationshipId),
+          current.map((a) => (a.id === context.optimisticId ? savedActivity : a))
+        )
+      }
     },
     onError: (_err, _newActivity, context) => {
       if (relationshipId && context?.previousActivities) {
@@ -229,6 +243,18 @@ export function useActivities() {
       )
 
       return { previousActivities }
+    },
+    onSuccess: (savedActivity) => {
+      if (!relationshipId) return
+      const current = queryClient.getQueryData<Activity[]>(
+        activityKeys.byRelationship(relationshipId)
+      )
+      if (current) {
+        queryClient.setQueryData<Activity[]>(
+          activityKeys.byRelationship(relationshipId),
+          current.map((a) => (a.id === savedActivity.id ? savedActivity : a))
+        )
+      }
     },
     onError: (_err, _variables, context) => {
       if (relationshipId && context?.previousActivities) {

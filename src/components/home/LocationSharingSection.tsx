@@ -104,7 +104,10 @@ export function LocationSharingSection() {
 
     // 2. Plot Partner Location Marker
     if (partnerLocation) {
-      const partnerLatLng: L.LatLngExpression = [partnerLocation.lat, partnerLocation.lng]
+      const partnerLatLng: L.LatLngExpression = [
+        partnerLocation.lat,
+        partnerLocation.lng,
+      ]
       points.push(partnerLatLng)
 
       const partnerIcon = L.divIcon({
@@ -148,12 +151,14 @@ export function LocationSharingSection() {
   }
 
   return (
-    <Item variant="outline" className="w-full flex-col items-start gap-2.5 p-3.5">
+    <Item
+      variant="outline"
+      className="w-full flex-col items-start gap-2.5 p-3.5"
+    >
       <ItemHeader className="w-full flex-row items-center justify-between space-y-0">
-        <div className="flex items-center gap-1.5">
-          <MapPin className="size-4 text-primary" />
-          <ItemTitle className="text-sm font-semibold">Location Sharing</ItemTitle>
-        </div>
+        <ItemTitle className="text-sm font-semibold">
+          Location Sharing
+        </ItemTitle>
 
         <div className="flex items-center gap-1.5">
           {formattedDistance && (
@@ -183,11 +188,11 @@ export function LocationSharingSection() {
       <ItemContent className="w-full space-y-2">
         {/* Leaflet Map Frame */}
         <div className="relative h-44 w-full overflow-hidden rounded-xl border border-border/70 bg-muted/40 shadow-inner">
-          <div ref={mapContainerRef} className="h-full w-full z-0" />
+          <div ref={mapContainerRef} className="z-0 h-full w-full" />
 
           {/* Overlay when waiting for initial coordinates */}
           {!myLocation && !partnerLocation && (
-            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background/60 backdrop-blur-xs text-xs text-muted-foreground gap-1.5 p-4 text-center">
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-1.5 bg-background/60 p-4 text-center text-xs text-muted-foreground backdrop-blur-xs">
               {isLocating ? (
                 <>
                   <Spinner className="size-5 text-primary" />
@@ -205,48 +210,42 @@ export function LocationSharingSection() {
 
         {/* Error message */}
         {geoError && (
-          <p className="text-[11px] font-medium text-destructive">
-            {geoError}
-          </p>
+          <p className="text-[11px] font-medium text-destructive">{geoError}</p>
         )}
 
         {/* Location Status Chips */}
         <div className="grid grid-cols-2 gap-2 text-xs">
           {/* My Status */}
-          <div className="rounded-xl border border-border/50 bg-muted/20 p-2 space-y-0.5">
+          <div className="space-y-0.5 rounded-xl border border-border/50 bg-muted/20 p-2">
             <div className="flex items-center gap-1 text-[11px] font-semibold text-muted-foreground">
               <span>{myAvatar}</span>
               <span>You</span>
             </div>
-            <ItemDescription className="text-[11px] truncate text-foreground">
-              {myLocation ? (
-                formatDistanceToNow(new Date(myLocation.updated_at), {
-                  addSuffix: true,
-                })
-              ) : isLocating ? (
-                "Locating..."
-              ) : (
-                "Not shared"
-              )}
+            <ItemDescription className="truncate text-[11px] text-foreground">
+              {myLocation
+                ? formatDistanceToNow(new Date(myLocation.updated_at), {
+                    addSuffix: true,
+                  })
+                : isLocating
+                  ? "Locating..."
+                  : "Not shared"}
             </ItemDescription>
           </div>
 
           {/* Partner Status */}
-          <div className="rounded-xl border border-border/50 bg-muted/20 p-2 space-y-0.5">
+          <div className="space-y-0.5 rounded-xl border border-border/50 bg-muted/20 p-2">
             <div className="flex items-center gap-1 text-[11px] font-semibold text-muted-foreground">
               <span>{partnerAvatar}</span>
               <span className="truncate">{partnerName}</span>
             </div>
-            <ItemDescription className="text-[11px] truncate text-foreground">
-              {partnerLocation ? (
-                formatDistanceToNow(new Date(partnerLocation.updated_at), {
-                  addSuffix: true,
-                })
-              ) : partnerMember ? (
-                "Waiting for broadcast..."
-              ) : (
-                "No partner linked"
-              )}
+            <ItemDescription className="truncate text-[11px] text-foreground">
+              {partnerLocation
+                ? formatDistanceToNow(new Date(partnerLocation.updated_at), {
+                    addSuffix: true,
+                  })
+                : partnerMember
+                  ? "Waiting for broadcast..."
+                  : "No partner linked"}
             </ItemDescription>
           </div>
         </div>
@@ -254,4 +253,3 @@ export function LocationSharingSection() {
     </Item>
   )
 }
-

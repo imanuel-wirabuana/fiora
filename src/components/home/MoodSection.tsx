@@ -2,10 +2,9 @@ import { PartnerMood, YourMood } from "./CoupleMoodTracker"
 
 export function MoodSection() {
   return (
-    <div className="flex flex-row items-center justify-evenly gap-3">
+    <div className="grid min-h-32 grid-cols-2 gap-3">
       <YourMood />
       <PartnerMood />
     </div>
   )
 }
-

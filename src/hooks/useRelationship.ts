@@ -93,10 +93,67 @@ export function useRelationship() {
     },
   })
 
-  const regenerateInviteCodeMutation = useMutation<string, Error, number>({
-    mutationFn: (relationshipId) =>
-      relationshipService.regenerateInviteCode(relationshipId),
-    onSuccess: () => {
+  const regenerateInviteCodeMutation = useMutation<
+    string,
+    Error,
+    number,
+    { previousData?: UserRelationshipData | null }
+  >({
+    mutationFn: (relationshipId) => {
+      const generatedCode = String(Math.floor(10000 + Math.random() * 90000))
+      return relationshipService.regenerateInviteCode(relationshipId, generatedCode)
+    },
+    onMutate: async () => {
+      if (!userId) return {}
+      await queryClient.cancelQueries({ queryKey: relationshipKeys.byUser(userId) })
+      const previousData = queryClient.getQueryData<UserRelationshipData | null>(
+        relationshipKeys.byUser(userId)
+      )
+
+      if (previousData?.relationship) {
+        // Optimistically set a random 5-digit code or placeholder while generating
+        const optimisticCode = String(Math.floor(10000 + Math.random() * 90000))
+        queryClient.setQueryData<UserRelationshipData | null>(
+          relationshipKeys.byUser(userId),
+          {
+            ...previousData,
+            relationship: {
+              ...previousData.relationship,
+              invite_code: optimisticCode,
+            },
+          }
+        )
+      }
+
+      return { previousData }
+    },
+    onSuccess: (newCode) => {
+      if (!userId) return
+      const current = queryClient.getQueryData<UserRelationshipData | null>(
+        relationshipKeys.byUser(userId)
+      )
+      if (current?.relationship) {
+        queryClient.setQueryData<UserRelationshipData | null>(
+          relationshipKeys.byUser(userId),
+          {
+            ...current,
+            relationship: {
+              ...current.relationship,
+              invite_code: newCode,
+            },
+          }
+        )
+      }
+    },
+    onError: (_err, _vars, context) => {
+      if (userId && context?.previousData !== undefined) {
+        queryClient.setQueryData(
+          relationshipKeys.byUser(userId),
+          context.previousData
+        )
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: relationshipKeys.byUser(userId) })
       queryClient.invalidateQueries({ queryKey: relationshipKeys.all })
     },
@@ -105,11 +162,60 @@ export function useRelationship() {
   const updateRelationshipContentMutation = useMutation<
     Relationship,
     Error,
-    { relationshipId: number; content: Partial<Relationship["content"]> }
+    { relationshipId: number; content: Partial<Relationship["content"]> },
+    { previousData?: UserRelationshipData | null }
   >({
     mutationFn: ({ relationshipId, content }) =>
       relationshipService.updateRelationshipContent(relationshipId, content),
-    onSuccess: () => {
+    onMutate: async ({ content }) => {
+      if (!userId) return {}
+      await queryClient.cancelQueries({ queryKey: relationshipKeys.byUser(userId) })
+      const previousData = queryClient.getQueryData<UserRelationshipData | null>(
+        relationshipKeys.byUser(userId)
+      )
+
+      if (previousData?.relationship) {
+        queryClient.setQueryData<UserRelationshipData | null>(
+          relationshipKeys.byUser(userId),
+          {
+            ...previousData,
+            relationship: {
+              ...previousData.relationship,
+              content: {
+                ...(previousData.relationship.content || {}),
+                ...content,
+              },
+            },
+          }
+        )
+      }
+
+      return { previousData }
+    },
+    onSuccess: (updatedRelationship) => {
+      if (!userId) return
+      const current = queryClient.getQueryData<UserRelationshipData | null>(
+        relationshipKeys.byUser(userId)
+      )
+      if (current) {
+        queryClient.setQueryData<UserRelationshipData | null>(
+          relationshipKeys.byUser(userId),
+          {
+            ...current,
+            relationship: updatedRelationship,
+          }
+        )
+      }
+    },
+    onError: (_err, _vars, context) => {
+      if (userId && context?.previousData !== undefined) {
+        queryClient.setQueryData(
+          relationshipKeys.byUser(userId),
+          context.previousData
+        )
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: relationshipKeys.byUser(userId) })
       queryClient.invalidateQueries({ queryKey: relationshipKeys.all })
     },
@@ -118,11 +224,82 @@ export function useRelationship() {
   const updateMemberContentMutation = useMutation<
     RelationshipMember,
     Error,
-    { memberId: number; content: Partial<RelationshipMemberContent> }
+    { memberId: number; content: Partial<RelationshipMemberContent> },
+    { previousData?: UserRelationshipData | null }
   >({
     mutationFn: ({ memberId, content }) =>
       relationshipService.updateMemberContent(memberId, content),
-    onSuccess: () => {
+    onMutate: async ({ memberId, content }) => {
+      if (!userId) return {}
+      await queryClient.cancelQueries({ queryKey: relationshipKeys.byUser(userId) })
+      const previousData = queryClient.getQueryData<UserRelationshipData | null>(
+        relationshipKeys.byUser(userId)
+      )
+
+      if (previousData) {
+        const updatedCurrentMember =
+          previousData.currentMember?.id === memberId
+            ? {
+                ...previousData.currentMember,
+                content: {
+                  ...(previousData.currentMember.content || {}),
+                  ...content,
+                },
+              }
+            : previousData.currentMember
+
+        const updatedMembers = previousData.members.map((m) =>
+          m.id === memberId
+            ? {
+                ...m,
+                content: {
+                  ...(m.content || {}),
+                  ...content,
+                },
+              }
+            : m
+        )
+
+        queryClient.setQueryData<UserRelationshipData | null>(
+          relationshipKeys.byUser(userId),
+          {
+            ...previousData,
+            currentMember: updatedCurrentMember,
+            members: updatedMembers,
+          }
+        )
+      }
+
+      return { previousData }
+    },
+    onSuccess: (updatedMember) => {
+      if (!userId) return
+      const current = queryClient.getQueryData<UserRelationshipData | null>(
+        relationshipKeys.byUser(userId)
+      )
+      if (current) {
+        const isCurrent = current.currentMember?.id === updatedMember.id
+        queryClient.setQueryData<UserRelationshipData | null>(
+          relationshipKeys.byUser(userId),
+          {
+            ...current,
+            currentMember: isCurrent ? updatedMember : current.currentMember,
+            members: current.members.map((m) =>
+              m.id === updatedMember.id ? updatedMember : m
+            ),
+          }
+        )
+      }
+    },
+    onError: (_err, _vars, context) => {
+      if (userId && context?.previousData !== undefined) {
+        queryClient.setQueryData(
+          relationshipKeys.byUser(userId),
+          context.previousData
+        )
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: relationshipKeys.byUser(userId) })
       queryClient.invalidateQueries({ queryKey: relationshipKeys.all })
     },

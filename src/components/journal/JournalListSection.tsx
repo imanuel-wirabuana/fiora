@@ -12,7 +12,6 @@ import type { PrivacyFilter } from "./JournalFilterSection"
 interface JournalListSectionProps {
   journals: Activity[]
   isLoading: boolean
-  isDeleting: boolean
   search: string
   privacyFilter: PrivacyFilter
   onTogglePrivacy: (id: number, content: JournalActivityContent) => void
@@ -22,7 +21,6 @@ interface JournalListSectionProps {
 export function JournalListSection({
   journals,
   isLoading,
-  isDeleting,
   search,
   privacyFilter,
   onTogglePrivacy,
@@ -135,7 +133,6 @@ export function JournalListSection({
                     <button
                       type="button"
                       onClick={() => onDelete(journal.id)}
-                      disabled={isDeleting}
                       className="rounded p-1 text-muted-foreground hover:bg-destructive/20 hover:text-destructive transition"
                       title="Delete journal"
                     >

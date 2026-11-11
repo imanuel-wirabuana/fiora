@@ -21,8 +21,6 @@ export function CommitmentSection() {
     return null
   }
 
-  const isPending = updateRelationshipContentMutation.isPending
-
   const handleToggleLocationSharing = (checked: boolean) => {
     updateRelationshipContentMutation.mutate({
       relationshipId: relationship.id,
@@ -55,7 +53,6 @@ export function CommitmentSection() {
           <Switch
             checked={locationSharing}
             onCheckedChange={handleToggleLocationSharing}
-            disabled={isPending}
             aria-label="Toggle location sharing"
           />
         </div>

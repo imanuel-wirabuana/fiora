@@ -9,7 +9,6 @@ import {
   ItemHeader,
   ItemTitle,
 } from "@/components/ui/item"
-import { Spinner } from "@/components/ui/spinner"
 import { useRelationship } from "@/hooks/useRelationship"
 import { DEFAULT_NUDGE_OPTIONS } from "@/lib/relationship"
 import type { NudgeOption } from "@/types/relationship"
@@ -32,7 +31,6 @@ export function NudgesSection() {
     return null
   }
 
-  const isPending = updateRelationshipContentMutation.isPending
   const isMaxReached = nudgeOptions.length >= MAX_NUDGES
 
   const handleSaveNudges = (updatedNudges: NudgeOption[]) => {
@@ -88,7 +86,6 @@ export function NudgesSection() {
             variant="ghost"
             size="icon-xs"
             onClick={handleResetDefaults}
-            disabled={isPending}
             title="Reset to default nudges"
             className="h-6 w-6 text-muted-foreground hover:text-foreground"
           >
@@ -99,7 +96,7 @@ export function NudgesSection() {
             variant="outline"
             size="xs"
             onClick={() => setIsAdding(!isAdding)}
-            disabled={isPending || (isMaxReached && !isAdding)}
+            disabled={isMaxReached && !isAdding}
             className="h-6 gap-1 px-2 text-[11px]"
           >
             <Plus className="size-3" />
@@ -128,7 +125,6 @@ export function NudgesSection() {
                 <button
                   type="button"
                   onClick={() => handleRemoveNudge(idx)}
-                  disabled={isPending}
                   className="shrink-0 rounded p-0.5 text-muted-foreground transition hover:bg-destructive/20 hover:text-destructive"
                   title="Remove nudge"
                 >
@@ -166,14 +162,13 @@ export function NudgesSection() {
               type="submit"
               size="xs"
               disabled={
-                isPending ||
                 isMaxReached ||
                 !newEmoji.trim() ||
                 !newLabel.trim()
               }
               className="h-7 gap-1 px-2.5 text-[11px]"
             >
-              {isPending ? <Spinner className="size-3" /> : "Save"}
+              Save
             </Button>
             <Button
               type="button"

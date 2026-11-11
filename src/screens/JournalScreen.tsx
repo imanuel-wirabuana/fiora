@@ -16,7 +16,6 @@ export function JournalScreen() {
     deleteActivity,
     isLoading,
     createActivityMutation,
-    deleteActivityMutation,
   } = useActivities()
 
   const [privacyFilter, setPrivacyFilter] = useState<PrivacyFilter>("all")
@@ -27,7 +26,6 @@ export function JournalScreen() {
   const [isSharedNew, setIsSharedNew] = useState(false) // Default is private
 
   const isSaving = createActivityMutation.isPending
-  const isDeleting = deleteActivityMutation.isPending
 
   const filteredJournals = visibleJournals.filter((activity) => {
     const content = activity.content as JournalActivityContent | null
@@ -46,25 +44,34 @@ export function JournalScreen() {
     )
   })
 
-  const handleSave = async (e: React.FormEvent) => {
+  const handleSave = (e: React.FormEvent) => {
     e.preventDefault()
     if (!title.trim() || !body.trim()) return
 
-    await createJournal({
-      title: title.trim(),
-      body: body.trim(),
-      isShared: isSharedNew,
-    })
+    const newTitle = title.trim()
+    const newBody = body.trim()
+    const newIsShared = isSharedNew
 
+    // Close form and reset fields immediately so optimistic entry shows up seamlessly
     setTitle("")
     setBody("")
     setIsSharedNew(false)
     setIsCreating(false)
+
+    createJournal({
+      title: newTitle,
+      body: newBody,
+      isShared: newIsShared,
+    }).catch(() => {
+      // Rollback is automatically handled by TanStack Query onMutate/onError
+    })
   }
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = (id: number) => {
     if (confirm("Are you sure you want to delete this journal entry?")) {
-      await deleteActivity(id)
+      deleteActivity(id).catch(() => {
+        // Rollback handled by query mutation
+      })
     }
   }
 
@@ -99,7 +106,6 @@ export function JournalScreen() {
       <JournalListSection
         journals={filteredJournals}
         isLoading={isLoading}
-        isDeleting={isDeleting}
         search={search}
         privacyFilter={privacyFilter}
         onTogglePrivacy={handleTogglePrivacy}

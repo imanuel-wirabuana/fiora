@@ -30,27 +30,27 @@ export function MoodDrawer({ open, onOpenChange, children }: MoodDrawerProps) {
 
   const isPending = createActivityMutation.isPending
 
-  const handleSendMood = async () => {
+  const handleSendMood = () => {
     const currentOption = moodOptions.find((m) => m.label === selectedMood) || {
       emoji: "🥰",
       label: selectedMood || "Loved",
     }
 
-    try {
-      await logMood({
-        emoji: currentOption.emoji,
-        label: currentOption.label,
-        note: note.trim() || undefined,
-      })
-      setIsSent(true)
-      setTimeout(() => {
-        setIsSent(false)
-        onOpenChange(false)
-        setNote("")
-      }, 700)
-    } catch {
-      // Error handled by mutation
-    }
+    // Fire mutation optimistically without blocking UI completion
+    logMood({
+      emoji: currentOption.emoji,
+      label: currentOption.label,
+      note: note.trim() || undefined,
+    }).catch(() => {
+      // Error handled by queryClient mutation rollback
+    })
+
+    setIsSent(true)
+    setTimeout(() => {
+      setIsSent(false)
+      onOpenChange(false)
+      setNote("")
+    }, 500)
   }
 
   return (

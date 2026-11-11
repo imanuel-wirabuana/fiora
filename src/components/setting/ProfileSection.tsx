@@ -49,37 +49,25 @@ export function ProfileSection() {
     const trimmed = name.trim()
     if (!trimmed || trimmed === savedName) return
 
-    updateMemberContentMutation.mutate(
-      {
-        memberId: currentMember.id,
-        content: { name: trimmed },
-      },
-      {
-        onSuccess: () => {
-          setSaved(true)
-          setTimeout(() => setSaved(false), 2000)
-        },
-      }
-    )
+    setSaved(true)
+    setTimeout(() => setSaved(false), 2000)
+
+    updateMemberContentMutation.mutate({
+      memberId: currentMember.id,
+      content: { name: trimmed },
+    })
   }
 
   const handleSelectAvatar = (newAvatar: string) => {
+    setAvatarOpen(false)
     if (newAvatar === savedAvatar) {
-      setAvatarOpen(false)
       return
     }
 
-    updateMemberContentMutation.mutate(
-      {
-        memberId: currentMember.id,
-        content: { avatar: newAvatar },
-      },
-      {
-        onSuccess: () => {
-          setAvatarOpen(false)
-        },
-      }
-    )
+    updateMemberContentMutation.mutate({
+      memberId: currentMember.id,
+      content: { avatar: newAvatar },
+    })
   }
 
   return (
@@ -99,11 +87,9 @@ export function ProfileSection() {
               render={
                 <button
                   type="button"
-                  disabled={isPending}
                   title="Change avatar"
                   className={cn(
-                    "relative flex h-8 items-center gap-0.5 rounded-xl border border-input bg-background px-2 text-base transition-colors hover:bg-muted/40 outline-none focus:border-primary shrink-0",
-                    isPending && "opacity-50"
+                    "relative flex h-8 items-center gap-0.5 rounded-xl border border-input bg-background px-2 text-base transition-colors hover:bg-muted/40 outline-none focus:border-primary shrink-0"
                   )}
                 />
               }
@@ -149,15 +135,15 @@ export function ProfileSection() {
           <Button
             type="submit"
             size="xs"
-            disabled={isPending || !isNameChanged || !name.trim()}
+            disabled={!isNameChanged || !name.trim()}
             className="h-8 gap-1 px-3 text-[11px]"
           >
-            {isPending ? (
-              <Spinner className="size-3" />
-            ) : saved ? (
+            {saved ? (
               <>
                 <Check className="size-3 text-emerald-400" /> Saved
               </>
+            ) : isPending ? (
+              <Spinner className="size-3" />
             ) : (
               "Save"
             )}
