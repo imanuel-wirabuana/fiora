@@ -89,7 +89,7 @@ export function SetupScreen() {
     <div className="relative mx-auto flex h-full min-h-svh w-full max-w-md flex-col justify-between overflow-hidden bg-primary lg:min-h-full">
       {/* Top Brand Header */}
       <div className="flex flex-col items-center justify-center px-6 pt-10 pb-4 text-primary-foreground">
-        <Brand size="md" align="center" subtitle="Let's set up your couple space" />
+        <Brand size="default" align="center" subtitle="Let's set up your couple space" />
       </div>
 
       {/* Persistent Bottom Stepper Card */}
