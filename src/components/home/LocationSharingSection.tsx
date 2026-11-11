@@ -20,6 +20,7 @@ export function LocationSharingSection() {
     myLocation,
     partnerLocation,
     partnerMember,
+    formattedDistance,
     isLocating,
     geoError,
     refreshLocation,
@@ -125,10 +126,17 @@ export function LocationSharingSection() {
       L.marker(partnerLatLng, { icon: partnerIcon }).addTo(layer)
     }
 
-    // 3. Fit Bounds or Center
+    // 3. Connect line & Fit Bounds or Center
     if (points.length === 1) {
       map.setView(points[0], 14, { animate: true })
     } else if (points.length > 1) {
+      L.polyline(points, {
+        color: "#f43f5e",
+        weight: 2,
+        dashArray: "4 6",
+        opacity: 0.7,
+      }).addTo(layer)
+
       const bounds = L.latLngBounds(points)
       map.fitBounds(bounds, { padding: [35, 35], maxZoom: 15, animate: true })
     }
@@ -147,21 +155,29 @@ export function LocationSharingSection() {
           <ItemTitle className="text-sm font-semibold">Location Sharing</ItemTitle>
         </div>
 
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-xs"
-          onClick={refreshLocation}
-          disabled={isLocating}
-          title="Refresh current location"
-          className="size-7 rounded-lg text-muted-foreground hover:text-foreground"
-        >
-          {isLocating ? (
-            <Spinner className="size-3.5" />
-          ) : (
-            <RefreshCw className="size-3.5" />
+        <div className="flex items-center gap-1.5">
+          {formattedDistance && (
+            <span className="inline-flex items-center rounded-full bg-rose-500/10 px-2 py-0.5 text-[11px] font-semibold text-rose-600 dark:text-rose-400">
+              {formattedDistance} apart
+            </span>
           )}
-        </Button>
+
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-xs"
+            onClick={refreshLocation}
+            disabled={isLocating}
+            title="Refresh current location"
+            className="size-7 rounded-lg text-muted-foreground hover:text-foreground"
+          >
+            {isLocating ? (
+              <Spinner className="size-3.5" />
+            ) : (
+              <RefreshCw className="size-3.5" />
+            )}
+          </Button>
+        </div>
       </ItemHeader>
 
       <ItemContent className="w-full space-y-2">

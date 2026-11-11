@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { calculateDistanceMeters, formatDistanceBetween } from "@/lib/location"
 import { locationService } from "@/services/locationService"
 import { useAuth } from "./useAuth"
 import { useRelationship } from "./useRelationship"
@@ -129,11 +130,23 @@ export function useLocationSharing() {
     }
   }, [locationSharing, relationship?.id, user?.id, broadcastCurrentCoords, refreshLocation])
 
+  const distanceMeters = useMemo(() => {
+    if (!myLocation || !partnerLocation) return null
+    return calculateDistanceMeters(myLocation, partnerLocation)
+  }, [myLocation, partnerLocation])
+
+  const formattedDistance = useMemo(() => {
+    if (distanceMeters === null) return null
+    return formatDistanceBetween(distanceMeters)
+  }, [distanceMeters])
+
   return {
     locationSharing,
     myLocation,
     partnerLocation,
     partnerMember,
+    distanceMeters,
+    formattedDistance,
     isLocating,
     geoError,
     refreshLocation,
