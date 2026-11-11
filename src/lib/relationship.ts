@@ -9,10 +9,10 @@ export const DEFAULT_MOOD_OPTIONS: MoodOption[] = [
 ]
 
 export const DEFAULT_NUDGE_OPTIONS: NudgeOption[] = [
-  { id: "1", emoji: "💌", label: "Thinking of you" },
-  { id: "2", emoji: "🤗", label: "Need a hug" },
-  { id: "3", emoji: "☕", label: "Coffee break?" },
-  { id: "4", emoji: "📞", label: "Call me soon" },
+  { emoji: "💌", label: "Thinking of you" },
+  { emoji: "🤗", label: "Need a hug" },
+  { emoji: "☕", label: "Coffee break?" },
+  { emoji: "📞", label: "Call me soon" },
 ]
 
 export const DEFAULT_AVATARS_BY_GENDER: Record<Gender, string[]> = {

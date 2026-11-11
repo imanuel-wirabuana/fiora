@@ -61,7 +61,7 @@ export function NudgesStep({ nudges, onChangeNudges }: NudgesStepProps) {
           const isSelected = activeNudgeIndex === idx
           return (
             <button
-              key={nudge.id || idx}
+              key={`${nudge.label}-${idx}`}
               type="button"
               onClick={() => setActiveNudgeIndex(idx)}
               className={cn(

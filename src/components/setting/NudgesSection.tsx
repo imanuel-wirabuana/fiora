@@ -42,9 +42,9 @@ export function NudgesSection() {
     })
   }
 
-  const handleRemoveNudge = (id: string) => {
+  const handleRemoveNudge = (index: number) => {
     if (nudgeOptions.length <= 1) return
-    const updated = nudgeOptions.filter((n) => n.id !== id)
+    const updated = nudgeOptions.filter((_, i) => i !== index)
     handleSaveNudges(updated)
   }
 
@@ -56,7 +56,6 @@ export function NudgesSection() {
     if (!trimmedEmoji || !trimmedLabel) return
 
     const newNudge: NudgeOption = {
-      id: String(Date.now()),
       emoji: trimmedEmoji,
       label: trimmedLabel,
     }
@@ -116,9 +115,9 @@ export function NudgesSection() {
 
         {/* Nudge Pills Grid */}
         <div className="grid grid-cols-1 gap-1.5 pt-0.5 sm:grid-cols-2">
-          {nudgeOptions.map((nudge) => (
+          {nudgeOptions.map((nudge, idx) => (
             <div
-              key={nudge.id}
+              key={`${nudge.label}-${idx}`}
               className="flex items-center justify-between rounded-lg border border-border/70 bg-muted/30 px-2.5 py-1.5 text-xs font-medium text-foreground"
             >
               <div className="flex items-center gap-1.5 truncate">
@@ -128,7 +127,7 @@ export function NudgesSection() {
               {nudgeOptions.length > 1 && (
                 <button
                   type="button"
-                  onClick={() => handleRemoveNudge(nudge.id)}
+                  onClick={() => handleRemoveNudge(idx)}
                   disabled={isPending}
                   className="shrink-0 rounded p-0.5 text-muted-foreground transition hover:bg-destructive/20 hover:text-destructive"
                   title="Remove nudge"

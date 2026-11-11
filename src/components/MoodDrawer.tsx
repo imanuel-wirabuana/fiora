@@ -2,6 +2,7 @@ import { useState, type ReactNode } from "react"
 import { Heart, Send } from "lucide-react"
 import { cn } from "../lib/utils"
 import { useRelationship } from "../hooks/useRelationship"
+import { useActivities } from "../hooks/useActivities"
 import {
   Drawer,
   DrawerContent,
@@ -10,6 +11,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "./ui/drawer"
+import { Spinner } from "./ui/spinner"
 
 interface MoodDrawerProps {
   open: boolean
@@ -19,19 +21,36 @@ interface MoodDrawerProps {
 
 export function MoodDrawer({ open, onOpenChange, children }: MoodDrawerProps) {
   const { moodOptions } = useRelationship()
+  const { logMood, createActivityMutation } = useActivities()
   const [selectedMood, setSelectedMood] = useState<string>(
     () => moodOptions[0]?.label || "Loved"
   )
   const [note, setNote] = useState("")
   const [isSent, setIsSent] = useState(false)
 
-  const handleSendMood = () => {
-    setIsSent(true)
-    setTimeout(() => {
-      setIsSent(false)
-      onOpenChange(false)
-      setNote("")
-    }, 800)
+  const isPending = createActivityMutation.isPending
+
+  const handleSendMood = async () => {
+    const currentOption = moodOptions.find((m) => m.label === selectedMood) || {
+      emoji: "🥰",
+      label: selectedMood || "Loved",
+    }
+
+    try {
+      await logMood({
+        emoji: currentOption.emoji,
+        label: currentOption.label,
+        note: note.trim() || undefined,
+      })
+      setIsSent(true)
+      setTimeout(() => {
+        setIsSent(false)
+        onOpenChange(false)
+        setNote("")
+      }, 700)
+    } catch {
+      // Error handled by mutation
+    }
   }
 
   return (
@@ -107,7 +126,7 @@ export function MoodDrawer({ open, onOpenChange, children }: MoodDrawerProps) {
           <button
             type="button"
             onClick={handleSendMood}
-            disabled={isSent}
+            disabled={isSent || isPending}
             className={cn(
               "flex h-11 w-full items-center justify-center gap-2 rounded-2xl font-medium text-primary-foreground shadow-xs transition active:scale-[0.99]",
               isSent
@@ -119,6 +138,11 @@ export function MoodDrawer({ open, onOpenChange, children }: MoodDrawerProps) {
               <>
                 <Heart className="size-4 fill-current" />
                 <span>Shared with Partner!</span>
+              </>
+            ) : isPending ? (
+              <>
+                <Spinner className="size-4" />
+                <span>Sharing...</span>
               </>
             ) : (
               <>

@@ -6,7 +6,6 @@ export interface MoodOption {
 }
 
 export interface NudgeOption {
-  id: string
   emoji: string
   label: string
 }
