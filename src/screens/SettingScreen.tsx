@@ -1,6 +1,7 @@
 import {
   AccountSection,
   AnniversarySection,
+  CommitmentSection,
   MoodsSection,
   NudgesSection,
   ProfileSection,
@@ -13,6 +14,7 @@ export function SettingScreen() {
       <ProfileSection />
       <RelationshipSection />
       <AnniversarySection />
+      <CommitmentSection />
       <MoodsSection />
       <NudgesSection />
       <AccountSection />

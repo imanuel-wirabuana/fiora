@@ -10,10 +10,18 @@ export interface NudgeOption {
   label: string
 }
 
+export interface MemberLocation {
+  userId: string
+  lat: number
+  lng: number
+  updated_at: string
+}
+
 export interface RelationshipContent {
   anniversary?: string | null
   moods?: MoodOption[]
   nudges?: NudgeOption[]
+  location_sharing?: boolean
 }
 
 export interface RelationshipMemberContent {

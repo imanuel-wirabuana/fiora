@@ -50,6 +50,7 @@ export function useRelationship() {
       : DEFAULT_NUDGE_OPTIONS
 
   const anniversary = relationship?.content?.anniversary ?? null
+  const locationSharing = Boolean(relationship?.content?.location_sharing)
 
   // 2. Realtime listener: invalidate query whenever changes occur on relationships or relationship_members
   useEffect(() => {
@@ -137,6 +138,7 @@ export function useRelationship() {
     moodOptions,
     nudgeOptions,
     anniversary,
+    locationSharing,
     isLoading: query.isLoading,
     isFetching: query.isFetching,
     error: query.error,
