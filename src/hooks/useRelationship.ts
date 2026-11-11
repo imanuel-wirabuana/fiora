@@ -113,7 +113,7 @@ export function useRelationship() {
       if (previousData?.relationship) {
         // Optimistically set a random 5-digit code or placeholder while generating
         const optimisticCode = String(Math.floor(10000 + Math.random() * 90000))
-        queryClient.setQueryData<UserRelationshipData | null>(
+        queryClient.setQueryData(
           relationshipKeys.byUser(userId),
           {
             ...previousData,
@@ -133,7 +133,7 @@ export function useRelationship() {
         relationshipKeys.byUser(userId)
       )
       if (current?.relationship) {
-        queryClient.setQueryData<UserRelationshipData | null>(
+        queryClient.setQueryData(
           relationshipKeys.byUser(userId),
           {
             ...current,
@@ -175,7 +175,7 @@ export function useRelationship() {
       )
 
       if (previousData?.relationship) {
-        queryClient.setQueryData<UserRelationshipData | null>(
+        queryClient.setQueryData(
           relationshipKeys.byUser(userId),
           {
             ...previousData,
@@ -198,7 +198,7 @@ export function useRelationship() {
         relationshipKeys.byUser(userId)
       )
       if (current) {
-        queryClient.setQueryData<UserRelationshipData | null>(
+        queryClient.setQueryData(
           relationshipKeys.byUser(userId),
           {
             ...current,
@@ -260,7 +260,7 @@ export function useRelationship() {
             : m
         )
 
-        queryClient.setQueryData<UserRelationshipData | null>(
+        queryClient.setQueryData(
           relationshipKeys.byUser(userId),
           {
             ...previousData,
@@ -279,7 +279,7 @@ export function useRelationship() {
       )
       if (current) {
         const isCurrent = current.currentMember?.id === updatedMember.id
-        queryClient.setQueryData<UserRelationshipData | null>(
+        queryClient.setQueryData(
           relationshipKeys.byUser(userId),
           {
             ...current,
