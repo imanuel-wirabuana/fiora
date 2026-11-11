@@ -72,13 +72,32 @@ export function useActivities() {
     [activities]
   )
 
-  const journalActivities = useMemo(
-    () =>
-      activities.filter(
-        (a): a is Activity<JournalActivityContent> => a.type === "journal"
-      ),
-    [activities]
-  )
+  // Journals visible to the current user:
+  // 1. Their own journals (both private and shared)
+  // 2. Partner's shared journals (isShared === true)
+  // (Partner's private journals are never shown)
+  const visibleJournals = useMemo(() => {
+    return activities.filter((a): a is Activity<JournalActivityContent> => {
+      if (a.type !== "journal") return false
+      const content = a.content as JournalActivityContent | null
+      if (!content) return false
+      if (a.user_id === currentUserId) return true
+      return !!content.isShared
+    })
+  }, [activities, currentUserId])
+
+  // Timeline activities:
+  // Moods + Nudges + ONLY Shared Journals
+  const timelineActivities = useMemo(() => {
+    return activities.filter((a) => {
+      if (a.type === "mood" || a.type === "nudge") return true
+      if (a.type === "journal") {
+        const content = a.content as JournalActivityContent | null
+        return !!content?.isShared
+      }
+      return false
+    })
+  }, [activities])
 
   const myLatestMood = useMemo(
     () =>
@@ -100,19 +119,29 @@ export function useActivities() {
     [nudgeActivities]
   )
 
+  // Partner updates for NotificationScreen:
+  // Moods + Nudges + ONLY Shared Journals
   const partnerActivities = useMemo(
     () =>
       partnerMember
-        ? activities.filter((a) => a.user_id === partnerMember.user_id)
+        ? activities.filter((a) => {
+            if (a.user_id !== partnerMember.user_id) return false
+            if (a.type === "journal") {
+              const content = a.content as JournalActivityContent | null
+              return !!content?.isShared
+            }
+            return true
+          })
         : [],
     [activities, partnerMember]
   )
 
-  // 3. Mutations
+  // 3. Optimistic Mutations
   const createActivityMutation = useMutation<
     Activity,
     Error,
-    { type: ActivityType; content: ActivityContent }
+    { type: ActivityType; content: ActivityContent },
+    { previousActivities?: Activity[] }
   >({
     mutationFn: ({ type, content }) => {
       if (!relationshipId) throw new Error("No active relationship found.")
@@ -122,33 +151,144 @@ export function useActivities() {
         content,
       })
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
+    onMutate: async (newActivity) => {
+      if (!relationshipId || !currentUserId) return {}
+
+      await queryClient.cancelQueries({
         queryKey: activityKeys.byRelationship(relationshipId),
       })
+
+      const previousActivities =
+        queryClient.getQueryData<Activity[]>(
+          activityKeys.byRelationship(relationshipId)
+        ) || []
+
+      const optimisticActivity: Activity = {
+        id: -Date.now(),
+        relationship_id: relationshipId,
+        user_id: currentUserId,
+        type: newActivity.type,
+        content: newActivity.content,
+        created_at: new Date().toISOString(),
+        updated_at: null,
+      }
+
+      queryClient.setQueryData<Activity[]>(
+        activityKeys.byRelationship(relationshipId),
+        [optimisticActivity, ...previousActivities]
+      )
+
+      return { previousActivities }
+    },
+    onError: (_err, _newActivity, context) => {
+      if (relationshipId && context?.previousActivities) {
+        queryClient.setQueryData(
+          activityKeys.byRelationship(relationshipId),
+          context.previousActivities
+        )
+      }
+    },
+    onSettled: () => {
+      if (relationshipId) {
+        queryClient.invalidateQueries({
+          queryKey: activityKeys.byRelationship(relationshipId),
+        })
+      }
     },
   })
 
   const updateActivityMutation = useMutation<
     Activity,
     Error,
-    { activityId: number; content: ActivityContent }
+    { activityId: number; content: ActivityContent },
+    { previousActivities?: Activity[] }
   >({
     mutationFn: ({ activityId, content }) =>
       activityService.updateActivity(activityId, content),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
+    onMutate: async ({ activityId, content }) => {
+      if (!relationshipId) return {}
+
+      await queryClient.cancelQueries({
         queryKey: activityKeys.byRelationship(relationshipId),
       })
+
+      const previousActivities =
+        queryClient.getQueryData<Activity[]>(
+          activityKeys.byRelationship(relationshipId)
+        ) || []
+
+      const updated = previousActivities.map((a) =>
+        a.id === activityId
+          ? { ...a, content, updated_at: new Date().toISOString() }
+          : a
+      )
+
+      queryClient.setQueryData<Activity[]>(
+        activityKeys.byRelationship(relationshipId),
+        updated
+      )
+
+      return { previousActivities }
+    },
+    onError: (_err, _variables, context) => {
+      if (relationshipId && context?.previousActivities) {
+        queryClient.setQueryData(
+          activityKeys.byRelationship(relationshipId),
+          context.previousActivities
+        )
+      }
+    },
+    onSettled: () => {
+      if (relationshipId) {
+        queryClient.invalidateQueries({
+          queryKey: activityKeys.byRelationship(relationshipId),
+        })
+      }
     },
   })
 
-  const deleteActivityMutation = useMutation<void, Error, number>({
+  const deleteActivityMutation = useMutation<
+    void,
+    Error,
+    number,
+    { previousActivities?: Activity[] }
+  >({
     mutationFn: (activityId) => activityService.deleteActivity(activityId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
+    onMutate: async (activityId) => {
+      if (!relationshipId) return {}
+
+      await queryClient.cancelQueries({
         queryKey: activityKeys.byRelationship(relationshipId),
       })
+
+      const previousActivities =
+        queryClient.getQueryData<Activity[]>(
+          activityKeys.byRelationship(relationshipId)
+        ) || []
+
+      const filtered = previousActivities.filter((a) => a.id !== activityId)
+
+      queryClient.setQueryData<Activity[]>(
+        activityKeys.byRelationship(relationshipId),
+        filtered
+      )
+
+      return { previousActivities }
+    },
+    onError: (_err, _activityId, context) => {
+      if (relationshipId && context?.previousActivities) {
+        queryClient.setQueryData(
+          activityKeys.byRelationship(relationshipId),
+          context.previousActivities
+        )
+      }
+    },
+    onSettled: () => {
+      if (relationshipId) {
+        queryClient.invalidateQueries({
+          queryKey: activityKeys.byRelationship(relationshipId),
+        })
+      }
     },
   })
 
@@ -169,15 +309,33 @@ export function useActivities() {
   const createJournal = async (content: JournalActivityContent) => {
     return createActivityMutation.mutateAsync({
       type: "journal",
-      content,
+      content: {
+        isShared: false,
+        ...content,
+      },
+    })
+  }
+
+  const toggleJournalPrivacy = async (
+    activityId: number,
+    currentContent: JournalActivityContent
+  ) => {
+    const updatedContent: JournalActivityContent = {
+      ...currentContent,
+      isShared: !currentContent.isShared,
+    }
+    return updateActivityMutation.mutateAsync({
+      activityId,
+      content: updatedContent,
     })
   }
 
   return {
     activities,
+    timelineActivities,
+    visibleJournals,
     moodActivities,
     nudgeActivities,
-    journalActivities,
     myLatestMood,
     partnerLatestMood,
     latestNudge,
@@ -193,6 +351,7 @@ export function useActivities() {
     logMood,
     sendNudge,
     createJournal,
+    toggleJournalPrivacy,
     updateJournal: updateActivityMutation.mutateAsync,
     deleteActivity: deleteActivityMutation.mutateAsync,
   }

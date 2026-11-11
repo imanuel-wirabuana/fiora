@@ -14,6 +14,7 @@ export interface NudgeActivityContent {
 export interface JournalActivityContent {
   title: string
   body: string
+  isShared?: boolean
 }
 
 export type ActivityContent =

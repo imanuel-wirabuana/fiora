@@ -91,7 +91,6 @@ export const activityService = {
           event: "*",
           schema: "public",
           table: "activities",
-          filter: `relationship_id=eq.${relationshipId}`,
         },
         () => {
           onChange()

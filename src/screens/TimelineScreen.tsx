@@ -1,13 +1,16 @@
-import { useState } from "react"
-import { formatDistanceToNow } from "date-fns"
-import { BookOpen, Heart, MessageCircle, Sparkles } from "lucide-react"
+import { useState, useMemo } from "react"
+import { format, formatDistanceToNow, isSameDay } from "date-fns"
+import { BookOpen, Calendar as CalendarIcon, Heart, MessageCircle, Sparkles, X } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
 import { Item, ItemContent, ItemHeader, ItemTitle } from "@/components/ui/item"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Spinner } from "@/components/ui/spinner"
 import { useActivities } from "@/hooks/useActivities"
 import { useAuth } from "@/hooks/useAuth"
 import { useRelationship } from "@/hooks/useRelationship"
+import { cn } from "@/lib/utils"
 import type {
   Activity,
   ActivityType,
@@ -19,15 +22,34 @@ import type {
 type FilterType = "all" | ActivityType
 
 export function TimelineScreen() {
-  const { activities, isLoading } = useActivities()
+  const { timelineActivities, isLoading } = useActivities()
   const { currentMember, partnerMember } = useRelationship()
   const { user } = useAuth()
-  const [filter, setFilter] = useState<FilterType>("all")
 
-  const filteredActivities = activities.filter((activity) => {
-    if (filter === "all") return true
-    return activity.type === filter
-  })
+  const [typeFilter, setTypeFilter] = useState<FilterType>("all")
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false)
+
+  // Identify dates that have activities for calendar dots/styling
+  const activeDays = useMemo(() => {
+    return timelineActivities.map((a) => new Date(a.created_at))
+  }, [timelineActivities])
+
+  const filteredActivities = useMemo(() => {
+    return timelineActivities.filter((activity) => {
+      // 1. Type filter
+      if (typeFilter !== "all" && activity.type !== typeFilter) {
+        return false
+      }
+      // 2. Date filter
+      if (selectedDate) {
+        if (!isSameDay(new Date(activity.created_at), selectedDate)) {
+          return false
+        }
+      }
+      return true
+    })
+  }, [timelineActivities, typeFilter, selectedDate])
 
   const getMemberInfo = (userId: string) => {
     if (userId === user?.id) {
@@ -77,7 +99,12 @@ export function TimelineScreen() {
       if (!content) return null
       return (
         <div className="flex flex-col gap-1">
-          <h4 className="text-xs font-bold text-foreground">{content.title}</h4>
+          <div className="flex items-center gap-1.5">
+            <h4 className="text-xs font-bold text-foreground">{content.title}</h4>
+            <Badge variant="outline" className="text-[9px] py-0 px-1 font-normal text-muted-foreground">
+              Shared
+            </Badge>
+          </div>
           <p className="text-xs text-muted-foreground whitespace-pre-wrap line-clamp-3">
             {content.body}
           </p>
@@ -114,22 +141,109 @@ export function TimelineScreen() {
     }
   }
 
+  const handleDateSelect = (date: Date | undefined) => {
+    if (selectedDate && date && isSameDay(selectedDate, date)) {
+      setSelectedDate(undefined)
+    } else {
+      setSelectedDate(date)
+    }
+    setIsCalendarOpen(false)
+  }
+
   return (
-    <section className="flex flex-col gap-4">
-      {/* Filter Tabs */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-        {(["all", "mood", "nudge", "journal"] as const).map((tab) => (
-          <Button
-            key={tab}
-            variant={filter === tab ? "default" : "outline"}
-            size="xs"
-            onClick={() => setFilter(tab)}
-            className="capitalize rounded-full px-3 text-xs"
+    <section className="flex flex-col gap-3">
+      {/* Compact Controls: Type Filter Tabs + Date Popover */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
+          {(["all", "mood", "nudge", "journal"] as const).map((tab) => (
+            <Button
+              key={tab}
+              variant={typeFilter === tab ? "default" : "outline"}
+              size="xs"
+              onClick={() => setTypeFilter(tab)}
+              className="capitalize rounded-full px-3 text-xs h-7"
+            >
+              {tab}
+            </Button>
+          ))}
+        </div>
+
+        {/* Compact Date Picker Popover */}
+        <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+          <PopoverTrigger
+            render={
+              <Button
+                variant={selectedDate ? "default" : "outline"}
+                size="xs"
+                className={cn(
+                  "h-7 gap-1.5 px-2.5 rounded-full text-xs shrink-0",
+                  selectedDate && "bg-primary text-primary-foreground"
+                )}
+              />
+            }
           >
-            {tab}
-          </Button>
-        ))}
+            <CalendarIcon className="size-3.5" />
+            <span>
+              {selectedDate ? format(selectedDate, "MMM d") : "Date"}
+            </span>
+          </PopoverTrigger>
+
+          <PopoverContent
+            align="end"
+            className="w-auto p-1 rounded-2xl border border-border shadow-lg"
+          >
+            <div className="p-1">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={handleDateSelect}
+                modifiers={{
+                  hasActivity: activeDays,
+                }}
+                modifiersClassNames={{
+                  hasActivity:
+                    "font-bold underline decoration-primary decoration-2 underline-offset-4",
+                }}
+                captionLayout="dropdown"
+                autoFocus
+              />
+            </div>
+            {selectedDate && (
+              <div className="flex justify-end border-t border-border/50 p-2 pt-1">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="xs"
+                  onClick={() => {
+                    setSelectedDate(undefined)
+                    setIsCalendarOpen(false)
+                  }}
+                  className="h-6 text-[11px] text-muted-foreground hover:text-foreground"
+                >
+                  Clear filter
+                </Button>
+              </div>
+            )}
+          </PopoverContent>
+        </Popover>
       </div>
+
+      {/* Active Date Filter Chip */}
+      {selectedDate && (
+        <div className="flex items-center justify-between rounded-xl bg-primary/10 px-3 py-1.5 text-xs text-primary">
+          <span>
+            Filtering by <strong>{format(selectedDate, "MMMM d, yyyy")}</strong>
+          </span>
+          <button
+            type="button"
+            onClick={() => setSelectedDate(undefined)}
+            className="rounded p-0.5 hover:bg-primary/20"
+            title="Clear date filter"
+          >
+            <X className="size-3.5" />
+          </button>
+        </div>
+      )}
 
       {/* Activity Timeline List */}
       {isLoading ? (
@@ -139,7 +253,11 @@ export function TimelineScreen() {
       ) : filteredActivities.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground gap-2">
           <Sparkles className="size-8 opacity-40" />
-          <p className="text-xs">No activities recorded yet.</p>
+          <p className="text-xs">
+            {selectedDate
+              ? `No activities recorded on ${format(selectedDate, "MMM d, yyyy")}.`
+              : "No activities recorded yet."}
+          </p>
         </div>
       ) : (
         <div className="flex flex-col gap-2.5">
