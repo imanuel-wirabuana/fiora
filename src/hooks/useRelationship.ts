@@ -6,6 +6,9 @@ import { DEFAULT_MOOD_OPTIONS, DEFAULT_NUDGE_OPTIONS } from "../lib/relationship
 import type {
   CreateRelationshipInput,
   JoinRelationshipInput,
+  Relationship,
+  RelationshipMember,
+  RelationshipMemberContent,
   UserRelationshipData,
 } from "../types/relationship"
 

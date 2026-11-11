@@ -4,6 +4,7 @@ import type {
   JoinRelationshipInput,
   Relationship,
   RelationshipMember,
+  RelationshipMemberContent,
   UserRelationshipData,
 } from "../types/relationship"
 
