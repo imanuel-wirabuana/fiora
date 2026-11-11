@@ -2,6 +2,7 @@ import { useEffect } from "react"
 import { Redirect, Route, Switch } from "wouter"
 import { DesktopShell } from "./components/DesktopShell"
 import { DetailLayout, MainLayout } from "./components/layouts"
+import { PWAInstallPrompt } from "./components/PWAInstallPrompt"
 import { Spinner } from "./components/ui/spinner"
 import { useAuth } from "./hooks/useAuth"
 import { useIsMobile } from "./hooks/use-mobile"
@@ -163,7 +164,12 @@ export function App() {
   }, [initialize])
 
   if (isMobile) {
-    return <AppRoutes />
+    return (
+      <>
+        <AppRoutes />
+        <PWAInstallPrompt />
+      </>
+    )
   }
 
   return (
