@@ -1,0 +1,85 @@
+import { Field, FieldLabel } from "@/components/ui/field"
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group"
+import { cn } from "@/lib/utils"
+import { DEFAULT_AVATARS_BY_GENDER } from "@/lib/relationship"
+import type { Gender } from "@/types/relationship"
+import { User } from "lucide-react"
+
+interface ProfileStepProps {
+  gender: Gender | null
+  name: string
+  avatar: string
+  onChangeName: (name: string) => void
+  onChangeAvatar: (avatar: string) => void
+  error?: string | null
+}
+
+export function ProfileStep({
+  gender,
+  name,
+  avatar,
+  onChangeName,
+  onChangeAvatar,
+  error,
+}: ProfileStepProps) {
+  const genderKey = gender || "male"
+  const avatarOptions = DEFAULT_AVATARS_BY_GENDER[genderKey]
+
+  return (
+    <div className="flex flex-col gap-5">
+      <div className="space-y-1">
+        <h3 className="text-base font-semibold tracking-tight">Your Profile</h3>
+        <p className="text-xs text-muted-foreground">
+          Choose an avatar icon and set the name your partner sees
+        </p>
+      </div>
+
+      {/* Avatar Picker */}
+      <div className="space-y-2">
+        <span className="text-xs font-medium text-muted-foreground">Select Avatar</span>
+        <div className="grid grid-cols-6 gap-2">
+          {avatarOptions.map((opt) => {
+            const isSelected = avatar === opt
+            return (
+              <button
+                key={opt}
+                type="button"
+                onClick={() => onChangeAvatar(opt)}
+                className={cn(
+                  "flex size-12 items-center justify-center rounded-2xl border text-2xl transition-all active:scale-95",
+                  isSelected
+                    ? "border-primary bg-primary/10 shadow-xs ring-2 ring-primary/30"
+                    : "border-border hover:bg-muted/40"
+                )}
+                aria-label={`Avatar ${opt}`}
+              >
+                {opt}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Name Input */}
+      <Field className="gap-1.5" data-invalid={!!error}>
+        <FieldLabel htmlFor="profile-name" className="text-xs font-medium text-muted-foreground">
+          Your Name / Nickname
+        </FieldLabel>
+        <InputGroup className="h-10 rounded-2xl border border-input bg-background focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
+          <InputGroupAddon align="inline-start" className="text-muted-foreground/60 pl-3">
+            <User className="size-4" />
+          </InputGroupAddon>
+          <InputGroupInput
+            id="profile-name"
+            required
+            placeholder="e.g. Alex or Honey"
+            value={name}
+            onChange={(e) => onChangeName(e.target.value)}
+            className="text-sm placeholder:text-muted-foreground/60"
+          />
+        </InputGroup>
+      </Field>
+    </div>
+  )
+}
+

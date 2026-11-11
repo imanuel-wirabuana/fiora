@@ -5,12 +5,22 @@ export interface MoodOption {
   label: string
 }
 
+export interface NudgeOption {
+  id: string
+  emoji: string
+  label: string
+}
+
 export interface RelationshipContent {
+  anniversary?: string | null
   moods?: MoodOption[]
+  nudges?: NudgeOption[]
 }
 
 export interface RelationshipMemberContent {
   gender?: Gender
+  name?: string
+  avatar?: string
 }
 
 export interface Relationship {
@@ -39,12 +49,17 @@ export interface UserRelationshipData {
 
 export interface CreateRelationshipInput {
   gender: Gender
+  name: string
+  avatar?: string
+  anniversary?: string | null
   moods?: MoodOption[]
+  nudges?: NudgeOption[]
   inviteCode?: string
 }
 
 export interface JoinRelationshipInput {
   gender: Gender
+  name: string
+  avatar?: string
   inviteCode: string
 }
-

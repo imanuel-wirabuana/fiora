@@ -74,7 +74,11 @@ export const relationshipService = {
       .from("relationships")
       .insert({
         invite_code: inviteCode,
-        content: { moods: input.moods || [] },
+        content: {
+          anniversary: input.anniversary || null,
+          moods: input.moods || [],
+          nudges: input.nudges || [],
+        },
       })
       .select()
       .single()
@@ -91,7 +95,11 @@ export const relationshipService = {
       .insert({
         relationship_id: relationship.id,
         user_id: userId,
-        content: { gender: input.gender },
+        content: {
+          gender: input.gender,
+          name: input.name,
+          avatar: input.avatar,
+        },
       })
       .select()
       .single()
@@ -167,7 +175,11 @@ export const relationshipService = {
       .insert({
         relationship_id: relationship.id,
         user_id: userId,
-        content: { gender: input.gender },
+        content: {
+          gender: input.gender,
+          name: input.name,
+          avatar: input.avatar,
+        },
       })
       .select()
       .single()

@@ -2,7 +2,7 @@ import { useEffect } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { relationshipService } from "../services/relationshipService"
 import { useAuth } from "./useAuth"
-import { DEFAULT_MOOD_OPTIONS } from "../lib/relationship"
+import { DEFAULT_MOOD_OPTIONS, DEFAULT_NUDGE_OPTIONS } from "../lib/relationship"
 import type {
   CreateRelationshipInput,
   JoinRelationshipInput,
@@ -40,6 +40,13 @@ export function useRelationship() {
     relationship?.content?.moods && relationship.content.moods.length > 0
       ? relationship.content.moods
       : DEFAULT_MOOD_OPTIONS
+
+  const nudgeOptions =
+    relationship?.content?.nudges && relationship.content.nudges.length > 0
+      ? relationship.content.nudges
+      : DEFAULT_NUDGE_OPTIONS
+
+  const anniversary = relationship?.content?.anniversary ?? null
 
   // 2. Realtime listener: invalidate query whenever changes occur on relationships or relationship_members
   useEffect(() => {
@@ -90,6 +97,8 @@ export function useRelationship() {
     members,
     hasRelationship,
     moodOptions,
+    nudgeOptions,
+    anniversary,
     isLoading: query.isLoading,
     isFetching: query.isFetching,
     error: query.error,
@@ -101,4 +110,3 @@ export function useRelationship() {
     joinRelationshipMutation,
   }
 }
-
