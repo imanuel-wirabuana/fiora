@@ -12,8 +12,8 @@ export function HomeScreen() {
       <PartnerPresenceSection />
       <MoodSection />
       <NudgeSection />
-      <DailyQuizSection />
       <LocationSharingSection />
+      <DailyQuizSection />
     </section>
   )
 }

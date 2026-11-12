@@ -81,6 +81,131 @@ export function useNotifications() {
     },
   })
 
+  const markAllAsReadMutation = useMutation<
+    void,
+    Error,
+    NotificationRecord[],
+    { previous?: NotificationRecord[] }
+  >({
+    mutationFn: (items) => notificationService.markAllAsRead(items),
+    onMutate: async () => {
+      if (!userId) return {}
+      await queryClient.cancelQueries({
+        queryKey: notificationKeys.byUser(userId),
+      })
+      const previous = queryClient.getQueryData<NotificationRecord[]>(
+        notificationKeys.byUser(userId)
+      )
+      if (previous) {
+        queryClient.setQueryData<NotificationRecord[]>(
+          notificationKeys.byUser(userId),
+          previous.map((item) =>
+            item.content
+              ? { ...item, content: { ...item.content, isRead: true } }
+              : item
+          )
+        )
+      }
+      return { previous }
+    },
+    onError: (_err, _vars, context) => {
+      if (userId && context?.previous) {
+        queryClient.setQueryData(
+          notificationKeys.byUser(userId),
+          context.previous
+        )
+      }
+    },
+    onSettled: () => {
+      if (userId) {
+        queryClient.invalidateQueries({
+          queryKey: notificationKeys.byUser(userId),
+        })
+      }
+    },
+  })
+
+  const deleteNotificationMutation = useMutation<
+    void,
+    Error,
+    number,
+    { previous?: NotificationRecord[] }
+  >({
+    mutationFn: (id) => notificationService.deleteNotification(id),
+    onMutate: async (id) => {
+      if (!userId) return {}
+      await queryClient.cancelQueries({
+        queryKey: notificationKeys.byUser(userId),
+      })
+      const previous = queryClient.getQueryData<NotificationRecord[]>(
+        notificationKeys.byUser(userId)
+      )
+      if (previous) {
+        queryClient.setQueryData<NotificationRecord[]>(
+          notificationKeys.byUser(userId),
+          previous.filter((item) => item.id !== id)
+        )
+      }
+      return { previous }
+    },
+    onError: (_err, _id, context) => {
+      if (userId && context?.previous) {
+        queryClient.setQueryData(
+          notificationKeys.byUser(userId),
+          context.previous
+        )
+      }
+    },
+    onSettled: () => {
+      if (userId) {
+        queryClient.invalidateQueries({
+          queryKey: notificationKeys.byUser(userId),
+        })
+      }
+    },
+  })
+
+  const clearAllMutation = useMutation<
+    void,
+    Error,
+    void,
+    { previous?: NotificationRecord[] }
+  >({
+    mutationFn: () => {
+      if (!userId) return Promise.resolve()
+      return notificationService.clearAllNotifications(userId)
+    },
+    onMutate: async () => {
+      if (!userId) return {}
+      await queryClient.cancelQueries({
+        queryKey: notificationKeys.byUser(userId),
+      })
+      const previous = queryClient.getQueryData<NotificationRecord[]>(
+        notificationKeys.byUser(userId)
+      )
+      queryClient.setQueryData<NotificationRecord[]>(
+        notificationKeys.byUser(userId),
+        []
+      )
+      return { previous }
+    },
+    onError: (_err, _vars, context) => {
+      if (userId && context?.previous) {
+        queryClient.setQueryData(
+          notificationKeys.byUser(userId),
+          context.previous
+        )
+      }
+    },
+    onSettled: () => {
+      if (userId) {
+        queryClient.invalidateQueries({
+          queryKey: notificationKeys.byUser(userId),
+        })
+      }
+    },
+  })
+
   const notifyPartner = useCallback(
     async (input: NotifyPartnerInput) => {
       if (!relationshipId || !partnerUserId || !userId) return null
@@ -105,10 +230,23 @@ export function useNotifications() {
     [relationshipId, partnerUserId, userId, senderName]
   )
 
+  const { mutateAsync: markAllMutateAsync } = markAllAsReadMutation
+
+  const markAllAsRead = useCallback(
+    (items?: NotificationRecord[]) => {
+      const target = items ?? notifications
+      const hasUnread = target.some((n) => n.content && !n.content.isRead)
+      if (!hasUnread) return Promise.resolve()
+      return markAllMutateAsync(target)
+    },
+    [notifications, markAllMutateAsync]
+  )
+
   return {
     notifications,
     unreadCount,
     isLoading: query.isLoading,
+    isClearing: clearAllMutation.isPending,
     refetch: query.refetch,
     notifyPartner,
     markAsRead: (notification: NotificationRecord) => {
@@ -118,6 +256,8 @@ export function useNotifications() {
         content: notification.content,
       })
     },
+    markAllAsRead,
+    deleteNotification: deleteNotificationMutation.mutateAsync,
+    clearAllNotifications: clearAllMutation.mutateAsync,
   }
 }
-

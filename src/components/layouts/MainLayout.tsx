@@ -7,7 +7,7 @@ interface MainLayoutProps {
   hasUnread?: boolean
 }
 
-export function MainLayout({ children, hasUnread = true }: MainLayoutProps) {
+export function MainLayout({ children, hasUnread }: MainLayoutProps) {
   return (
     <div className="flex min-h-svh flex-col bg-background text-foreground md:h-full md:min-h-0 md:overflow-y-auto">
       {/* Unified Mobile Top Header */}

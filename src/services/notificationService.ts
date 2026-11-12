@@ -68,6 +68,56 @@ export const notificationService = {
     return data as NotificationRecord
   },
 
+  async markAllAsRead(notifications: NotificationRecord[]): Promise<void> {
+    const unread = notifications.filter(
+      (item) => item.content && !item.content.isRead
+    )
+    if (unread.length === 0) return
+
+    const now = new Date().toISOString()
+    const results = await Promise.all(
+      unread.map((item) =>
+        supabase
+          .from("notifications")
+          .update({
+            content: {
+              ...item.content!,
+              isRead: true,
+            },
+            updated_at: now,
+          })
+          .eq("id", item.id)
+      )
+    )
+
+    const firstError = results.find((res) => res.error)?.error
+    if (firstError) {
+      throw new Error(firstError.message)
+    }
+  },
+
+  async deleteNotification(notificationId: number): Promise<void> {
+    const { error } = await supabase
+      .from("notifications")
+      .delete()
+      .eq("id", notificationId)
+
+    if (error) {
+      throw new Error(error.message)
+    }
+  },
+
+  async clearAllNotifications(userId: string): Promise<void> {
+    const { error } = await supabase
+      .from("notifications")
+      .delete()
+      .eq("user_id", userId)
+
+    if (error) {
+      throw new Error(error.message)
+    }
+  },
+
   subscribeToNotifications(userId: string, onChange: () => void): () => void {
     const uniqueId = Math.random().toString(36).slice(2, 9)
     const channelName = `realtime-notifications-${userId}-${uniqueId}`
@@ -93,4 +143,3 @@ export const notificationService = {
     }
   },
 }
-
