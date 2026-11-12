@@ -1,3 +1,5 @@
+import type { PushSubscriptionData } from "./notification"
+
 export type Gender = "male" | "female"
 
 export interface MoodOption {
@@ -39,6 +41,7 @@ export interface RelationshipMemberContent {
   avatar?: string
   last_seen_at?: string
   last_activity?: string
+  push_subscriptions?: PushSubscriptionData[]
 }
 
 export interface Relationship {

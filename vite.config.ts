@@ -10,12 +10,16 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
+      strategies: "injectManifest",
+      srcDir: "src",
+      filename: "sw.ts",
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "favicon.png", "apple-touch-icon.png"],
       manifest: {
         name: "Fiora - Couple Connection & Mood Tracker",
         short_name: "Fiora",
-        description: "Private mood tracking, connection, and relationship timeline for couples.",
+        description:
+          "Private mood tracking, connection, and relationship timeline for couples.",
         theme_color: "#FDF6F0",
         background_color: "#FDF6F0",
         display: "standalone",
@@ -41,10 +45,8 @@ export default defineConfig({
           },
         ],
       },
-      workbox: {
+      injectManifest: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
-        // Ensure Supabase APIs and WebSocket realtime endpoints bypass service worker cache
-        navigateFallbackDenylist: [/^\/~oauth/, /^https:\/\/.*\.supabase\.co/],
       },
     }),
   ],

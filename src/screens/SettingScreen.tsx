@@ -3,6 +3,7 @@ import {
   AnniversarySection,
   CommitmentSection,
   MoodsSection,
+  NotificationSection,
   NudgesSection,
   ProfileSection,
   QuizSection,
@@ -14,6 +15,7 @@ export function SettingScreen() {
     <section className="flex flex-col gap-3">
       <ProfileSection />
       <RelationshipSection />
+      <NotificationSection />
       <AnniversarySection />
       <CommitmentSection />
       <QuizSection />

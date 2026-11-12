@@ -2,6 +2,7 @@ import { useEffect, useMemo } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { activityService } from "../services/activityService"
 import { useAuth } from "./useAuth"
+import { useNotifications } from "./useNotifications"
 import { useRelationship } from "./useRelationship"
 import type {
   Activity,
@@ -21,7 +22,9 @@ export const activityKeys = {
 export function useActivities() {
   const queryClient = useQueryClient()
   const { user } = useAuth()
-  const { relationship, partnerMember } = useRelationship()
+  const { relationship, currentMember, partnerMember } = useRelationship()
+  const { notifyPartner } = useNotifications()
+  const senderName = currentMember?.content?.name || "Your partner"
   const relationshipId = relationship?.id
   const currentUserId = user?.id
 
@@ -312,41 +315,87 @@ export function useActivities() {
   })
 
   const logMood = async (content: MoodActivityContent) => {
-    return createActivityMutation.mutateAsync({
+    const saved = await createActivityMutation.mutateAsync({
       type: "mood",
       content,
     })
+
+    void notifyPartner({
+      type: "mood",
+      title: `${senderName} updated mood: ${content.emoji} ${content.label}`,
+      body: content.note ? `"${content.note}"` : "Checked in their mood",
+      url: "/home",
+      emoji: content.emoji,
+    })
+
+    return saved
   }
 
   const sendNudge = async (content: NudgeActivityContent) => {
-    return createActivityMutation.mutateAsync({
+    const saved = await createActivityMutation.mutateAsync({
       type: "nudge",
       content,
     })
+
+    void notifyPartner({
+      type: "nudge",
+      title: `${senderName} sent you a nudge!`,
+      body: `${content.emoji} "${content.label}"`,
+      url: "/home",
+      emoji: content.emoji,
+    })
+
+    return saved
   }
 
   const createJournal = async (content: JournalActivityContent) => {
-    return createActivityMutation.mutateAsync({
+    const payload: JournalActivityContent = {
+      isShared: false,
+      ...content,
+    }
+    const saved = await createActivityMutation.mutateAsync({
       type: "journal",
-      content: {
-        isShared: false,
-        ...content,
-      },
+      content: payload,
     })
+
+    if (payload.isShared) {
+      void notifyPartner({
+        type: "journal",
+        title: `${senderName} added a new journal entry`,
+        body: payload.title || "Shared a memory",
+        url: "/journal",
+        emoji: "📖",
+      })
+    }
+
+    return saved
   }
 
   const toggleJournalPrivacy = async (
     activityId: number,
     currentContent: JournalActivityContent
   ) => {
+    const nextShared = !currentContent.isShared
     const updatedContent: JournalActivityContent = {
       ...currentContent,
-      isShared: !currentContent.isShared,
+      isShared: nextShared,
     }
-    return updateActivityMutation.mutateAsync({
+    const saved = await updateActivityMutation.mutateAsync({
       activityId,
       content: updatedContent,
     })
+
+    if (nextShared) {
+      void notifyPartner({
+        type: "journal",
+        title: `${senderName} shared a journal entry`,
+        body: currentContent.title || "Shared a memory",
+        url: "/journal",
+        emoji: "📖",
+      })
+    }
+
+    return saved
   }
 
   return {

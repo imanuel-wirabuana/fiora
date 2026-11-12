@@ -1,8 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { differenceInMinutes, format, isSameDay, startOfTomorrow } from "date-fns"
+import {
+  differenceInMinutes,
+  format,
+  isSameDay,
+  startOfTomorrow,
+} from "date-fns"
 import { quizService } from "../services/quizService"
 import { useAuth } from "./useAuth"
+import { useNotifications } from "./useNotifications"
 import { useRelationship } from "./useRelationship"
 import type {
   DailyQuizItem,
@@ -34,11 +40,14 @@ export function useQuiz() {
   const { user } = useAuth()
   const {
     relationship,
+    currentMember,
     partnerMember,
     dailyQuizCount,
     dailyQuizState,
     updateRelationshipContentMutation,
   } = useRelationship()
+  const { notifyPartner } = useNotifications()
+  const senderName = currentMember?.content?.name || "Your partner"
   const relationshipId = relationship?.id
   const currentUserId = user?.id
   const lastSyncedDateRef = useRef<string | null>(null)
@@ -219,16 +228,16 @@ export function useQuiz() {
     return selectedQuizzes.map((quiz) => {
       const qAnswers = answersByQuiz.get(quiz.id) ?? []
       const myAnswer = currentUserId
-        ? qAnswers.find((a) => a.user_id === currentUserId) ?? null
+        ? (qAnswers.find((a) => a.user_id === currentUserId) ?? null)
         : null
       const partnerAnswer = partnerMember
-        ? qAnswers.find((a) => a.user_id === partnerMember.user_id) ?? null
+        ? (qAnswers.find((a) => a.user_id === partnerMember.user_id) ?? null)
         : null
       const isBothAnswered = Boolean(myAnswer && partnerAnswer)
       const isMatched = Boolean(
         isBothAnswered &&
-          myAnswer?.content?.selectedOption ===
-            partnerAnswer?.content?.selectedOption
+        myAnswer?.content?.selectedOption ===
+          partnerAnswer?.content?.selectedOption
       )
 
       return {
@@ -314,10 +323,10 @@ export function useQuiz() {
       if (!quiz) continue
 
       const myAnswer = currentUserId
-        ? qAnswers.find((a) => a.user_id === currentUserId) ?? null
+        ? (qAnswers.find((a) => a.user_id === currentUserId) ?? null)
         : null
       const partnerAnswer = partnerMember
-        ? qAnswers.find((a) => a.user_id === partnerMember.user_id) ?? null
+        ? (qAnswers.find((a) => a.user_id === partnerMember.user_id) ?? null)
         : null
       const isBothAnswered = Boolean(myAnswer && partnerAnswer)
 
@@ -326,7 +335,7 @@ export function useQuiz() {
 
       const isMatched = Boolean(
         myAnswer?.content?.selectedOption ===
-          partnerAnswer?.content?.selectedOption
+        partnerAnswer?.content?.selectedOption
       )
 
       // Determine latest answer timestamp
@@ -440,14 +449,25 @@ export function useQuiz() {
     isLoading: quizzesQuery.isLoading || answersQuery.isLoading,
     isSubmitting: submitAnswerMutation.isPending,
     updateDailyQuizCount,
-    submitAnswer: (
+    submitAnswer: async (
       quizId: number,
       selectedOption: string,
       optionIndex?: number
-    ) =>
-      submitAnswerMutation.mutateAsync({
+    ) => {
+      const result = await submitAnswerMutation.mutateAsync({
         quizId,
         content: { selectedOption, optionIndex },
-      }),
+      })
+
+      void notifyPartner({
+        type: "quiz",
+        title: `${senderName} answered today's quiz!`,
+        body: "Tap to see if your answers match 🎯",
+        url: "/home",
+        emoji: "🎯",
+      })
+
+      return result
+    },
   }
 }
