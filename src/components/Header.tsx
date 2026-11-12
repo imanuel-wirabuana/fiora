@@ -1,6 +1,7 @@
 import type { ReactNode } from "react"
 import { Link } from "wouter"
 import { ArrowLeft, Bell } from "lucide-react"
+import { useStickyHeader } from "../hooks/useStickyHeader"
 import { cn } from "../lib/utils"
 
 export interface HeaderProps {
@@ -20,6 +21,7 @@ export function Header({
   rightAction,
   className,
 }: HeaderProps) {
+  const { headerRef, isHidden } = useStickyHeader()
   const isDetail = variant === "detail" || !!title || !!backHref
 
   const handleBack = () => {
@@ -30,39 +32,43 @@ export function Header({
 
   return (
     <header
+      ref={headerRef}
       className={cn(
-        "bg-background shadow-2xl shadow-background",
+        "sticky top-0 z-30 shrink-0 bg-background transition-[translate,transform,box-shadow] duration-300 ease-in-out will-change-[translate,transform]",
+        isHidden
+          ? "pointer-events-none -translate-y-full shadow-none"
+          : "translate-y-0 shadow-2xl shadow-background",
         className
       )}
     >
-      <div className="mx-auto flex h-14 max-w-md items-center justify-between px-4 sm:max-w-2xl">
+      <div className="mx-auto flex h-12 max-w-md items-center justify-between px-4 sm:max-w-2xl">
         {/* Left Section */}
         {isDetail ? (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             {backHref ? (
               <Link
                 href={backHref}
-                className="inline-flex size-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                className="inline-flex size-7 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                 aria-label="Back"
               >
-                <ArrowLeft className="size-5" />
+                <ArrowLeft className="size-4.5" />
               </Link>
             ) : (
               <button
                 type="button"
                 onClick={handleBack}
-                className="inline-flex size-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                className="inline-flex size-7 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                 aria-label="Back"
               >
-                <ArrowLeft className="size-5" />
+                <ArrowLeft className="size-4.5" />
               </button>
             )}
-            <span className="text-base font-semibold tracking-tight">
+            <span className="text-sm font-semibold tracking-tight">
               {title ?? "Detail"}
             </span>
           </div>
         ) : (
-          <Link href="/home" className="text-lg font-bold tracking-tight">
+          <Link href="/home" className="text-base font-bold tracking-tight">
             Fiora
           </Link>
         )}
@@ -74,12 +80,12 @@ export function Header({
           ) : !isDetail ? (
             <Link
               href="/notification"
-              className="relative flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              className="relative flex size-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
               aria-label="Notifications"
             >
-              <Bell className="size-5" />
+              <Bell className="size-4.5" />
               {hasUnread ? (
-                <span className="absolute top-1.5 right-1.5 flex size-2">
+                <span className="absolute top-1 right-1 flex size-2">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/75 opacity-75" />
                   <span className="relative inline-flex size-2 rounded-full bg-primary" />
                 </span>

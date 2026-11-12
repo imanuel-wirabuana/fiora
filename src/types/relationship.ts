@@ -37,6 +37,8 @@ export interface RelationshipMemberContent {
   gender?: Gender
   name?: string
   avatar?: string
+  last_seen_at?: string
+  last_activity?: string
 }
 
 export interface Relationship {

@@ -16,7 +16,7 @@ export function DetailLayout({
   rightAction,
 }: DetailLayoutProps) {
   return (
-    <div className="flex h-full min-h-svh flex-col overflow-y-auto bg-background text-foreground lg:min-h-full">
+    <div className="flex min-h-svh flex-col bg-background text-foreground md:h-full md:min-h-0 md:overflow-y-auto">
       {/* Unified Detail Header */}
       <Header
         variant="detail"
@@ -26,7 +26,7 @@ export function DetailLayout({
       />
 
       {/* Main content area with bottom padding for navigation bar */}
-      <main className="mx-auto w-full max-w-md flex-1 px-4 pt-4 pb-24 sm:max-w-2xl">
+      <main className="mx-auto w-full max-w-md flex-1 px-4 pt-3 pb-20 sm:max-w-2xl">
         {children}
       </main>
 

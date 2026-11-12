@@ -6,6 +6,7 @@ import { PWAInstallPrompt } from "./components/PWAInstallPrompt"
 import { SplashScreen } from "./components/SplashScreen"
 import { useAuth } from "./hooks/useAuth"
 import { useIsMobile } from "./hooks/use-mobile"
+import { usePresenceTracker } from "./hooks/usePartnerPresence"
 import { useRelationship } from "./hooks/useRelationship"
 import {
   HomeScreen,
@@ -25,6 +26,8 @@ function AppRoutes() {
   const { isAuthenticated, isInitialized } = useAuth()
   const { hasRelationship, isLoading: isRelationshipLoading } =
     useRelationship()
+
+  usePresenceTracker()
 
   // Wait until auth session check finishes
   if (!isInitialized) {
