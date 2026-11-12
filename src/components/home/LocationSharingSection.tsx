@@ -1,18 +1,19 @@
-import { useEffect, useRef } from "react"
-import { formatDistanceToNow } from "date-fns"
+import { useCallback, useEffect, useRef } from "react"
+import { useLocation } from "wouter"
+import { format, formatDistanceToNow, isToday } from "date-fns"
 import L from "leaflet"
-import { MapPin, RefreshCw } from "lucide-react"
+import { Clock, MapPin, Maximize2, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Item,
   ItemContent,
-  ItemDescription,
   ItemHeader,
   ItemTitle,
 } from "@/components/ui/item"
 import { Spinner } from "@/components/ui/spinner"
 import { useLocationSharing } from "@/hooks/useLocationSharing"
 import { useRelationship } from "@/hooks/useRelationship"
+import type { MemberLocation } from "@/types/relationship"
 
 export function LocationSharingSection() {
   const {
@@ -27,14 +28,110 @@ export function LocationSharingSection() {
   } = useLocationSharing()
 
   const { currentMember } = useRelationship()
+  const [, setLocation] = useLocation()
 
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
   const mapInstanceRef = useRef<L.Map | null>(null)
   const markersLayerRef = useRef<L.LayerGroup | null>(null)
+  const pointsRef = useRef<L.LatLngExpression[]>([])
+  const recenterTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const isProgrammaticMoveRef = useRef(false)
+  const programmaticResetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const fitMapToPoints = useCallback((map: L.Map) => {
+    const pts = pointsRef.current
+    if (pts.length === 0) return
+
+    if (recenterTimeoutRef.current) {
+      clearTimeout(recenterTimeoutRef.current)
+      recenterTimeoutRef.current = null
+    }
+    if (programmaticResetTimeoutRef.current) {
+      clearTimeout(programmaticResetTimeoutRef.current)
+    }
+
+    isProgrammaticMoveRef.current = true
+    if (pts.length === 1) {
+      map.setView(pts[0], 14, { animate: true })
+    } else {
+      const bounds = L.latLngBounds(pts)
+      map.fitBounds(bounds, { padding: [35, 35], maxZoom: 15, animate: true })
+    }
+
+    // Fallback reset in case fitBounds/setView is a no-op and does not fire moveend
+    programmaticResetTimeoutRef.current = setTimeout(() => {
+      isProgrammaticMoveRef.current = false
+      programmaticResetTimeoutRef.current = null
+    }, 500)
+  }, [])
 
   const myAvatar = currentMember?.content?.avatar || "🙋"
   const partnerAvatar = partnerMember?.content?.avatar || "🤍"
   const partnerName = partnerMember?.content?.name || "Partner"
+
+  const formatLastUpdated = (dateStr: string) => {
+    const d = new Date(dateStr)
+    const exactTime = format(d, "h:mm a")
+    if (isToday(d)) {
+      return `Today at ${exactTime}`
+    }
+    return `${format(d, "MMM d")} at ${exactTime}`
+  }
+
+  const renderLocationCard = (
+    avatar: string,
+    name: string,
+    location: MemberLocation | null,
+    isMe: boolean
+  ) => {
+    return (
+      <div className="flex flex-col gap-1.5 rounded-xl border border-border/60 bg-muted/20 p-2.5 text-xs">
+        <div className="flex items-center justify-between gap-1">
+          <div className="flex items-center gap-1.5 font-semibold text-foreground">
+            <span className="text-sm">{avatar}</span>
+            <span className="truncate">{name}</span>
+          </div>
+          {location ? (
+            <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+              {formatDistanceToNow(new Date(location.updated_at), {
+                addSuffix: true,
+              })}
+            </span>
+          ) : (
+            <span className="text-[10px] text-muted-foreground italic">
+              {isMe && isLocating ? "Locating..." : "Not shared"}
+            </span>
+          )}
+        </div>
+
+        {location ? (
+          <div className="space-y-1 pt-0.5">
+            {/* Last Place Name / Coordinates */}
+            <div className="flex items-start gap-1 text-[11px] text-foreground/90 font-medium leading-snug">
+              <MapPin className="size-3 text-primary shrink-0 mt-0.5" />
+              <span className="break-words line-clamp-1" title={location.placeName || `${location.lat}, ${location.lng}`}>
+                {location.placeName || `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`}
+              </span>
+            </div>
+
+            {/* Last Update Time */}
+            <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+              <Clock className="size-2.5 shrink-0 opacity-70" />
+              <span className="truncate">{formatLastUpdated(location.updated_at)}</span>
+            </div>
+          </div>
+        ) : (
+          <p className="text-[11px] text-muted-foreground italic pt-1">
+            {isMe
+              ? isLocating
+                ? "Acquiring GPS fix..."
+                : "Tap refresh to share your location"
+              : "Waiting for partner's update..."}
+          </p>
+        )}
+      </div>
+    )
+  }
 
   // Initialize Leaflet Map
   useEffect(() => {
@@ -58,16 +155,72 @@ export function LocationSharingSection() {
       const markersLayer = L.layerGroup().addTo(map)
       markersLayerRef.current = markersLayer
       mapInstanceRef.current = map
+
+      const clearRecenterTimer = () => {
+        if (recenterTimeoutRef.current) {
+          clearTimeout(recenterTimeoutRef.current)
+          recenterTimeoutRef.current = null
+        }
+      }
+
+      const scheduleRecenter = () => {
+        clearRecenterTimer()
+        recenterTimeoutRef.current = setTimeout(() => {
+          recenterTimeoutRef.current = null
+          if (mapInstanceRef.current) {
+            fitMapToPoints(mapInstanceRef.current)
+          }
+        }, 3000)
+      }
+
+      map.on("dragstart", () => {
+        isProgrammaticMoveRef.current = false
+        clearRecenterTimer()
+      })
+
+      map.on("dragend", () => {
+        scheduleRecenter()
+      })
+
+      map.on("zoomstart", () => {
+        if (!isProgrammaticMoveRef.current) {
+          clearRecenterTimer()
+        }
+      })
+
+      map.on("zoomend", () => {
+        if (!isProgrammaticMoveRef.current) {
+          scheduleRecenter()
+        }
+      })
+
+      map.on("moveend", () => {
+        if (isProgrammaticMoveRef.current) {
+          isProgrammaticMoveRef.current = false
+          if (programmaticResetTimeoutRef.current) {
+            clearTimeout(programmaticResetTimeoutRef.current)
+            programmaticResetTimeoutRef.current = null
+          }
+        }
+      })
     }
 
     return () => {
+      if (recenterTimeoutRef.current) {
+        clearTimeout(recenterTimeoutRef.current)
+        recenterTimeoutRef.current = null
+      }
+      if (programmaticResetTimeoutRef.current) {
+        clearTimeout(programmaticResetTimeoutRef.current)
+        programmaticResetTimeoutRef.current = null
+      }
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove()
         mapInstanceRef.current = null
         markersLayerRef.current = null
       }
     }
-  }, [locationSharing])
+  }, [locationSharing, fitMapToPoints])
 
   // Update Markers & Zoom bounds whenever locations change
   useEffect(() => {
@@ -129,21 +282,19 @@ export function LocationSharingSection() {
       L.marker(partnerLatLng, { icon: partnerIcon }).addTo(layer)
     }
 
-    // 3. Connect line & Fit Bounds or Center
-    if (points.length === 1) {
-      map.setView(points[0], 14, { animate: true })
-    } else if (points.length > 1) {
+    // 3. Connect line & Always Fit Both points to keep home map in view
+    pointsRef.current = points
+    if (points.length > 1) {
       L.polyline(points, {
         color: "#f43f5e",
         weight: 2,
         dashArray: "4 6",
         opacity: 0.7,
       }).addTo(layer)
-
-      const bounds = L.latLngBounds(points)
-      map.fitBounds(bounds, { padding: [35, 35], maxZoom: 15, animate: true })
     }
-  }, [myLocation, partnerLocation, myAvatar, partnerAvatar, partnerName])
+
+    fitMapToPoints(map)
+  }, [myLocation, partnerLocation, myAvatar, partnerAvatar, partnerName, fitMapToPoints])
 
   // Strictly return null if location sharing is not enabled in commitment settings
   if (!locationSharing) {
@@ -166,6 +317,17 @@ export function LocationSharingSection() {
               {formattedDistance} apart
             </span>
           )}
+
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-xs"
+            onClick={() => setLocation("/location")}
+            title="Open full map"
+            className="size-7 rounded-lg text-muted-foreground hover:text-foreground"
+          >
+            <Maximize2 className="size-3.5" />
+          </Button>
 
           <Button
             type="button"
@@ -213,41 +375,15 @@ export function LocationSharingSection() {
           <p className="text-[11px] font-medium text-destructive">{geoError}</p>
         )}
 
-        {/* Location Status Chips */}
-        <div className="grid grid-cols-2 gap-2 text-xs">
-          {/* My Status */}
-          <div className="space-y-0.5 rounded-xl border border-border/50 bg-muted/20 p-2">
-            <div className="flex items-center gap-1 text-[11px] font-semibold text-muted-foreground">
-              <span>{myAvatar}</span>
-              <span>You</span>
-            </div>
-            <ItemDescription className="truncate text-[11px] text-foreground">
-              {myLocation
-                ? formatDistanceToNow(new Date(myLocation.updated_at), {
-                    addSuffix: true,
-                  })
-                : isLocating
-                  ? "Locating..."
-                  : "Not shared"}
-            </ItemDescription>
-          </div>
-
-          {/* Partner Status */}
-          <div className="space-y-0.5 rounded-xl border border-border/50 bg-muted/20 p-2">
-            <div className="flex items-center gap-1 text-[11px] font-semibold text-muted-foreground">
-              <span>{partnerAvatar}</span>
-              <span className="truncate">{partnerName}</span>
-            </div>
-            <ItemDescription className="truncate text-[11px] text-foreground">
-              {partnerLocation
-                ? formatDistanceToNow(new Date(partnerLocation.updated_at), {
-                    addSuffix: true,
-                  })
-                : partnerMember
-                  ? "Waiting for broadcast..."
-                  : "No partner linked"}
-            </ItemDescription>
-          </div>
+        {/* Location Status Cards */}
+        <div className="grid grid-cols-2 gap-2">
+          {renderLocationCard(myAvatar, "You", myLocation, true)}
+          {renderLocationCard(
+            partnerAvatar,
+            partnerName,
+            partnerLocation,
+            false
+          )}
         </div>
       </ItemContent>
     </Item>

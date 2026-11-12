@@ -10,6 +10,7 @@ import { useRelationship } from "./hooks/useRelationship"
 import {
   HomeScreen,
   JournalScreen,
+  LocationSharingScreen,
   LoginScreen,
   NotFoundScreen,
   NotificationScreen,
@@ -132,6 +133,16 @@ function AppRoutes() {
           <DetailLayout title="Notification">
             <NotificationScreen />
           </DetailLayout>
+        )}
+      </Route>
+
+      <Route path="/location">
+        {!isAuthenticated ? (
+          <Redirect to="/" />
+        ) : !hasRelationship ? (
+          <Redirect to="/setup" />
+        ) : (
+          <LocationSharingScreen />
         )}
       </Route>
 

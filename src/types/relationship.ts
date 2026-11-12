@@ -15,6 +15,7 @@ export interface MemberLocation {
   lat: number
   lng: number
   updated_at: string
+  placeName?: string
 }
 
 export interface DailyQuizState {
@@ -29,6 +30,7 @@ export interface RelationshipContent {
   location_sharing?: boolean
   daily_quiz_count?: number
   daily_quiz?: DailyQuizState | null
+  locations?: Record<string, MemberLocation>
 }
 
 export interface RelationshipMemberContent {

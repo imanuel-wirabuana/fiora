@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { useCallback, useEffect } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { relationshipService } from "../services/relationshipService"
 import { useAuth } from "./useAuth"
@@ -10,6 +10,7 @@ import {
 import type {
   CreateRelationshipInput,
   JoinRelationshipInput,
+  MemberLocation,
   Relationship,
   RelationshipMember,
   RelationshipMemberContent,
@@ -315,6 +316,14 @@ export function useRelationship() {
     },
   })
 
+  const updateMemberLocation = useCallback(
+    (loc: MemberLocation) => {
+      if (!relationship?.id) return Promise.resolve(null)
+      return relationshipService.updateMemberLocation(relationship.id, loc)
+    },
+    [relationship?.id]
+  )
+
   return {
     relationshipData,
     relationship,
@@ -340,5 +349,6 @@ export function useRelationship() {
     regenerateInviteCodeMutation,
     updateRelationshipContentMutation,
     updateMemberContentMutation,
+    updateMemberLocation,
   }
 }

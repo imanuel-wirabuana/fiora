@@ -2,6 +2,7 @@ import { supabase } from "./supabase"
 import type {
   CreateRelationshipInput,
   JoinRelationshipInput,
+  MemberLocation,
   Relationship,
   RelationshipMember,
   RelationshipMemberContent,
@@ -241,6 +242,50 @@ export const relationshipService = {
     const mergedContent = {
       ...(currentData?.content || {}),
       ...content,
+    }
+
+    const { data: updatedData, error: updateError } = await supabase
+      .from("relationships")
+      .update({
+        content: mergedContent,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", relationshipId)
+      .select()
+      .single()
+
+    if (updateError) {
+      throw new Error(updateError.message)
+    }
+
+    return updatedData as Relationship
+  },
+
+  async updateMemberLocation(
+    relationshipId: number,
+    location: MemberLocation
+  ): Promise<Relationship> {
+    const { data: currentData, error: fetchError } = await supabase
+      .from("relationships")
+      .select("content")
+      .eq("id", relationshipId)
+      .single()
+
+    if (fetchError) {
+      throw new Error(fetchError.message)
+    }
+
+    const currentContent = currentData?.content || {}
+    const currentLocations = currentContent.locations || {}
+
+    const updatedLocations = {
+      ...currentLocations,
+      [location.userId]: location,
+    }
+
+    const mergedContent = {
+      ...currentContent,
+      locations: updatedLocations,
     }
 
     const { data: updatedData, error: updateError } = await supabase

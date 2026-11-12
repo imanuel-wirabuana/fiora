@@ -6,7 +6,47 @@ export interface LocationChannelCallbacks {
   onLocationRequested?: () => void
 }
 
+const placeNameCache = new Map<string, string>()
+
 export const locationService = {
+  async getPlaceName(lat: number, lng: number): Promise<string> {
+    const key = `${lat.toFixed(3)},${lng.toFixed(3)}`
+    if (placeNameCache.has(key)) {
+      return placeNameCache.get(key)!
+    }
+
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`,
+        {
+          headers: {
+            "Accept-Language": "en",
+          },
+        }
+      )
+      if (!res.ok) {
+        throw new Error("Geocoding failed")
+      }
+      const data = await res.json()
+      const addr = data.address || {}
+      const name =
+        addr.suburb ||
+        addr.neighbourhood ||
+        addr.city_district ||
+        addr.city ||
+        addr.town ||
+        addr.county ||
+        addr.state ||
+        data.name ||
+        `${lat.toFixed(4)}, ${lng.toFixed(4)}`
+
+      placeNameCache.set(key, name)
+      return name
+    } catch {
+      return `${lat.toFixed(4)}, ${lng.toFixed(4)}`
+    }
+  },
+
   createLocationChannel(
     relationshipId: number,
     userId: string,
@@ -20,6 +60,30 @@ export const locationService = {
         },
       },
     })
+
+    const sendLocation = async (coords: { lat: number; lng: number; placeName?: string }) => {
+      const payload: MemberLocation = {
+        userId,
+        lat: coords.lat,
+        lng: coords.lng,
+        updated_at: new Date().toISOString(),
+        placeName: coords.placeName,
+      }
+      await channel.send({
+        type: "broadcast",
+        event: "location_update",
+        payload,
+      })
+      return payload
+    }
+
+    const requestPartnerLocation = async () => {
+      await channel.send({
+        type: "broadcast",
+        event: "location_request",
+        payload: { requesterId: userId },
+      })
+    }
 
     channel
       .on(
@@ -40,30 +104,11 @@ export const locationService = {
           }
         }
       )
-      .subscribe()
-
-    const sendLocation = async (coords: { lat: number; lng: number }) => {
-      const payload: MemberLocation = {
-        userId,
-        lat: coords.lat,
-        lng: coords.lng,
-        updated_at: new Date().toISOString(),
-      }
-      await channel.send({
-        type: "broadcast",
-        event: "location_update",
-        payload,
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") {
+          void requestPartnerLocation()
+        }
       })
-      return payload
-    }
-
-    const requestPartnerLocation = async () => {
-      await channel.send({
-        type: "broadcast",
-        event: "location_request",
-        payload: { requesterId: userId },
-      })
-    }
 
     const unsubscribe = () => {
       supabase.removeChannel(channel)

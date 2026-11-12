@@ -4,7 +4,6 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
-  LayoutList,
   Lock,
   Sparkles,
 } from "lucide-react"
