@@ -1,6 +1,6 @@
 import { formatDistanceToNow } from "date-fns"
 import { Bell, BookOpen, Heart, MessageCircle } from "lucide-react"
-import { Item, ItemContent, ItemHeader, ItemTitle } from "@/components/ui/item"
+import { CustomItem } from "@/components/CustomItem"
 import { Spinner } from "@/components/ui/spinner"
 import { useActivities } from "@/hooks/useActivities"
 import { useRelationship } from "@/hooks/useRelationship"
@@ -68,29 +68,26 @@ export function NotificationListSection() {
         }
 
         return (
-          <Item
+          <CustomItem
             key={activity.id}
-            variant="outline"
-            className="w-full flex-col items-start gap-1.5 p-3 rounded-2xl"
-          >
-            <ItemHeader className="w-full flex-row items-center justify-between space-y-0">
-              <div className="flex items-center gap-2">
-                <span className="text-base">{partnerAvatar}</span>
-                <div className="flex items-center gap-1.5">
-                  {icon}
-                  <ItemTitle className="text-xs font-semibold">{title}</ItemTitle>
-                </div>
+            className="gap-1.5 rounded-2xl p-3"
+            icon={
+              <div className="flex items-center gap-1.5">
+                <span className="text-base leading-none">{partnerAvatar}</span>
+                {icon}
               </div>
+            }
+            title={title}
+            topRightActions={
               <span className="text-[10px] text-muted-foreground">
                 {formatDistanceToNow(new Date(activity.created_at), {
                   addSuffix: true,
                 })}
               </span>
-            </ItemHeader>
-            <ItemContent className="pl-6 text-xs text-muted-foreground">
-              {description}
-            </ItemContent>
-          </Item>
+            }
+            description={description}
+            descriptionClassName="pl-6"
+          />
         )
       })}
     </div>

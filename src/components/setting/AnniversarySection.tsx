@@ -1,8 +1,8 @@
 import { differenceInCalendarDays, format, parseISO } from "date-fns"
 import { Calendar as CalendarIcon, X } from "lucide-react"
+import { CustomItem } from "@/components/CustomItem"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
-import { Item, ItemContent, ItemHeader, ItemTitle } from "@/components/ui/item"
 import {
   Popover,
   PopoverContent,
@@ -50,71 +50,69 @@ export function AnniversarySection() {
   }
 
   return (
-    <Item
+    <CustomItem
       variant="outline"
-      className="w-full flex-col items-start gap-2.5 p-3.5"
-    >
-      <ItemHeader className="w-full flex-row items-center justify-between space-y-0">
-        <ItemTitle className="text-sm font-semibold">Anniversary</ItemTitle>
-        {daysTogether !== null && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-rose-500/10 px-2 py-0.5 text-[11px] font-semibold text-rose-600 dark:text-rose-400">
+      icon={<CalendarIcon className="size-3.5 text-primary" />}
+      title="Anniversary"
+      topRightActions={
+        daysTogether !== null ? (
+          <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
             {daysTogether === 0
               ? "Today is Day 1!"
               : `${daysTogether} days together`}
           </span>
-        )}
-      </ItemHeader>
-
-      <ItemContent className="w-full space-y-2">
-        <div className="flex w-full items-center gap-2">
-          <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger
-              render={
-                <button
-                  type="button"
-                  className={cn(
-                    "flex h-8 flex-1 items-center justify-start gap-2 rounded-xl border border-input bg-background px-2.5 text-left text-xs transition-colors outline-none hover:bg-muted/40 focus:border-primary",
-                    !anniversary && "text-muted-foreground"
-                  )}
-                />
-              }
-            >
-              <CalendarIcon className="size-3.5 shrink-0 text-muted-foreground" />
-              <span className="truncate">
-                {selectedDate
-                  ? format(selectedDate, "MMM d, yyyy")
-                  : "Set anniversary date"}
-              </span>
-            </PopoverTrigger>
-            <PopoverContent
-              align="start"
-              className="w-auto rounded-2xl border border-border p-0 shadow-lg"
-            >
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={handleDateChange}
-                disabled={(date) => date > new Date()}
-                captionLayout="dropdown"
-                autoFocus
+        ) : null
+      }
+      contentClassName="space-y-2"
+    >
+      <div className="flex w-full items-center gap-2">
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger
+            render={
+              <button
+                type="button"
+                className={cn(
+                  "flex h-8 flex-1 items-center justify-start gap-2 rounded-xl border border-input bg-background px-2.5 text-left text-xs text-foreground transition-colors outline-none hover:bg-muted/40 focus:border-primary",
+                  !anniversary && "text-muted-foreground"
+                )}
               />
-            </PopoverContent>
-          </Popover>
+            }
+          >
+            <CalendarIcon className="size-3.5 shrink-0 text-muted-foreground" />
+            <span className="truncate">
+              {selectedDate
+                ? format(selectedDate, "MMM d, yyyy")
+                : "Set anniversary date"}
+            </span>
+          </PopoverTrigger>
+          <PopoverContent
+            align="start"
+            className="w-auto rounded-2xl border border-border p-0 shadow-lg"
+          >
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={handleDateChange}
+              disabled={(date) => date > new Date()}
+              captionLayout="dropdown"
+              autoFocus
+            />
+          </PopoverContent>
+        </Popover>
 
-          {anniversary && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-xs"
-              onClick={handleClear}
-              title="Remove anniversary date"
-              className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
-            >
-              <X className="size-3.5" />
-            </Button>
-          )}
-        </div>
-      </ItemContent>
-    </Item>
+        {anniversary && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-xs"
+            onClick={handleClear}
+            title="Remove anniversary date"
+            className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
+          >
+            <X className="size-3.5" />
+          </Button>
+        )}
+      </div>
+    </CustomItem>
   )
 }

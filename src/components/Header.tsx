@@ -37,7 +37,7 @@ export function Header({
         "sticky top-0 z-30 shrink-0 bg-background transition-[translate,transform,box-shadow] duration-300 ease-in-out will-change-[translate,transform]",
         isHidden
           ? "pointer-events-none -translate-y-full shadow-none"
-          : "translate-y-0 shadow-2xl shadow-background",
+          : "translate-y-0",
         className
       )}
     >

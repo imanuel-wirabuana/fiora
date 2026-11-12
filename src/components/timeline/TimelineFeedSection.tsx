@@ -1,7 +1,12 @@
 import { format, formatDistanceToNow, isToday } from "date-fns"
-import { ArrowRight, Heart, HelpCircle, MessageCircle, Sparkles } from "lucide-react"
+import {
+  Heart,
+  HelpCircle,
+  MessageCircle,
+  Sparkles,
+} from "lucide-react"
+import { CustomItem } from "@/components/CustomItem"
 import { Badge } from "@/components/ui/badge"
-import { Item, ItemContent } from "@/components/ui/item"
 import { Spinner } from "@/components/ui/spinner"
 import { useAuth } from "@/hooks/useAuth"
 import { useRelationship } from "@/hooks/useRelationship"
@@ -56,7 +61,7 @@ export function TimelineFeedSection({
     return `${format(date, "MMM d")} · ${exactTime}`
   }
 
-  const renderActivityBody = (activity: Activity) => {
+  const renderActivityItem = (activity: Activity, key: string) => {
     const member = getMemberInfo(activity.user_id)
 
     if (activity.type === "mood") {
@@ -64,38 +69,39 @@ export function TimelineFeedSection({
       if (!content) return null
 
       return (
-        <div className="flex flex-col gap-1 w-full">
-          {/* Main inline row */}
-          <div className="flex items-center justify-between gap-2 w-full min-w-0">
-            <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
-              <span className="text-sm shrink-0">{member.avatar}</span>
-              <span className="text-xs font-semibold text-foreground shrink-0">
-                {member.name}
-              </span>
-              <Badge
-                variant="outline"
-                className="gap-1 text-[10px] py-0 px-1.5 font-normal border-rose-500/30 bg-rose-500/5 text-rose-600 dark:text-rose-400 shrink-0"
-              >
-                <Heart className="size-2.5 fill-rose-500 text-rose-500" />
-                Mood
-              </Badge>
-              <span className="inline-flex items-center gap-1 rounded-md bg-muted/60 px-1.5 py-0.5 text-xs font-medium text-foreground">
-                <span>{content.emoji}</span>
-                <span>{content.label}</span>
-              </span>
-            </div>
-            <span className="text-[10px] text-muted-foreground shrink-0 whitespace-nowrap">
+        <CustomItem
+          key={key}
+          variant="default"
+          className="gap-1.5 rounded-xl p-2.5 transition-colors"
+          icon={<span className="text-sm leading-none">{member.avatar}</span>}
+          title={`${member.name} · Mood`}
+          topRightActions={
+            <span className="text-[10px] whitespace-nowrap text-muted-foreground">
               {formatItemTime(activity.created_at)}
+            </span>
+          }
+          contentClassName="space-y-1.5"
+        >
+          <div className="flex flex-wrap items-center gap-1.5">
+            <Badge
+              variant="outline"
+              className="shrink-0 gap-1 border-rose-500/30 bg-rose-500/5 px-1.5 py-0 text-[10px] font-normal text-rose-600 dark:text-rose-400"
+            >
+              <Heart className="size-2.5 fill-rose-500 text-rose-500" />
+              Mood
+            </Badge>
+            <span className="inline-flex items-center gap-1 rounded-md bg-muted/60 px-1.5 py-0.5 text-xs font-medium text-foreground">
+              <span>{content.emoji}</span>
+              <span>{content.label}</span>
             </span>
           </div>
 
-          {/* Note if present */}
           {content.note && (
-            <div className="border-l-2 border-primary/40 pl-2 text-[11px] text-muted-foreground italic leading-relaxed break-words mt-0.5">
+            <div className="border-l-2 border-primary/40 pl-2 text-[11px] leading-relaxed break-words text-muted-foreground italic">
               "{content.note}"
             </div>
           )}
-        </div>
+        </CustomItem>
       )
     }
 
@@ -107,40 +113,44 @@ export function TimelineFeedSection({
       const receiverAvatar = member.isMe ? partnerAvatar : myAvatar
 
       return (
-        <div className="flex items-center justify-between gap-2 w-full min-w-0">
-          <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
-            <span className="text-sm shrink-0">{member.avatar}</span>
-            <span className="text-xs font-semibold text-foreground shrink-0">
-              {member.name}
+        <CustomItem
+          key={key}
+          variant="fill"
+          className="gap-1.5 rounded-xl p-2.5 transition-colors"
+          icon={<span className="text-sm leading-none">{member.avatar}</span>}
+          title={`${member.name} → ${receiverName}`}
+          topRightActions={
+            <span className="text-[10px] whitespace-nowrap text-primary-foreground/80">
+              {formatItemTime(activity.created_at)}
             </span>
-            <ArrowRight className="size-2.5 text-muted-foreground shrink-0" />
-            <span className="text-sm shrink-0">{receiverAvatar}</span>
-            <span className="text-xs text-muted-foreground shrink-0">
-              {receiverName}
-            </span>
+          }
+        >
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="shrink-0 text-xs">{receiverAvatar}</span>
             <Badge
               variant="outline"
-              className="gap-1 text-[10px] py-0 px-1.5 font-normal border-amber-500/30 bg-amber-500/5 text-amber-600 dark:text-amber-400 shrink-0"
+              className="shrink-0 gap-1 border-primary-foreground/25 bg-primary-foreground/15 px-1.5 py-0 text-[10px] font-normal text-primary-foreground"
             >
-              <MessageCircle className="size-2.5 text-amber-500" />
+              <MessageCircle className="size-2.5 text-primary-foreground" />
               Nudge
             </Badge>
-            <span className="inline-flex items-center gap-1 rounded-md bg-muted/60 px-1.5 py-0.5 text-xs font-medium text-foreground">
+            <span className="inline-flex items-center gap-1 rounded-md bg-primary-foreground/15 px-1.5 py-0.5 text-xs font-medium text-primary-foreground">
               <span>{content.emoji}</span>
               <span>{content.label}</span>
             </span>
           </div>
-          <span className="text-[10px] text-muted-foreground shrink-0 whitespace-nowrap">
-            {formatItemTime(activity.created_at)}
-          </span>
-        </div>
+        </CustomItem>
       )
     }
 
     return null
   }
 
-  const renderQuizBody = (entry: QuizTimelineEntry, createdAt: string) => {
+  const renderQuizItem = (
+    entry: QuizTimelineEntry,
+    createdAt: string,
+    key: string
+  ) => {
     const qContent = entry.quiz.content
     if (!qContent) return null
 
@@ -149,72 +159,80 @@ export function TimelineFeedSection({
     const tag = qContent.tags?.[0]
 
     return (
-      <div className="flex flex-col gap-1.5 w-full min-w-0">
-        {/* Header line */}
-        <div className="flex items-center justify-between gap-2 w-full min-w-0">
-          <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
-            <div className="flex -space-x-1 shrink-0">
-              <span className="text-xs">{myAvatar}</span>
-              <span className="text-xs">{partnerAvatar}</span>
-            </div>
-            <span className="text-xs font-semibold text-foreground shrink-0">
-              Daily Quiz
-            </span>
-            {tag && (
-              <span className="text-[10px] font-medium text-muted-foreground bg-muted/70 px-1.5 py-0.2 rounded shrink-0">
-                #{tag}
-              </span>
-            )}
-            <Badge
-              variant="outline"
-              className={cn(
-                "gap-1 text-[10px] py-0 px-1.5 font-normal shrink-0",
-                entry.isMatched
-                  ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                  : "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400"
-              )}
-            >
-              <HelpCircle className="size-2.5 text-primary" />
-              {entry.isMatched ? "Match ✨" : "Diff 💬"}
-            </Badge>
+      <CustomItem
+        key={key}
+        variant="outline"
+        className="gap-1.5 rounded-xl p-2.5 transition-colors"
+        icon={
+          <div className="flex shrink-0 -space-x-1">
+            <span className="text-xs">{myAvatar}</span>
+            <span className="text-xs">{partnerAvatar}</span>
           </div>
-          <span className="text-[10px] text-muted-foreground shrink-0 whitespace-nowrap">
+        }
+        title="Daily Quiz"
+        topRightActions={
+          <span className="text-[10px] whitespace-nowrap text-primary/75">
             {formatItemTime(createdAt)}
           </span>
+        }
+        contentClassName="space-y-1.5"
+      >
+        <div className="flex flex-wrap items-center gap-1.5">
+          {tag && (
+            <span className="py-0.2 shrink-0 rounded bg-muted/70 px-1.5 text-[10px] font-medium text-muted-foreground">
+              #{tag}
+            </span>
+          )}
+          <Badge
+            variant="outline"
+            className={cn(
+              "shrink-0 gap-1 px-1.5 py-0 text-[10px] font-normal",
+              entry.isMatched
+                ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                : "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400"
+            )}
+          >
+            <HelpCircle className="size-2.5 text-primary" />
+            {entry.isMatched ? "Match ✨" : "Diff 💬"}
+          </Badge>
         </div>
 
         {/* Question */}
-        <p className="text-xs font-medium text-foreground leading-snug break-words">
+        <p className="text-xs leading-snug font-medium break-words text-foreground">
           {qContent.question}
         </p>
 
         {/* Stacked Full Answers */}
-        <div className="flex flex-col gap-1 rounded-lg border border-border/50 bg-muted/20 p-2 text-[11px] pt-1.5">
-          <div className="flex items-start gap-1.5 min-w-0">
-            <span className="shrink-0 font-medium text-primary flex items-center gap-1">
+        <div className="flex flex-col gap-1 rounded-lg border border-border/50 bg-muted/20 p-2 pt-1.5 text-[11px]">
+          <div className="flex min-w-0 items-start gap-1.5">
+            <span className="flex shrink-0 items-center gap-1 font-medium text-primary">
               <span>{myAvatar}</span> You:
             </span>
-            <span className="text-foreground/90 font-medium break-words leading-snug flex-1">
-              {myChoice || <span className="italic text-muted-foreground font-normal">Not answered yet</span>}
+            <span className="flex-1 leading-snug font-medium break-words text-foreground/90">
+              {myChoice || (
+                <span className="font-normal text-muted-foreground italic">
+                  Not answered yet
+                </span>
+              )}
             </span>
           </div>
 
-          <div className="flex items-start gap-1.5 min-w-0">
-            <span className="shrink-0 font-medium text-rose-500 flex items-center gap-1">
+          <div className="flex min-w-0 items-start gap-1.5">
+            <span className="flex shrink-0 items-center gap-1 font-medium text-rose-500">
               <span>{partnerAvatar}</span> {partnerName}:
             </span>
             {entry.isBothAnswered ? (
-              <span className="text-foreground/90 font-medium break-words leading-snug flex-1">
+              <span className="flex-1 leading-snug font-medium break-words text-foreground/90">
                 {partnerChoice}
               </span>
             ) : (
-              <span className="italic text-muted-foreground font-normal leading-snug">
+              <span className="leading-snug font-normal text-muted-foreground italic">
                 Locked until both answer 🔒
               </span>
             )}
           </div>
         </div>
-      </div>
+      </CustomItem>
     )
   }
 
@@ -228,7 +246,7 @@ export function TimelineFeedSection({
 
   if (items.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground gap-2">
+      <div className="flex flex-col items-center justify-center gap-2 py-12 text-center text-muted-foreground">
         <Sparkles className="size-8 opacity-40" />
         <p className="text-xs">
           {selectedDate
@@ -245,32 +263,11 @@ export function TimelineFeedSection({
     <div className="flex flex-col gap-2">
       {items.map((item) => {
         if (item.type === "quiz") {
-          return (
-            <Item
-              key={item.id}
-              variant="outline"
-              className="w-full max-w-full overflow-hidden p-2.5 rounded-xl border-border/60 hover:border-border transition-colors"
-            >
-              <ItemContent className="w-full min-w-0 p-0">
-                {renderQuizBody(item.quizEntry, item.created_at)}
-              </ItemContent>
-            </Item>
-          )
+          return renderQuizItem(item.quizEntry, item.created_at, item.id)
         }
 
-        return (
-          <Item
-            key={item.id}
-            variant="outline"
-            className="w-full max-w-full overflow-hidden p-2.5 rounded-xl border-border/60 hover:border-border transition-colors"
-          >
-            <ItemContent className="w-full min-w-0 p-0">
-              {renderActivityBody(item.activity)}
-            </ItemContent>
-          </Item>
-        )
+        return renderActivityItem(item.activity, item.id)
       })}
     </div>
   )
 }
-

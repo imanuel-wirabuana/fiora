@@ -13,8 +13,8 @@ import {
   Sparkles,
   UserPlus,
 } from "lucide-react"
+import { CustomItem } from "@/components/CustomItem"
 import { Badge } from "@/components/ui/badge"
-import { Item, ItemContent } from "@/components/ui/item"
 import { usePartnerPresence } from "@/hooks/usePartnerPresence"
 import { cn } from "@/lib/utils"
 
@@ -60,13 +60,8 @@ function formatLastOnline(dateStr: string): string {
 }
 
 export function PartnerPresenceSection() {
-  const {
-    isOnline,
-    isBackground,
-    currentActivity,
-    lastSeenAt,
-    partnerMember,
-  } = usePartnerPresence()
+  const { isOnline, isBackground, currentActivity, lastSeenAt, partnerMember } =
+    usePartnerPresence()
 
   // Refresh relative timestamps every 30s while viewing Home
   const [, setTick] = useState(0)
@@ -79,95 +74,87 @@ export function PartnerPresenceSection() {
 
   if (!partnerMember) {
     return (
-      <Item variant="outline" className="w-full items-center gap-3 p-3.5">
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted/60 text-muted-foreground">
-          <UserPlus className="size-4.5" />
-        </div>
-        <ItemContent className="min-w-0 gap-0.5">
-          <span className="text-xs font-semibold text-foreground">
-            Waiting for partner
-          </span>
-          <span className="text-[11px] text-muted-foreground">
-            Share your invite code in Settings to connect
-          </span>
-        </ItemContent>
-      </Item>
+      <CustomItem
+        variant="fill"
+        className="gap-1.5"
+        icon={
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary-foreground/15 text-primary-foreground">
+            <UserPlus className="size-4" />
+          </div>
+        }
+        title="Waiting for partner"
+        description="Share your invite code in Settings to connect"
+        descriptionClassName="text-[11px]"
+      />
     )
   }
 
   const partnerName = partnerMember.content?.name || "Partner"
   const partnerAvatar = partnerMember.content?.avatar || "🤍"
 
-  const statusLabel = isOnline
-    ? isBackground
-      ? "Away"
-      : "Online"
-    : "Offline"
+  const statusLabel = isOnline ? (isBackground ? "Away" : "Online") : "Offline"
 
   return (
-    <Item variant="outline" className="w-full items-center gap-3 p-3.5">
-      {/* Partner Avatar + Live Status Dot */}
-      <div className="relative flex size-10 shrink-0 items-center justify-center rounded-full bg-muted/50 text-lg ring-1 ring-border">
-        <span className="leading-none select-none">{partnerAvatar}</span>
-        <span
-          className={cn(
-            "absolute right-0 bottom-0 flex size-3 items-center justify-center rounded-full ring-2 ring-background",
-            isOnline
-              ? isBackground
-                ? "bg-amber-500"
-                : "bg-emerald-500"
-              : "bg-muted-foreground/40"
-          )}
-          aria-label={statusLabel}
-        >
-          {isOnline && !isBackground ? (
-            <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-          ) : null}
-        </span>
-      </div>
-
-      {/* Name, Status, Activity & Last Online */}
-      <ItemContent className="min-w-0 gap-1">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex min-w-0 items-center gap-1.5">
-            <span className="truncate text-sm font-semibold capitalize text-foreground">
-              {partnerName}
-            </span>
-            <Badge
-              variant={isOnline ? "secondary" : "outline"}
-              className={cn(
-                "h-4.5 px-1.5 text-[10px] font-medium",
-                isOnline && !isBackground
-                  ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
-                  : isOnline && isBackground
-                    ? "bg-amber-500/15 text-amber-700 dark:text-amber-400"
-                    : "text-muted-foreground"
-              )}
-            >
-              {statusLabel}
-            </Badge>
-          </div>
-
+    <CustomItem
+      variant="fill"
+      className="gap-2"
+      icon={
+        <div className="relative flex size-9 shrink-0 items-center justify-center rounded-full bg-primary-foreground/15 text-base ring-1 ring-primary-foreground/25">
+          <span className="leading-none select-none">{partnerAvatar}</span>
+          <span
+            className={cn(
+              "absolute right-0 bottom-0 flex size-2.5 items-center justify-center rounded-full ring-2 ring-primary",
+              isOnline
+                ? isBackground
+                  ? "bg-amber-400"
+                  : "bg-emerald-400"
+                : "bg-primary-foreground/45"
+            )}
+            aria-label={statusLabel}
+          >
+            {isOnline && !isBackground ? (
+              <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-300 opacity-75" />
+            ) : null}
+          </span>
+        </div>
+      }
+      title={partnerName}
+      topRightActions={
+        <div className="flex items-center gap-1.5">
+          <Badge
+            variant="outline"
+            className={cn(
+              "h-4.5 shrink-0 px-1.5 text-[10px] font-medium",
+              isOnline && !isBackground
+                ? "border-emerald-300/30 bg-emerald-400/25 text-white"
+                : isOnline && isBackground
+                  ? "border-amber-300/30 bg-amber-400/25 text-white"
+                  : "border-primary-foreground/20 bg-primary-foreground/15 text-primary-foreground/85"
+            )}
+          >
+            {statusLabel}
+          </Badge>
           {isOnline ? (
-            <span className="shrink-0 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+            <span className="shrink-0 text-[10px] font-medium text-primary-foreground/90">
               {isBackground ? "Idle" : "Active now"}
             </span>
           ) : null}
         </div>
-
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-muted-foreground">
+      }
+      bottomLeftInfo={
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-primary-foreground/80">
           {/* Current Activity */}
           {isOnline && currentActivity ? (
-            <span className="inline-flex items-center gap-1 font-medium text-foreground/85">
+            <span className="inline-flex items-center gap-1 font-medium text-primary-foreground">
               <ActivityIcon
                 activity={currentActivity}
-                className="size-3 shrink-0 text-primary"
+                className="size-3 shrink-0 text-primary-foreground/90"
               />
               <span className="truncate">{currentActivity}</span>
             </span>
           ) : (
             <span className="inline-flex items-center gap-1">
-              <Clock className="size-3 shrink-0 opacity-70" />
+              <Clock className="size-3 shrink-0 opacity-80" />
               <span>
                 {lastSeenAt
                   ? `Last online ${formatLastOnline(lastSeenAt)}`
@@ -175,21 +162,8 @@ export function PartnerPresenceSection() {
               </span>
             </span>
           )}
-
-          {/* Subtle last activity when offline */}
-          {!isOnline && currentActivity ? (
-            <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground/80">
-              <span>·</span>
-              <ActivityIcon
-                activity={currentActivity}
-                className="size-2.5 shrink-0"
-              />
-              <span className="truncate">Last: {currentActivity}</span>
-            </span>
-          ) : null}
         </div>
-      </ItemContent>
-    </Item>
+      }
+    />
   )
 }
-

@@ -1,19 +1,20 @@
 import { useCallback, useEffect, useRef } from "react"
 import { useLocation } from "wouter"
-import { format, formatDistanceToNow, isToday } from "date-fns"
+import { format, isToday } from "date-fns"
 import L from "leaflet"
 import { Clock, MapPin, Maximize2, RefreshCw } from "lucide-react"
+import { CustomItem } from "@/components/CustomItem"
 import { Button } from "@/components/ui/button"
-import {
-  Item,
-  ItemContent,
-  ItemHeader,
-  ItemTitle,
-} from "@/components/ui/item"
 import { Spinner } from "@/components/ui/spinner"
 import { useLocationSharing } from "@/hooks/useLocationSharing"
 import { useRelationship } from "@/hooks/useRelationship"
-import type { MemberLocation } from "@/types/relationship"
+import type { Gender, MemberLocation } from "@/types/relationship"
+
+function getGenderMarkerBg(gender?: Gender | null) {
+  if (gender === "male") return "bg-blue-500"
+  if (gender === "female") return "bg-rose-500"
+  return "bg-primary"
+}
 
 export function LocationSharingSection() {
   const {
@@ -36,7 +37,9 @@ export function LocationSharingSection() {
   const pointsRef = useRef<L.LatLngExpression[]>([])
   const recenterTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isProgrammaticMoveRef = useRef(false)
-  const programmaticResetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const programmaticResetTimeoutRef = useRef<ReturnType<
+    typeof setTimeout
+  > | null>(null)
 
   const fitMapToPoints = useCallback((map: L.Map) => {
     const pts = pointsRef.current
@@ -66,8 +69,10 @@ export function LocationSharingSection() {
   }, [])
 
   const myAvatar = currentMember?.content?.avatar || "🙋"
+  const myGender = currentMember?.content?.gender
   const partnerAvatar = partnerMember?.content?.avatar || "🤍"
   const partnerName = partnerMember?.content?.name || "Partner"
+  const partnerGender = partnerMember?.content?.gender
 
   const formatLastUpdated = (dateStr: string) => {
     const d = new Date(dateStr)
@@ -78,55 +83,46 @@ export function LocationSharingSection() {
     return `${format(d, "MMM d")} at ${exactTime}`
   }
 
-  const renderLocationCard = (
+  const renderLocationItem = (
     avatar: string,
     name: string,
     location: MemberLocation | null,
     isMe: boolean
   ) => {
     return (
-      <div className="flex flex-col gap-1.5 rounded-xl border border-border/60 bg-muted/20 p-2.5 text-xs">
-        <div className="flex items-center justify-between gap-1">
-          <div className="flex items-center gap-1.5 font-semibold text-foreground">
-            <span className="text-sm">{avatar}</span>
-            <span className="truncate">{name}</span>
-          </div>
-          {location ? (
-            <span className="text-[10px] text-muted-foreground whitespace-nowrap">
-              {formatDistanceToNow(new Date(location.updated_at), {
-                addSuffix: true,
-              })}
-            </span>
-          ) : (
-            <span className="text-[10px] text-muted-foreground italic">
-              {isMe && isLocating ? "Locating..." : "Not shared"}
-            </span>
-          )}
+      <div className="flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 text-center text-xs">
+        <div className="flex max-w-full items-center justify-center gap-1.5 font-semibold text-foreground">
+          <span className="shrink-0 text-xs leading-none">{avatar}</span>
+          <span className="truncate capitalize">{name}</span>
         </div>
 
         {location ? (
-          <div className="space-y-1 pt-0.5">
-            {/* Last Place Name / Coordinates */}
-            <div className="flex items-start gap-1 text-[11px] text-foreground/90 font-medium leading-snug">
-              <MapPin className="size-3 text-primary shrink-0 mt-0.5" />
-              <span className="break-words line-clamp-1" title={location.placeName || `${location.lat}, ${location.lng}`}>
-                {location.placeName || `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`}
+          <>
+            <div className="flex max-w-full items-center justify-center gap-1 text-[11px] font-medium text-foreground/90">
+              <MapPin className="size-2.5 shrink-0 text-primary" />
+              <span
+                className="truncate"
+                title={location.placeName || `${location.lat}, ${location.lng}`}
+              >
+                {location.placeName ||
+                  `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`}
               </span>
             </div>
 
-            {/* Last Update Time */}
-            <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+            <div className="flex max-w-full items-center justify-center gap-1 text-[10px] text-muted-foreground">
               <Clock className="size-2.5 shrink-0 opacity-70" />
-              <span className="truncate">{formatLastUpdated(location.updated_at)}</span>
+              <span className="truncate">
+                {formatLastUpdated(location.updated_at)}
+              </span>
             </div>
-          </div>
+          </>
         ) : (
-          <p className="text-[11px] text-muted-foreground italic pt-1">
+          <p className="w-full truncate text-center text-[10px] text-muted-foreground italic">
             {isMe
               ? isLocating
-                ? "Acquiring GPS fix..."
-                : "Tap refresh to share your location"
-              : "Waiting for partner's update..."}
+                ? "Locating..."
+                : "Tap refresh to share"
+              : "Waiting for update..."}
           </p>
         )}
       </div>
@@ -240,7 +236,7 @@ export function LocationSharingSection() {
         className: "custom-leaflet-marker",
         html: `
           <div class="flex flex-col items-center">
-            <div class="flex size-7 items-center justify-center rounded-full bg-primary text-white shadow-md ring-2 ring-background text-sm">
+            <div class="flex size-7 items-center justify-center rounded-full ${getGenderMarkerBg(myGender)} text-white shadow-md ring-2 ring-background text-sm">
               ${myAvatar}
             </div>
             <div class="mt-0.5 rounded bg-background/90 px-1 py-0.2 text-[9px] font-semibold text-foreground shadow-xs border border-border/60">
@@ -267,7 +263,7 @@ export function LocationSharingSection() {
         className: "custom-leaflet-marker",
         html: `
           <div class="flex flex-col items-center">
-            <div class="flex size-7 items-center justify-center rounded-full bg-rose-500 text-white shadow-md ring-2 ring-background text-sm">
+            <div class="flex size-7 items-center justify-center rounded-full ${getGenderMarkerBg(partnerGender)} text-white shadow-md ring-2 ring-background text-sm">
               ${partnerAvatar}
             </div>
             <div class="mt-0.5 rounded bg-background/90 px-1 py-0.2 text-[9px] font-semibold text-foreground shadow-xs border border-border/60">
@@ -294,7 +290,16 @@ export function LocationSharingSection() {
     }
 
     fitMapToPoints(map)
-  }, [myLocation, partnerLocation, myAvatar, partnerAvatar, partnerName, fitMapToPoints])
+  }, [
+    myLocation,
+    partnerLocation,
+    myAvatar,
+    myGender,
+    partnerAvatar,
+    partnerName,
+    partnerGender,
+    fitMapToPoints,
+  ])
 
   // Strictly return null if location sharing is not enabled in commitment settings
   if (!locationSharing) {
@@ -302,22 +307,11 @@ export function LocationSharingSection() {
   }
 
   return (
-    <Item
-      variant="outline"
-      className="w-full flex-col items-start gap-2.5 p-3.5"
-    >
-      <ItemHeader className="w-full flex-row items-center justify-between space-y-0">
-        <ItemTitle className="text-sm font-semibold">
-          Location Sharing
-        </ItemTitle>
-
-        <div className="flex items-center gap-1.5">
-          {formattedDistance && (
-            <span className="inline-flex items-center rounded-full bg-rose-500/10 px-2 py-0.5 text-[11px] font-semibold text-rose-600 dark:text-rose-400">
-              {formattedDistance} apart
-            </span>
-          )}
-
+    <CustomItem
+      icon={<MapPin className="size-3.5 text-primary" />}
+      title="Location Sharing"
+      topRightActions={
+        <div className="flex items-center gap-1">
           <Button
             type="button"
             variant="ghost"
@@ -345,47 +339,50 @@ export function LocationSharingSection() {
             )}
           </Button>
         </div>
-      </ItemHeader>
+      }
+      contentClassName="space-y-2"
+    >
+      {/* Leaflet Map Frame */}
+      <div className="relative h-44 w-full overflow-hidden rounded-xl border border-border/70 bg-muted/40 shadow-inner">
+        <div ref={mapContainerRef} className="z-0 h-full w-full" />
 
-      <ItemContent className="w-full space-y-2">
-        {/* Leaflet Map Frame */}
-        <div className="relative h-44 w-full overflow-hidden rounded-xl border border-border/70 bg-muted/40 shadow-inner">
-          <div ref={mapContainerRef} className="z-0 h-full w-full" />
+        {/* Overlay when waiting for initial coordinates */}
+        {!myLocation && !partnerLocation && (
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-1.5 bg-background/60 p-4 text-center text-xs text-muted-foreground backdrop-blur-xs">
+            {isLocating ? (
+              <>
+                <Spinner className="size-5 text-primary" />
+                <span>Fetching your GPS location...</span>
+              </>
+            ) : (
+              <>
+                <MapPin className="size-5 opacity-40" />
+                <span>Tap refresh to broadcast your location</span>
+              </>
+            )}
+          </div>
+        )}
+      </div>
 
-          {/* Overlay when waiting for initial coordinates */}
-          {!myLocation && !partnerLocation && (
-            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-1.5 bg-background/60 p-4 text-center text-xs text-muted-foreground backdrop-blur-xs">
-              {isLocating ? (
-                <>
-                  <Spinner className="size-5 text-primary" />
-                  <span>Fetching your GPS location...</span>
-                </>
-              ) : (
-                <>
-                  <MapPin className="size-5 opacity-40" />
-                  <span>Tap refresh to broadcast your location</span>
-                </>
-              )}
-            </div>
-          )}
-        </div>
+      {/* Error message */}
+      {geoError && (
+        <p className="text-[11px] font-medium text-destructive">{geoError}</p>
+      )}
 
-        {/* Error message */}
-        {geoError && (
-          <p className="text-[11px] font-medium text-destructive">{geoError}</p>
+      {/* Compact Location Status Summary */}
+      <div className="flex items-stretch gap-2 pt-0.5">
+        {renderLocationItem(myAvatar, "You", myLocation, true)}
+
+        {formattedDistance && (
+          <div className="flex shrink-0 flex-col items-center justify-center gap-1">
+            <span className="inline-flex items-center rounded-full bg-rose-500/10 px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap text-rose-600 dark:text-rose-400">
+              {formattedDistance} apart
+            </span>
+          </div>
         )}
 
-        {/* Location Status Cards */}
-        <div className="grid grid-cols-2 gap-2">
-          {renderLocationCard(myAvatar, "You", myLocation, true)}
-          {renderLocationCard(
-            partnerAvatar,
-            partnerName,
-            partnerLocation,
-            false
-          )}
-        </div>
-      </ItemContent>
-    </Item>
+        {renderLocationItem(partnerAvatar, partnerName, partnerLocation, false)}
+      </div>
+    </CustomItem>
   )
 }

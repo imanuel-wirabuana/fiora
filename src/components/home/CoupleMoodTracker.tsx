@@ -1,16 +1,10 @@
 import { formatDistanceToNow } from "date-fns"
 import { Heart, Smile, UserPlus } from "lucide-react"
-import {
-  Item,
-  ItemContent,
-  ItemDescription,
-  ItemHeader,
-  ItemTitle,
-} from "../ui/item"
-import { cn } from "../../lib/utils"
-import { useActivities } from "../../hooks/useActivities"
-import { useRelationship } from "../../hooks/useRelationship"
-import type { Gender } from "../../types/relationship"
+import { CustomItem } from "@/components/CustomItem"
+import { cn } from "@/lib/utils"
+import { useActivities } from "@/hooks/useActivities"
+import { useRelationship } from "@/hooks/useRelationship"
+import type { Gender } from "@/types/relationship"
 
 function getGenderRingStyles(gender?: Gender | null) {
   if (gender === "male") {
@@ -42,75 +36,72 @@ function YourMood() {
   const styles = getGenderRingStyles(gender)
 
   return (
-    <Item
-      variant="outline"
+    <CustomItem
+      variant="default"
       className={cn(
-        "h-full w-full flex-col flex-nowrap items-center justify-between gap-3 p-3.5 text-center",
+        "h-full flex-nowrap items-center justify-between gap-3 text-center",
         styles.card
       )}
-    >
-      {/* Top Header */}
-      <ItemHeader className="w-full basis-auto items-center justify-between gap-1.5">
-        <div className="flex min-w-0 items-center gap-1.5">
-          <span className="shrink-0 text-sm leading-none">
-            {currentMember?.content?.avatar || "🙋"}
-          </span>
-          <ItemTitle className="truncate text-xs font-semibold">You</ItemTitle>
-        </div>
-        {myLatestMood ? (
-          <span className="shrink-0 text-[10px] text-muted-foreground">
+      icon={
+        <span className="text-sm leading-none">
+          {currentMember?.content?.avatar || "🙋"}
+        </span>
+      }
+      title="You"
+      topRightActions={
+        myLatestMood ? (
+          <span className="text-[10px] text-muted-foreground">
             {formatDistanceToNow(new Date(myLatestMood.created_at), {
               addSuffix: true,
             })}
           </span>
-        ) : null}
-      </ItemHeader>
-
+        ) : null
+      }
+      contentClassName="flex-none items-center justify-center gap-2 py-0.5"
+    >
       {/* Centered Big Icon & Mood Status */}
-      <ItemContent className="w-full flex-none items-center justify-center gap-2 py-0.5">
-        <div
-          className={cn(
-            "flex size-14 shrink-0 items-center justify-center rounded-full transition-transform",
-            styles.circle
-          )}
-        >
-          {moodContent ? (
-            <span className="text-3xl leading-none select-none">
-              {moodContent.emoji}
-            </span>
+      <div
+        className={cn(
+          "flex size-14 shrink-0 items-center justify-center rounded-full transition-transform",
+          styles.circle
+        )}
+      >
+        {moodContent ? (
+          <span className="text-3xl leading-none select-none">
+            {moodContent.emoji}
+          </span>
+        ) : (
+          <Smile className="size-6 opacity-75" />
+        )}
+      </div>
+
+      {isLoading ? (
+        <div className="space-y-0.5">
+          <p className="text-xs font-medium text-muted-foreground">
+            Loading...
+          </p>
+        </div>
+      ) : moodContent ? (
+        <div className="flex w-full min-w-0 flex-col items-center gap-0.5">
+          <span className="w-full truncate text-sm font-semibold text-foreground">
+            {moodContent.label}
+          </span>
+          {moodContent.note ? (
+            <p className="line-clamp-1 w-full text-center text-[11px] text-muted-foreground italic">
+              "{moodContent.note}"
+            </p>
           ) : (
-            <Smile className="size-6 opacity-75" />
+            <span className="text-[11px] text-muted-foreground/70">
+              Checked in
+            </span>
           )}
         </div>
-
-        {isLoading ? (
-          <div className="space-y-0.5">
-            <p className="text-xs font-medium text-muted-foreground">
-              Loading...
-            </p>
-          </div>
-        ) : moodContent ? (
-          <div className="flex w-full min-w-0 flex-col items-center gap-0.5">
-            <span className="w-full truncate text-sm font-semibold text-foreground">
-              {moodContent.label}
-            </span>
-            {moodContent.note ? (
-              <p className="line-clamp-1 w-full text-center text-[11px] text-muted-foreground italic">
-                "{moodContent.note}"
-              </p>
-            ) : (
-              <span className="text-[11px] text-muted-foreground/70">
-                Checked in
-              </span>
-            )}
-          </div>
-        ) : (
-          <ItemDescription className="text-center text-xs">
-            Tap + to log mood
-          </ItemDescription>
-        )}
-      </ItemContent>
-    </Item>
+      ) : (
+        <p className="text-center text-xs text-muted-foreground">
+          Tap + to log mood
+        </p>
+      )}
+    </CustomItem>
   )
 }
 
@@ -124,83 +115,78 @@ function PartnerMood() {
   const styles = getGenderRingStyles(gender)
 
   return (
-    <Item
-      variant="outline"
+    <CustomItem
+      variant="default"
       className={cn(
-        "h-full w-full flex-col flex-nowrap items-center justify-between gap-3 p-3.5 text-center",
+        "h-full flex-nowrap items-center justify-between gap-3 text-center",
         styles.card
       )}
-    >
-      {/* Top Header */}
-      <ItemHeader className="w-full basis-auto items-center justify-between gap-1.5">
-        <div className="flex min-w-0 items-center gap-1.5">
-          <span className="shrink-0 text-sm leading-none">
-            {partnerMember?.content?.avatar || "🤍"}
-          </span>
-          <ItemTitle className="truncate text-xs font-semibold capitalize">
-            {partnerName}
-          </ItemTitle>
-        </div>
-        {partnerLatestMood ? (
-          <span className="shrink-0 text-[10px] text-muted-foreground">
+      icon={
+        <span className="text-sm leading-none">
+          {partnerMember?.content?.avatar || "🤍"}
+        </span>
+      }
+      title={partnerName}
+      topRightActions={
+        partnerLatestMood ? (
+          <span className="text-[10px] text-muted-foreground">
             {formatDistanceToNow(new Date(partnerLatestMood.created_at), {
               addSuffix: true,
             })}
           </span>
-        ) : null}
-      </ItemHeader>
-
+        ) : null
+      }
+      contentClassName="flex-none items-center justify-center gap-2 py-0.5"
+    >
       {/* Centered Big Icon & Mood Status */}
-      <ItemContent className="w-full flex-none items-center justify-center gap-2 py-0.5">
-        <div
-          className={cn(
-            "flex size-14 shrink-0 items-center justify-center rounded-full transition-transform",
-            styles.circle
-          )}
-        >
-          {!partnerMember ? (
-            <UserPlus className="size-6 opacity-60" />
-          ) : moodContent ? (
-            <span className="text-3xl leading-none select-none">
-              {moodContent.emoji}
-            </span>
+      <div
+        className={cn(
+          "flex size-14 shrink-0 items-center justify-center rounded-full transition-transform",
+          styles.circle
+        )}
+      >
+        {!partnerMember ? (
+          <UserPlus className="size-6 opacity-60" />
+        ) : moodContent ? (
+          <span className="text-3xl leading-none select-none">
+            {moodContent.emoji}
+          </span>
+        ) : (
+          <Heart className="size-6 opacity-75" />
+        )}
+      </div>
+
+      {!partnerMember ? (
+        <p className="text-center text-xs text-muted-foreground">
+          Waiting for partner
+        </p>
+      ) : isLoading ? (
+        <div className="space-y-0.5">
+          <p className="text-xs font-medium text-muted-foreground">
+            Loading...
+          </p>
+        </div>
+      ) : moodContent ? (
+        <div className="flex w-full min-w-0 flex-col items-center gap-0.5">
+          <span className="w-full truncate text-sm font-semibold text-foreground">
+            {moodContent.label}
+          </span>
+          {moodContent.note ? (
+            <p className="line-clamp-1 w-full text-center text-[11px] text-muted-foreground italic">
+              "{moodContent.note}"
+            </p>
           ) : (
-            <Heart className="size-6 opacity-75" />
+            <span className="text-[11px] text-muted-foreground/70">
+              Checked in
+            </span>
           )}
         </div>
-
-        {!partnerMember ? (
-          <ItemDescription className="text-center text-xs">
-            Waiting for partner
-          </ItemDescription>
-        ) : isLoading ? (
-          <div className="space-y-0.5">
-            <p className="text-xs font-medium text-muted-foreground">
-              Loading...
-            </p>
-          </div>
-        ) : moodContent ? (
-          <div className="flex w-full min-w-0 flex-col items-center gap-0.5">
-            <span className="w-full truncate text-sm font-semibold text-foreground">
-              {moodContent.label}
-            </span>
-            {moodContent.note ? (
-              <p className="line-clamp-1 w-full text-center text-[11px] text-muted-foreground italic">
-                "{moodContent.note}"
-              </p>
-            ) : (
-              <span className="text-[11px] text-muted-foreground/70">
-                Checked in
-              </span>
-            )}
-          </div>
-        ) : (
-          <ItemDescription className="text-center text-xs">
-            No mood logged yet
-          </ItemDescription>
-        )}
-      </ItemContent>
-    </Item>
+      ) : (
+        <p className="text-center text-xs text-muted-foreground">
+          No mood logged yet
+        </p>
+      )}
+    </CustomItem>
   )
 }
 

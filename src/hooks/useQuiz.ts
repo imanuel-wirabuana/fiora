@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { format, isSameDay } from "date-fns"
+import { differenceInMinutes, format, isSameDay, startOfTomorrow } from "date-fns"
 import { quizService } from "../services/quizService"
 import { useAuth } from "./useAuth"
 import { useRelationship } from "./useRelationship"
@@ -42,6 +42,17 @@ export function useQuiz() {
   const relationshipId = relationship?.id
   const currentUserId = user?.id
   const lastSyncedDateRef = useRef<string | null>(null)
+  const [now, setNow] = useState(() => new Date())
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setNow(new Date())
+    }, 60_000)
+
+    return () => {
+      window.clearInterval(intervalId)
+    }
+  }, [])
 
   // 1. Fetch available quizzes
   const quizzesQuery = useQuery<Quiz[]>({
@@ -80,7 +91,11 @@ export function useQuiz() {
   const quizzes = useMemo(() => quizzesQuery.data ?? [], [quizzesQuery.data])
   const answers = useMemo(() => answersQuery.data ?? [], [answersQuery.data])
 
-  const todayStr = format(new Date(), "yyyy-MM-dd")
+  const todayStr = format(now, "yyyy-MM-dd")
+  const hoursUntilNextQuiz = useMemo(() => {
+    const minutesRemaining = differenceInMinutes(startOfTomorrow(), now)
+    return Math.max(1, Math.ceil(minutesRemaining / 60))
+  }, [now])
 
   // Group answers by quiz_id
   const answersByQuiz = useMemo(() => {
@@ -421,6 +436,7 @@ export function useQuiz() {
     matchedCount,
     isAllMyAnswered,
     isAllBothAnswered,
+    hoursUntilNextQuiz,
     isLoading: quizzesQuery.isLoading || answersQuery.isLoading,
     isSubmitting: submitAnswerMutation.isPending,
     updateDailyQuizCount,
