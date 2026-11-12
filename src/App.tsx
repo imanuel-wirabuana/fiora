@@ -7,6 +7,7 @@ import { SplashScreen } from "./components/SplashScreen"
 import { useAuth } from "./hooks/useAuth"
 import { useIsMobile } from "./hooks/use-mobile"
 import { usePresenceTracker } from "./hooks/usePartnerPresence"
+import { useAutoPushSubscription } from "./hooks/usePushNotifications"
 import { useRelationship } from "./hooks/useRelationship"
 import {
   HomeScreen,
@@ -28,6 +29,7 @@ function AppRoutes() {
     useRelationship()
 
   usePresenceTracker()
+  useAutoPushSubscription()
 
   // Wait until auth session check finishes
   if (!isInitialized) {

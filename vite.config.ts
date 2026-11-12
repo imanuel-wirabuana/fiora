@@ -14,7 +14,12 @@ export default defineConfig({
       srcDir: "src",
       filename: "sw.ts",
       registerType: "autoUpdate",
-      includeAssets: ["favicon.ico", "favicon.png", "apple-touch-icon.png"],
+      includeAssets: [
+        "favicon.ico",
+        "favicon.png",
+        "apple-touch-icon.png",
+        "notification-badge.png",
+      ],
       manifest: {
         name: "Fiora - Couple Connection & Mood Tracker",
         short_name: "Fiora",

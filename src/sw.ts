@@ -51,8 +51,7 @@ self.addEventListener("push", (event) => {
   const title = payload.title || "Fiora"
   const options: NotificationOptions = {
     body: payload.body || "You have a new update from your partner",
-    icon: payload.icon || "/pwa-192x192.png",
-    badge: payload.badge || "/pwa-192x192.png",
+    badge: "/notification-badge.png",
     tag: payload.tag || "fiora-notification",
     data: {
       url: payload.url || "/notification",

@@ -1,8 +1,10 @@
-import { useMemo } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { pushService } from "../services/pushService"
 import { useRelationship } from "./useRelationship"
 import type { PushPermissionState } from "../types/notification"
+
+const PUSH_OPT_OUT_KEY = "fiora_push_opt_out"
 
 export const pushKeys = {
   all: ["push"] as const,
@@ -58,6 +60,8 @@ export function usePushNotifications() {
       }
 
       const subscriptionData = await pushService.subscribeDevice()
+      localStorage.removeItem(PUSH_OPT_OUT_KEY)
+
       const filtered = savedSubscriptions.filter(
         (sub) => sub.endpoint !== subscriptionData.endpoint
       )
@@ -80,6 +84,7 @@ export function usePushNotifications() {
 
   const disablePushMutation = useMutation({
     mutationFn: async () => {
+      localStorage.setItem(PUSH_OPT_OUT_KEY, "true")
       const removedEndpoint = await pushService.unsubscribeDevice()
 
       if (currentMember && removedEndpoint) {
@@ -123,3 +128,77 @@ export function usePushNotifications() {
   }
 }
 
+export function useAutoPushSubscription() {
+  const { currentMember } = useRelationship()
+  const {
+    isSupported,
+    isIOS,
+    isStandalone,
+    permission,
+    isSubscribed,
+    isLoading,
+    enablePush,
+  } = usePushNotifications()
+  const attemptedRef = useRef(false)
+
+  useEffect(() => {
+    if (
+      attemptedRef.current ||
+      isLoading ||
+      !currentMember ||
+      !isSupported ||
+      (isIOS && !isStandalone) ||
+      isSubscribed ||
+      permission === "denied"
+    ) {
+      return
+    }
+
+    if (localStorage.getItem(PUSH_OPT_OUT_KEY) === "true") {
+      return
+    }
+
+    attemptedRef.current = true
+
+    const triggerSubscribe = () => {
+      void enablePush().catch(() => {
+        // Ignore if user dismisses or browser requires gesture
+      })
+    }
+
+    // 1. Try immediately on app open (works when permission is already "granted" or on desktop/Android)
+    triggerSubscribe()
+
+    // 2. If browser requires a user gesture to show the permission prompt, trigger on first tap
+    if (pushService.getPermissionState() === "default") {
+      const handleFirstInteraction = () => {
+        if (pushService.getPermissionState() === "default") {
+          triggerSubscribe()
+        }
+        window.removeEventListener("pointerdown", handleFirstInteraction)
+        window.removeEventListener("keydown", handleFirstInteraction)
+      }
+
+      window.addEventListener("pointerdown", handleFirstInteraction, {
+        once: true,
+      })
+      window.addEventListener("keydown", handleFirstInteraction, {
+        once: true,
+      })
+
+      return () => {
+        window.removeEventListener("pointerdown", handleFirstInteraction)
+        window.removeEventListener("keydown", handleFirstInteraction)
+      }
+    }
+  }, [
+    currentMember,
+    isLoading,
+    isSupported,
+    isIOS,
+    isStandalone,
+    isSubscribed,
+    permission,
+    enablePush,
+  ])
+}
