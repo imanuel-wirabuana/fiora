@@ -1,11 +1,23 @@
 /// <reference lib="webworker" />
-import { cleanupOutdatedCaches, precacheAndRoute } from "workbox-precaching"
+import {
+  cleanupOutdatedCaches,
+  createHandlerBoundToURL,
+  precacheAndRoute,
+} from "workbox-precaching"
+import { NavigationRoute, registerRoute } from "workbox-routing"
 
 declare let self: ServiceWorkerGlobalScope
 
 // Clean up outdated Workbox caches and precache Vite build assets
 cleanupOutdatedCaches()
 precacheAndRoute(self.__WB_MANIFEST)
+
+// Serve index.html for all SPA client routes (e.g. /home, /setting, /notification)
+registerRoute(
+  new NavigationRoute(createHandlerBoundToURL("/index.html"), {
+    denylist: [/^\/~oauth/, /^https:\/\/.*\.supabase\.co/],
+  })
+)
 
 // Activate updated service worker immediately
 self.addEventListener("install", () => {
