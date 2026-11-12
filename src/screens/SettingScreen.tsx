@@ -5,6 +5,7 @@ import {
   MoodsSection,
   NudgesSection,
   ProfileSection,
+  QuizSection,
   RelationshipSection,
 } from "@/components/setting"
 
@@ -15,6 +16,7 @@ export function SettingScreen() {
       <RelationshipSection />
       <AnniversarySection />
       <CommitmentSection />
+      <QuizSection />
       <MoodsSection />
       <NudgesSection />
       <AccountSection />

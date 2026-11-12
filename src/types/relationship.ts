@@ -17,11 +17,18 @@ export interface MemberLocation {
   updated_at: string
 }
 
+export interface DailyQuizState {
+  date: string
+  quiz_ids: number[]
+}
+
 export interface RelationshipContent {
   anniversary?: string | null
   moods?: MoodOption[]
   nudges?: NudgeOption[]
   location_sharing?: boolean
+  daily_quiz_count?: number
+  daily_quiz?: DailyQuizState | null
 }
 
 export interface RelationshipMemberContent {

@@ -87,16 +87,9 @@ export function useActivities() {
   }, [activities, currentUserId])
 
   // Timeline activities:
-  // Moods + Nudges + ONLY Shared Journals
+  // Moods + Nudges ONLY (Journals are separated into their own dedicated screen)
   const timelineActivities = useMemo(() => {
-    return activities.filter((a) => {
-      if (a.type === "mood" || a.type === "nudge") return true
-      if (a.type === "journal") {
-        const content = a.content as JournalActivityContent | null
-        return !!content?.isShared
-      }
-      return false
-    })
+    return activities.filter((a) => a.type === "mood" || a.type === "nudge")
   }, [activities])
 
   const myLatestMood = useMemo(

@@ -6,34 +6,59 @@ import {
   TimelineFilterSection,
 } from "@/components/timeline"
 import { useActivities } from "@/hooks/useActivities"
+import { useQuiz } from "@/hooks/useQuiz"
+import type { TimelineItem } from "@/types/timeline"
 
 export function TimelineScreen() {
-  const { timelineActivities, isLoading } = useActivities()
+  const { timelineActivities, isLoading: isActivitiesLoading } = useActivities()
+  const { answeredQuizzes, isLoading: isQuizLoading } = useQuiz()
 
   const [typeFilter, setTypeFilter] = useState<FilterType>("all")
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(() => new Date())
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
 
-  // Identify dates that have activities for calendar dots/styling
-  const activeDays = useMemo(() => {
-    return timelineActivities.map((a) => new Date(a.created_at))
-  }, [timelineActivities])
+  // Merge timelineActivities (moods + nudges) and answeredQuizzes into unified TimelineItem[]
+  const allTimelineItems = useMemo<TimelineItem[]>(() => {
+    const activityItems: TimelineItem[] = timelineActivities.map((a) => ({
+      id: `activity-${a.id}`,
+      type: a.type as "mood" | "nudge",
+      created_at: a.created_at,
+      activity: a,
+    }))
 
-  const filteredActivities = useMemo(() => {
-    return timelineActivities.filter((activity) => {
+    const quizItems: TimelineItem[] = answeredQuizzes.map((q) => ({
+      id: `quiz-${q.quiz.id}`,
+      type: "quiz",
+      created_at: q.latestAnsweredAt,
+      quizEntry: q,
+    }))
+
+    return [...activityItems, ...quizItems].sort(
+      (a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    )
+  }, [timelineActivities, answeredQuizzes])
+
+  // Identify dates that have activities/quizzes for calendar dots/styling
+  const activeDays = useMemo(() => {
+    return allTimelineItems.map((item) => new Date(item.created_at))
+  }, [allTimelineItems])
+
+  const filteredItems = useMemo(() => {
+    return allTimelineItems.filter((item) => {
       // 1. Type filter
-      if (typeFilter !== "all" && activity.type !== typeFilter) {
+      if (typeFilter !== "all" && item.type !== typeFilter) {
         return false
       }
       // 2. Date filter
       if (selectedDate) {
-        if (!isSameDay(new Date(activity.created_at), selectedDate)) {
+        if (!isSameDay(new Date(item.created_at), selectedDate)) {
           return false
         }
       }
       return true
     })
-  }, [timelineActivities, typeFilter, selectedDate])
+  }, [allTimelineItems, typeFilter, selectedDate])
 
   return (
     <section className="flex flex-col gap-3">
@@ -47,8 +72,8 @@ export function TimelineScreen() {
         activeDays={activeDays}
       />
       <TimelineFeedSection
-        activities={filteredActivities}
-        isLoading={isLoading}
+        items={filteredItems}
+        isLoading={isActivitiesLoading || isQuizLoading}
         selectedDate={selectedDate}
       />
     </section>

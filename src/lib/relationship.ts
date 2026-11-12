@@ -15,6 +15,9 @@ export const DEFAULT_NUDGE_OPTIONS: NudgeOption[] = [
   { emoji: "📞", label: "Call me soon" },
 ]
 
+export const DEFAULT_DAILY_QUIZ_COUNT = 3
+export const DAILY_QUIZ_COUNT_OPTIONS = [1, 2, 3, 5] as const
+
 export const DEFAULT_AVATARS_BY_GENDER: Record<Gender, string[]> = {
   male: ["🙋‍♂️", "👦", "👨", "🧔", "🦊", "🐶"],
   female: ["🙋‍♀️", "👧", "👩", "👩‍🦰", "🐱", "🐰"],

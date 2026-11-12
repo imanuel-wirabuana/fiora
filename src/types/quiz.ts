@@ -32,3 +32,14 @@ export interface SubmitQuizAnswerInput {
   content: QuizAnswerContent
 }
 
+export interface DailyQuizItem {
+  quiz: Quiz
+  myAnswer: QuizAnswer | null
+  partnerAnswer: QuizAnswer | null
+  isBothAnswered: boolean
+  isMatched: boolean
+}
+
+export interface QuizTimelineEntry extends DailyQuizItem {
+  latestAnsweredAt: string
+}

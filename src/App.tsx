@@ -3,7 +3,7 @@ import { Redirect, Route, Switch } from "wouter"
 import { DesktopShell } from "./components/DesktopShell"
 import { DetailLayout, MainLayout } from "./components/layouts"
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt"
-import { Spinner } from "./components/ui/spinner"
+import { SplashScreen } from "./components/SplashScreen"
 import { useAuth } from "./hooks/useAuth"
 import { useIsMobile } from "./hooks/use-mobile"
 import { useRelationship } from "./hooks/useRelationship"
@@ -13,6 +13,7 @@ import {
   LoginScreen,
   NotFoundScreen,
   NotificationScreen,
+  QuizSummaryScreen,
   RegisterScreen,
   SettingScreen,
   SetupScreen,
@@ -26,20 +27,12 @@ function AppRoutes() {
 
   // Wait until auth session check finishes
   if (!isInitialized) {
-    return (
-      <div className="flex min-h-svh items-center justify-center">
-        <Spinner className="size-8 text-primary" />
-      </div>
-    )
+    return <SplashScreen />
   }
 
   // If user is logged in, wait until relationship status is fetched
   if (isAuthenticated && isRelationshipLoading) {
-    return (
-      <div className="flex min-h-svh items-center justify-center">
-        <Spinner className="size-8 text-primary" />
-      </div>
-    )
+    return <SplashScreen />
   }
 
   // Flow rules:
@@ -138,6 +131,18 @@ function AppRoutes() {
         ) : (
           <DetailLayout title="Notification">
             <NotificationScreen />
+          </DetailLayout>
+        )}
+      </Route>
+
+      <Route path="/quiz-summary">
+        {!isAuthenticated ? (
+          <Redirect to="/" />
+        ) : !hasRelationship ? (
+          <Redirect to="/setup" />
+        ) : (
+          <DetailLayout title="Quiz Summary" backHref="/home">
+            <QuizSummaryScreen />
           </DetailLayout>
         )}
       </Route>
