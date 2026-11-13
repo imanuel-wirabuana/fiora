@@ -302,7 +302,7 @@ export function LocationSharingSection() {
       )}
 
       {/* Compact Location Status Summary */}
-      <div className="flex items-stretch gap-2 pt-0.5">
+      <div className="flex w-full items-stretch justify-between gap-2 pt-0.5">
         {renderLocationItem(myAvatar, "You", myLocation, true)}
 
         {formattedDistance && (

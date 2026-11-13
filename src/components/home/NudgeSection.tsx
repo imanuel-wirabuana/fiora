@@ -59,7 +59,7 @@ export function NudgeSection() {
     >
       {/* Latest Nudge Status Preview */}
       {latestNudge && latestNudge.content && (
-        <div className="flex items-center gap-2 rounded-xl bg-muted/40 px-3 py-2 text-xs">
+        <div className="flex w-full items-center gap-2 rounded-xl bg-muted/40 px-3 py-2 text-xs">
           <span className="text-base">{latestNudge.content.emoji}</span>
           <div className="flex-1 truncate">
             <span className="font-medium text-foreground">
@@ -73,7 +73,7 @@ export function NudgeSection() {
       )}
 
       {/* Nudge Buttons */}
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid w-full grid-cols-2 gap-2">
         {nudgeOptions.map((nudge, idx) => {
           const isJustSent = justSentLabel === nudge.label
           return (
