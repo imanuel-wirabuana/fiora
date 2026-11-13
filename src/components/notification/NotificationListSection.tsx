@@ -39,7 +39,7 @@ const FILTER_OPTIONS: { value: NotificationFilter; label: string }[] = [
   { value: "quiz", label: "Quiz" },
 ]
 
-function getTypeMeta(type: NotificationType) {
+function getTypeMeta(type?: string | null) {
   switch (type) {
     case "mood":
       return {
@@ -69,11 +69,23 @@ function getTypeMeta(type: NotificationType) {
         badgeClass:
           "border-violet-500/30 bg-violet-500/10 text-violet-600 dark:text-violet-400",
       }
+    default:
+      return {
+        label:
+          typeof type === "string" && type.trim().length > 0
+            ? type.charAt(0).toUpperCase() + type.slice(1)
+            : "Notification",
+        icon: <Bell className="size-2.5 text-muted-foreground" />,
+        badgeClass:
+          "border-muted-foreground/30 bg-muted/40 text-muted-foreground",
+      }
   }
 }
 
-function formatNotificationTime(dateStr: string) {
+function formatNotificationTime(dateStr?: string | null) {
+  if (!dateStr) return ""
   const date = new Date(dateStr)
+  if (isNaN(date.getTime())) return ""
   const exactTime = format(date, "h:mm a")
   if (isToday(date)) {
     return `${exactTime} · ${formatDistanceToNow(date, { addSuffix: true })}`
@@ -285,7 +297,7 @@ export function NotificationListSection() {
                             {partnerAvatar}
                           </span>
                         }
-                        title={content.title}
+                        title={content.title || "Notification"}
                         topRightActions={
                           <div className="flex items-center gap-1.5">
                             <span className="text-[10px] whitespace-nowrap text-muted-foreground">
@@ -317,9 +329,11 @@ export function NotificationListSection() {
                             {meta.icon}
                             {meta.label}
                           </Badge>
-                          <p className="text-xs leading-snug text-muted-foreground">
-                            {content.body}
-                          </p>
+                          {content.body && (
+                            <p className="text-xs leading-snug text-muted-foreground">
+                              {content.body}
+                            </p>
+                          )}
                         </div>
                       </CustomItem>
                     </div>

@@ -1,4 +1,9 @@
-export type NotificationType = "nudge" | "mood" | "journal" | "quiz"
+export type NotificationType =
+  | "nudge"
+  | "mood"
+  | "journal"
+  | "quiz"
+  | (string & {})
 
 export interface NotificationContent {
   type: NotificationType

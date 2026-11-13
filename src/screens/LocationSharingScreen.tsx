@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { useLocationSharing } from "@/hooks/useLocationSharing"
 import { useRelationship } from "@/hooks/useRelationship"
+import { createMapTileLayer } from "@/lib/map"
 import { cn } from "@/lib/utils"
 
 export function LocationSharingScreen() {
@@ -54,9 +55,7 @@ export function LocationSharingScreen() {
         attributionControl: false,
       })
 
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 19,
-      }).addTo(map)
+      createMapTileLayer().addTo(map)
 
       // Add zoom control at bottom-right or top-right
       L.control

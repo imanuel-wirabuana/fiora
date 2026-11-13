@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { useLocationSharing } from "@/hooks/useLocationSharing"
 import { useRelationship } from "@/hooks/useRelationship"
+import { createMapTileLayer } from "@/lib/map"
 import type { Gender, MemberLocation } from "@/types/relationship"
 
 function getGenderMarkerBg(gender?: Gender | null) {
@@ -130,9 +131,7 @@ export function LocationSharingSection() {
         keyboard: false,
       })
 
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 19,
-      }).addTo(map)
+      createMapTileLayer().addTo(map)
 
       const markersLayer = L.layerGroup().addTo(map)
       markersLayerRef.current = markersLayer

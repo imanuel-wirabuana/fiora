@@ -187,3 +187,8 @@
     @apply font-sans;
   }
 }
+
+/* In dark mode, invert standard OSM tile pane to dark theme without affecting markers */
+.dark .leaflet-tile-pane {
+  filter: brightness(0.65) invert(1) contrast(2.6) hue-rotate(205deg) saturate(0.35);
+}
