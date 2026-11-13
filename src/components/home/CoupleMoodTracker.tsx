@@ -78,7 +78,7 @@ function MoodCard({
         "h-full flex-nowrap items-center justify-between gap-3 text-center",
         styles.card
       )}
-      icon={<span className="text-sm leading-none">{avatar}</span>}
+      icon={<span className="text-xs leading-none">{avatar}</span>}
       title={title}
       contentHorizontalAlign="center"
       contentClassName="flex-none items-center justify-center gap-2 py-0.5"
@@ -103,8 +103,8 @@ function MoodCard({
       <div className="flex w-full min-w-0 flex-col items-center justify-center text-center gap-0.5">
         <span
           className={cn(
-            "w-full truncate text-center text-sm font-semibold",
-            moodContent ? "text-foreground" : "text-xs font-medium text-muted-foreground"
+            "w-full truncate text-center text-xs font-semibold",
+            moodContent ? "text-foreground" : "text-[11px] font-medium text-muted-foreground"
           )}
         >
           {primaryLabel}

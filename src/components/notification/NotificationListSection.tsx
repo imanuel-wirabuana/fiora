@@ -10,20 +10,19 @@ import {
   BellRing,
   BookOpen,
   Heart,
-  MessageCircle,
+  Send,
   Sparkles,
   Trash2,
   X,
 } from "lucide-react"
 import { useLocation } from "wouter"
 import { CustomItem } from "@/components/CustomItem"
-import { Badge } from "@/components/ui/badge"
+import { FormDrawer } from "@/components/FormDrawer"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { useNotifications } from "@/hooks/useNotifications"
 import { usePushNotifications } from "@/hooks/usePushNotifications"
 import { useRelationship } from "@/hooks/useRelationship"
-import { cn } from "@/lib/utils"
 import type {
   NotificationRecord,
   NotificationType,
@@ -39,46 +38,18 @@ const FILTER_OPTIONS: { value: NotificationFilter; label: string }[] = [
   { value: "quiz", label: "Quiz" },
 ]
 
-function getTypeMeta(type?: string | null) {
+function getTypeIcon(type?: string | null) {
   switch (type) {
     case "mood":
-      return {
-        label: "Mood",
-        icon: <Heart className="size-2.5 fill-rose-500 text-rose-500" />,
-        badgeClass:
-          "border-rose-500/30 bg-rose-500/10 text-rose-600 dark:text-rose-400",
-      }
+      return <Heart className="size-4 fill-rose-500 text-rose-500" />
     case "nudge":
-      return {
-        label: "Nudge",
-        icon: <MessageCircle className="size-2.5 text-amber-500" />,
-        badgeClass:
-          "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400",
-      }
+      return <Send className="size-4 text-amber-500" />
     case "journal":
-      return {
-        label: "Journal",
-        icon: <BookOpen className="size-2.5 text-blue-500" />,
-        badgeClass:
-          "border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-400",
-      }
+      return <BookOpen className="size-4 text-blue-500" />
     case "quiz":
-      return {
-        label: "Quiz",
-        icon: <Sparkles className="size-2.5 text-violet-500" />,
-        badgeClass:
-          "border-violet-500/30 bg-violet-500/10 text-violet-600 dark:text-violet-400",
-      }
+      return <Sparkles className="size-4 text-violet-500" />
     default:
-      return {
-        label:
-          typeof type === "string" && type.trim().length > 0
-            ? type.charAt(0).toUpperCase() + type.slice(1)
-            : "Notification",
-        icon: <Bell className="size-2.5 text-muted-foreground" />,
-        badgeClass:
-          "border-muted-foreground/30 bg-muted/40 text-muted-foreground",
-      }
+      return <Bell className="size-4 text-muted-foreground" />
   }
 }
 
@@ -96,6 +67,7 @@ function formatNotificationTime(dateStr?: string | null) {
 export function NotificationListSection() {
   const [, navigate] = useLocation()
   const [filter, setFilter] = useState<NotificationFilter>("all")
+  const [clearDrawerOpen, setClearDrawerOpen] = useState(false)
   const {
     notifications,
     unreadCount,
@@ -214,7 +186,7 @@ export function NotificationListSection() {
                 variant={filter === option.value ? "default" : "outline"}
                 size="xs"
                 onClick={() => setFilter(option.value)}
-                className="h-7 rounded-full px-3 text-xs"
+                className="h-7 rounded-full px-3 text-[11px]"
               >
                 {option.label}
               </Button>
@@ -226,9 +198,7 @@ export function NotificationListSection() {
             variant="ghost"
             size="xs"
             disabled={isClearing}
-            onClick={() => {
-              void clearAllNotifications()
-            }}
+            onClick={() => setClearDrawerOpen(true)}
             className="h-7 shrink-0 gap-1 px-2 text-[11px] text-muted-foreground hover:text-destructive"
           >
             {isClearing ? (
@@ -245,7 +215,7 @@ export function NotificationListSection() {
       {filteredNotifications.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-2 py-12 text-center text-muted-foreground">
           <Bell className="size-8 opacity-40" />
-          <p className="text-xs">
+          <p className="text-[11px]">
             {filter === "all"
               ? `No updates from ${partnerName} yet.`
               : `No ${filter} notifications yet.`}
@@ -268,7 +238,6 @@ export function NotificationListSection() {
                 {group.items.map((item) => {
                   const content = item.content
                   if (!content) return null
-                  const meta = getTypeMeta(content.type)
 
                   return (
                     <div
@@ -292,12 +261,9 @@ export function NotificationListSection() {
                     >
                       <CustomItem
                         className="gap-1.5 rounded-2xl p-3 transition-colors hover:bg-muted/30"
-                        icon={
-                          <span className="text-base leading-none">
-                            {partnerAvatar}
-                          </span>
-                        }
-                        title={content.title || "Notification"}
+                        icon={getTypeIcon(content.type)}
+                        title={`${partnerAvatar} ${content.title || "Notification"}`}
+                        description={content.body || undefined}
                         topRightActions={
                           <div className="flex items-center gap-1.5">
                             <span className="text-[10px] whitespace-nowrap text-muted-foreground">
@@ -316,26 +282,8 @@ export function NotificationListSection() {
                             </button>
                           </div>
                         }
-                        contentClassName="space-y-1.5 pl-6"
-                      >
-                        <div className="flex flex-wrap items-center gap-1.5">
-                          <Badge
-                            variant="outline"
-                            className={cn(
-                              "shrink-0 gap-1 px-1.5 py-0 text-[10px] font-normal",
-                              meta.badgeClass
-                            )}
-                          >
-                            {meta.icon}
-                            {meta.label}
-                          </Badge>
-                          {content.body && (
-                            <p className="text-xs leading-snug text-muted-foreground">
-                              {content.body}
-                            </p>
-                          )}
-                        </div>
-                      </CustomItem>
+                        contentClassName="pl-6"
+                      />
                     </div>
                   )
                 })}
@@ -344,6 +292,19 @@ export function NotificationListSection() {
           ))}
         </div>
       )}
+
+      <FormDrawer
+        open={clearDrawerOpen}
+        onOpenChange={setClearDrawerOpen}
+        title="Clear all notifications?"
+        description="This will permanently remove all notifications from your feed."
+        submitLabel="Clear All"
+        successLabel="Cleared!"
+        isPending={isClearing}
+        onSubmit={async () => {
+          await clearAllNotifications()
+        }}
+      />
     </div>
   )
 }

@@ -27,7 +27,7 @@ const customItemVariants = cva(
   }
 )
 
-const customItemDescriptionVariants = cva("text-xs", {
+const customItemDescriptionVariants = cva("text-[11px]", {
   variants: {
     variant: {
       default: "text-muted-foreground",
@@ -129,7 +129,7 @@ export function CustomItem({
           <div className="flex shrink-0 items-center justify-center">
             {icon}
           </div>
-          <ItemTitle className="min-w-0 text-sm font-semibold">
+          <ItemTitle className="min-w-0 text-xs font-semibold">
             {title}
           </ItemTitle>
         </div>

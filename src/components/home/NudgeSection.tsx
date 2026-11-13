@@ -59,8 +59,8 @@ export function NudgeSection() {
     >
       {/* Latest Nudge Status Preview */}
       {latestNudge && latestNudge.content && (
-        <div className="flex w-full items-center gap-2 rounded-xl bg-muted/40 px-3 py-2 text-xs">
-          <span className="text-base">{latestNudge.content.emoji}</span>
+        <div className="flex w-full items-center gap-2 rounded-xl bg-muted/40 px-3 py-2 text-[11px]">
+          <span className="text-sm">{latestNudge.content.emoji}</span>
           <div className="flex-1 truncate">
             <span className="font-medium text-foreground">
               {isSentByMe ? "You sent: " : `${partnerName} sent: `}
@@ -84,9 +84,9 @@ export function NudgeSection() {
               size="sm"
               disabled={!partnerMember}
               onClick={() => handleSendNudge(nudge)}
-              className="h-9 justify-start gap-2 px-2.5 text-xs font-normal transition active:scale-95"
+              className="h-9 justify-start gap-2 px-2.5 text-[11px] font-normal transition active:scale-95"
             >
-              <span className="shrink-0 text-base">{nudge.emoji}</span>
+              <span className="shrink-0 text-sm">{nudge.emoji}</span>
               <span className="flex-1 truncate text-left">
                 {isJustSent ? "Sent! 💌" : nudge.label}
               </span>

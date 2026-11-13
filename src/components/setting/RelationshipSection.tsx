@@ -131,7 +131,7 @@ export function RelationshipSection() {
           </div>
 
           {relationship.invite_code ? (
-            <p className="font-mono text-base font-bold tracking-widest text-foreground">
+            <p className="font-mono text-sm font-bold tracking-widest text-foreground">
               {relationship.invite_code}
             </p>
           ) : (

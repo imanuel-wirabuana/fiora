@@ -1,8 +1,9 @@
-import { format, formatDistanceToNow, isToday } from "date-fns"
+import { useMemo } from "react"
+import { format, formatDistanceToNow, isToday, isYesterday } from "date-fns"
 import {
   Heart,
   HelpCircle,
-  MessageCircle,
+  Send,
   Sparkles,
 } from "lucide-react"
 import { CustomItem } from "@/components/CustomItem"
@@ -56,7 +57,7 @@ export function TimelineFeedSection({
     const date = new Date(dateStr)
     const exactTime = format(date, "h:mm a")
     if (isToday(date)) {
-      return `${exactTime} (${formatDistanceToNow(date, { addSuffix: true })})`
+      return `${exactTime} · ${formatDistanceToNow(date, { addSuffix: true })}`
     }
     return `${format(date, "MMM d")} · ${exactTime}`
   }
@@ -72,29 +73,20 @@ export function TimelineFeedSection({
         <CustomItem
           key={key}
           variant="default"
-          className="gap-1.5 rounded-xl p-2.5 transition-colors"
-          icon={<span className="text-sm leading-none">{member.avatar}</span>}
-          title={`${member.name} · Mood`}
+          className="gap-1.5 rounded-2xl p-3 transition-colors"
+          icon={<Heart className="size-4 fill-rose-500 text-rose-500" />}
+          title={`${member.avatar} ${member.name} · Mood`}
           topRightActions={
             <span className="text-[10px] whitespace-nowrap text-muted-foreground">
               {formatItemTime(activity.created_at)}
             </span>
           }
-          contentClassName="space-y-1.5"
+          contentClassName="space-y-1.5 pl-6"
         >
-          <div className="flex flex-wrap items-center gap-1.5">
-            <Badge
-              variant="outline"
-              className="shrink-0 gap-1 border-rose-500/30 bg-rose-500/5 px-1.5 py-0 text-[10px] font-normal text-rose-600 dark:text-rose-400"
-            >
-              <Heart className="size-2.5 fill-rose-500 text-rose-500" />
-              Mood
-            </Badge>
-            <span className="inline-flex items-center gap-1 rounded-md bg-muted/60 px-1.5 py-0.5 text-xs font-medium text-foreground">
-              <span>{content.emoji}</span>
-              <span>{content.label}</span>
-            </span>
-          </div>
+          <span className="inline-flex items-center gap-1 rounded-md bg-muted/60 px-1.5 py-0.5 text-[11px] font-medium text-foreground">
+            <span>{content.emoji}</span>
+            <span>{content.label}</span>
+          </span>
 
           {content.note && (
             <div className="border-l-2 border-primary/40 pl-2 text-[11px] leading-relaxed break-words text-muted-foreground italic">
@@ -116,29 +108,20 @@ export function TimelineFeedSection({
         <CustomItem
           key={key}
           variant="soft"
-          className="gap-1.5 rounded-xl p-2.5 transition-colors"
-          icon={<span className="text-sm leading-none">{member.avatar}</span>}
-          title={`${member.name} → ${receiverName}`}
+          className="gap-1.5 rounded-2xl p-3 transition-colors"
+          icon={<Send className="size-4 text-amber-500" />}
+          title={`${member.avatar} ${member.name} → ${receiverAvatar} ${receiverName}`}
           topRightActions={
             <span className="text-[10px] whitespace-nowrap text-muted-foreground">
               {formatItemTime(activity.created_at)}
             </span>
           }
+          contentClassName="pl-6"
         >
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="shrink-0 text-xs">{receiverAvatar}</span>
-            <Badge
-              variant="outline"
-              className="shrink-0 gap-1 border-primary/25 bg-primary/15 px-1.5 py-0 text-[10px] font-normal text-primary"
-            >
-              <MessageCircle className="size-2.5 text-primary" />
-              Nudge
-            </Badge>
-            <span className="inline-flex items-center gap-1 rounded-md bg-background/70 px-1.5 py-0.5 text-xs font-medium text-foreground">
-              <span>{content.emoji}</span>
-              <span>{content.label}</span>
-            </span>
-          </div>
+          <span className="inline-flex items-center gap-1 rounded-md bg-background/70 px-1.5 py-0.5 text-[11px] font-medium text-foreground">
+            <span>{content.emoji}</span>
+            <span>{content.label}</span>
+          </span>
         </CustomItem>
       )
     }
@@ -162,20 +145,15 @@ export function TimelineFeedSection({
       <CustomItem
         key={key}
         variant="outline"
-        className="gap-1.5 rounded-xl p-2.5 transition-colors"
-        icon={
-          <div className="flex shrink-0 -space-x-1">
-            <span className="text-xs">{myAvatar}</span>
-            <span className="text-xs">{partnerAvatar}</span>
-          </div>
-        }
-        title="Daily Quiz"
+        className="gap-1.5 rounded-2xl p-3 transition-colors"
+        icon={<Sparkles className="size-4 text-violet-500" />}
+        title={`${myAvatar}${partnerAvatar} Daily Quiz`}
         topRightActions={
           <span className="text-[10px] whitespace-nowrap text-primary/75">
             {formatItemTime(createdAt)}
           </span>
         }
-        contentClassName="space-y-1.5"
+        contentClassName="space-y-1.5 pl-6"
       >
         <div className="flex flex-wrap items-center gap-1.5">
           {tag && (
@@ -198,7 +176,7 @@ export function TimelineFeedSection({
         </div>
 
         {/* Question */}
-        <p className="text-xs leading-snug font-medium break-words text-foreground">
+        <p className="text-[11px] leading-snug font-medium break-words text-foreground">
           {qContent.question}
         </p>
 
@@ -236,6 +214,29 @@ export function TimelineFeedSection({
     )
   }
 
+  const groupedSections = useMemo(() => {
+    const todayItems: TimelineItem[] = []
+    const yesterdayItems: TimelineItem[] = []
+    const earlierItems: TimelineItem[] = []
+
+    for (const item of items) {
+      const date = new Date(item.created_at)
+      if (isToday(date)) {
+        todayItems.push(item)
+      } else if (isYesterday(date)) {
+        yesterdayItems.push(item)
+      } else {
+        earlierItems.push(item)
+      }
+    }
+
+    return [
+      { label: "Today", items: todayItems },
+      { label: "Yesterday", items: yesterdayItems },
+      { label: "Earlier", items: earlierItems },
+    ].filter((group) => group.items.length > 0)
+  }, [items])
+
   if (isLoading) {
     return (
       <div className="flex justify-center py-12">
@@ -248,7 +249,7 @@ export function TimelineFeedSection({
     return (
       <div className="flex flex-col items-center justify-center gap-2 py-12 text-center text-muted-foreground">
         <Sparkles className="size-8 opacity-40" />
-        <p className="text-xs">
+        <p className="text-[11px]">
           {selectedDate
             ? isToday(selectedDate)
               ? "No activities recorded today yet."
@@ -260,14 +261,29 @@ export function TimelineFeedSection({
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      {items.map((item) => {
-        if (item.type === "quiz") {
-          return renderQuizItem(item.quizEntry, item.created_at, item.id)
-        }
+    <div className="flex flex-col gap-4">
+      {groupedSections.map((group) => (
+        <div key={group.label} className="flex flex-col gap-2">
+          <div className="flex items-center justify-between px-1">
+            <span className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+              {group.label}
+            </span>
+            <span className="text-[10px] text-muted-foreground">
+              {group.items.length}
+            </span>
+          </div>
 
-        return renderActivityItem(item.activity, item.id)
-      })}
+          <div className="flex flex-col gap-2">
+            {group.items.map((item) => {
+              if (item.type === "quiz") {
+                return renderQuizItem(item.quizEntry, item.created_at, item.id)
+              }
+
+              return renderActivityItem(item.activity, item.id)
+            })}
+          </div>
+        </div>
+      ))}
     </div>
   )
 }

@@ -34,17 +34,26 @@ export function sortMoodsByScore(moods: MoodOption[]): MoodOption[] {
 }
 
 /**
- * Sort moods good-to-bad and assign evenly spaced unique scores: (N - i) / N.
+ * Assign evenly spaced unique good-to-bad scores in the given array order: (N - i) / N.
  * E.g. 5 moods -> [1.0, 0.8, 0.6, 0.4, 0.2]; 10 moods -> [1.0, 0.9, ..., 0.1].
  */
-export function distributeMoodScores(moods: MoodOption[]): MoodOption[] {
+export function assignMoodScoresByOrder(
+  moods: Array<Omit<MoodOption, "score"> & { score?: number }>
+): MoodOption[] {
   const total = moods.length
   if (total === 0) return []
 
-  return sortMoodsByScore(moods).map((mood, index) => ({
+  return moods.map((mood, index) => ({
     ...mood,
     score: Math.round(((total - index) / total) * 100) / 100,
   }))
+}
+
+/**
+ * Sort moods good-to-bad and assign evenly spaced unique scores: (N - i) / N.
+ */
+export function distributeMoodScores(moods: MoodOption[]): MoodOption[] {
+  return assignMoodScoresByOrder(sortMoodsByScore(moods))
 }
 
 export type MoodCategory =

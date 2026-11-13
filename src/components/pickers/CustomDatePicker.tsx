@@ -23,6 +23,7 @@ export interface CustomDatePickerProps {
   description?: string
   confirmLabel?: string
   successLabel?: string
+  showTodayButton?: boolean
   disabled?: boolean
   className?: string
   trigger?: React.ReactElement
@@ -102,6 +103,7 @@ export function CustomDatePicker({
   description,
   confirmLabel = "Done",
   successLabel = "Saved!",
+  showTodayButton = false,
   disabled = false,
   className,
   trigger,
@@ -294,6 +296,26 @@ export function CustomDatePicker({
       onConfirm={handleConfirm}
       confirmLabel={confirmLabel}
       successLabel={successLabel}
+      secondaryAction={
+        showTodayButton
+          ? {
+              label: "Today",
+              onClick: () => {
+                const now = new Date()
+                setDraftDate(
+                  clampDate(
+                    now.getFullYear(),
+                    now.getMonth(),
+                    now.getDate(),
+                    minDate,
+                    maxDate,
+                    variant
+                  )
+                )
+              },
+            }
+          : undefined
+      }
     >
       <div className="flex w-full items-center gap-1">
         {variant === "default" && (

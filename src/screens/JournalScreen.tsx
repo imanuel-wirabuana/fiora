@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useLocation } from "wouter"
 import {
   JournalFilterSection,
   JournalFormSection,
@@ -9,6 +10,7 @@ import { useActivities } from "@/hooks/useActivities"
 import type { JournalActivityContent } from "@/types/activity"
 
 export function JournalScreen() {
+  const [, setLocation] = useLocation()
   const {
     visibleJournals,
     createJournal,
@@ -22,8 +24,6 @@ export function JournalScreen() {
   const [search, setSearch] = useState("")
   const [isCreating, setIsCreating] = useState(false)
   const [title, setTitle] = useState("")
-  const [body, setBody] = useState("")
-  const [isSharedNew, setIsSharedNew] = useState(false) // Default is private
 
   const isSaving = createActivityMutation.isPending
 
@@ -44,35 +44,29 @@ export function JournalScreen() {
     )
   })
 
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!title.trim() || !body.trim()) return
-
+  const handleSave = async () => {
     const newTitle = title.trim()
-    const newBody = body.trim()
-    const newIsShared = isSharedNew
+    if (!newTitle) return false
 
-    // Close form and reset fields immediately so optimistic entry shows up seamlessly
-    setTitle("")
-    setBody("")
-    setIsSharedNew(false)
-    setIsCreating(false)
-
-    createJournal({
-      title: newTitle,
-      body: newBody,
-      isShared: newIsShared,
-    }).catch(() => {
-      // Rollback is automatically handled by TanStack Query onMutate/onError
-    })
+    try {
+      const saved = await createJournal({
+        title: newTitle,
+        body: "",
+        isShared: false,
+      })
+      setTitle("")
+      setIsCreating(false)
+      setLocation(`/journal/${saved.id}`)
+      return true
+    } catch {
+      return false
+    }
   }
 
   const handleDelete = (id: number) => {
-    if (confirm("Are you sure you want to delete this journal entry?")) {
-      deleteActivity(id).catch(() => {
-        // Rollback handled by query mutation
-      })
-    }
+    deleteActivity(id).catch(() => {
+      // Rollback handled by query mutation
+    })
   }
 
   const handleTogglePrivacy = (id: number, content: JournalActivityContent) => {
@@ -92,13 +86,12 @@ export function JournalScreen() {
 
       <JournalFormSection
         isOpen={isCreating}
-        onClose={() => setIsCreating(false)}
+        onClose={() => {
+          setTitle("")
+          setIsCreating(false)
+        }}
         title={title}
         setTitle={setTitle}
-        body={body}
-        setBody={setBody}
-        isShared={isSharedNew}
-        setIsShared={setIsSharedNew}
         onSave={handleSave}
         isSaving={isSaving}
       />

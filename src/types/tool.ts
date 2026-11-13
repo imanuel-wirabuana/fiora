@@ -20,8 +20,9 @@ export interface ToolItem {
   id: string
   title: string
   description: string
-  href: string
+  href?: string
   icon: LucideIcon
+  comingSoon?: boolean
   size?: ToolBoxSize
   variant?: CustomItemVariant
   contentVerticalAlign?: CustomItemVerticalAlign

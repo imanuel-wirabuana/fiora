@@ -14,7 +14,7 @@ export function TimelineScreen() {
   const { answeredQuizzes, isLoading: isQuizLoading } = useQuiz()
 
   const [typeFilter, setTypeFilter] = useState<FilterType>("all")
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(() => new Date())
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
 
   // Merge timelineActivities (moods + nudges) and answeredQuizzes into unified TimelineItem[]
@@ -38,11 +38,6 @@ export function TimelineScreen() {
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     )
   }, [timelineActivities, answeredQuizzes])
-
-  // Identify dates that have activities/quizzes for calendar dots/styling
-  const activeDays = useMemo(() => {
-    return allTimelineItems.map((item) => new Date(item.created_at))
-  }, [allTimelineItems])
 
   const filteredItems = useMemo(() => {
     return allTimelineItems.filter((item) => {
@@ -69,7 +64,6 @@ export function TimelineScreen() {
         setSelectedDate={setSelectedDate}
         isCalendarOpen={isCalendarOpen}
         setIsCalendarOpen={setIsCalendarOpen}
-        activeDays={activeDays}
       />
       <TimelineFeedSection
         items={filteredItems}

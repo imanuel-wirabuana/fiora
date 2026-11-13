@@ -12,6 +12,7 @@ import { useRelationship } from "./hooks/useRelationship"
 import { useDynamicFavicon } from "./hooks/useDynamicFavicon"
 import {
   HomeScreen,
+  JournalDetailScreen,
   JournalScreen,
   SpaceScreen,
   LocationSharingScreen,
@@ -218,6 +219,16 @@ function AppRoutes() {
           <Redirect to="/setup" />
         ) : (
           <LocationSharingScreen />
+        )}
+      </Route>
+
+      <Route path="/journal/:id">
+        {!isAuthenticated ? (
+          <Redirect to="/" />
+        ) : !hasRelationship ? (
+          <Redirect to="/setup" />
+        ) : (
+          <JournalDetailScreen />
         )}
       </Route>
 

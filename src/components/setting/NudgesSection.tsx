@@ -1,6 +1,7 @@
 import { Plus, RotateCcw, Send, X } from "lucide-react"
 import { useState } from "react"
 import { CustomItem } from "@/components/CustomItem"
+import { FormDrawer } from "@/components/FormDrawer"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useRelationship } from "@/hooks/useRelationship"
@@ -20,6 +21,11 @@ export function NudgesSection() {
   const [isAdding, setIsAdding] = useState(false)
   const [newEmoji, setNewEmoji] = useState("")
   const [newLabel, setNewLabel] = useState("")
+  const [confirmAction, setConfirmAction] = useState<
+    | { type: "remove"; index: number; nudge: NudgeOption }
+    | { type: "reset" }
+    | null
+  >(null)
 
   if (!hasRelationship || !relationship) {
     return null
@@ -34,10 +40,22 @@ export function NudgesSection() {
     })
   }
 
-  const handleRemoveNudge = (index: number) => {
-    if (nudgeOptions.length <= 1) return
-    const updated = nudgeOptions.filter((_, i) => i !== index)
-    handleSaveNudges(updated)
+  const handleConfirmAction = async () => {
+    if (!confirmAction) return false
+    const updatedNudges =
+      confirmAction.type === "remove"
+        ? nudgeOptions.filter((_, i) => i !== confirmAction.index)
+        : DEFAULT_NUDGE_OPTIONS
+
+    try {
+      await updateRelationshipContentMutation.mutateAsync({
+        relationshipId: relationship.id,
+        content: { nudges: updatedNudges },
+      })
+      return true
+    } catch {
+      return false
+    }
   }
 
   const handleAddNudge = (e: React.FormEvent) => {
@@ -75,7 +93,7 @@ export function NudgesSection() {
             type="button"
             variant="ghost"
             size="icon-xs"
-            onClick={handleResetDefaults}
+            onClick={() => setConfirmAction({ type: "reset" })}
             title="Reset to default nudges"
             className="h-6 w-6 text-muted-foreground hover:text-foreground"
           >
@@ -106,13 +124,15 @@ export function NudgesSection() {
             className="flex items-center justify-between rounded-lg border border-border/70 bg-muted/30 px-2.5 py-1.5 text-xs font-medium text-foreground"
           >
             <div className="flex items-center gap-1.5 truncate">
-              <span className="shrink-0 text-sm">{nudge.emoji}</span>
+              <span className="shrink-0 text-xs">{nudge.emoji}</span>
               <span className="truncate">{nudge.label}</span>
             </div>
             {nudgeOptions.length > 1 && (
               <button
                 type="button"
-                onClick={() => handleRemoveNudge(idx)}
+                onClick={() =>
+                  setConfirmAction({ type: "remove", index: idx, nudge })
+                }
                 className="shrink-0 rounded p-0.5 text-muted-foreground transition hover:bg-destructive/20 hover:text-destructive"
                 title="Remove nudge"
               >
@@ -134,7 +154,7 @@ export function NudgesSection() {
             placeholder="Emoji"
             value={newEmoji}
             onChange={(e) => setNewEmoji(e.target.value)}
-            className="h-7 w-14 px-1.5 text-center text-sm"
+            className="h-7 w-14 px-1.5 text-center text-xs"
             maxLength={4}
             autoFocus
           />
@@ -165,6 +185,27 @@ export function NudgesSection() {
           </Button>
         </form>
       )}
+
+      <FormDrawer
+        open={confirmAction !== null}
+        onOpenChange={(open) => {
+          if (!open) setConfirmAction(null)
+        }}
+        title={
+          confirmAction?.type === "remove"
+            ? "Remove nudge?"
+            : "Reset nudges to default?"
+        }
+        description={
+          confirmAction?.type === "remove"
+            ? `Remove "${confirmAction.nudge.emoji} ${confirmAction.nudge.label}" from quick nudges?`
+            : "This will replace your custom nudges with the default options."
+        }
+        submitLabel={confirmAction?.type === "remove" ? "Remove" : "Reset"}
+        successLabel={confirmAction?.type === "remove" ? "Removed!" : "Reset!"}
+        isPending={updateRelationshipContentMutation.isPending}
+        onSubmit={handleConfirmAction}
+      />
     </CustomItem>
   )
 }

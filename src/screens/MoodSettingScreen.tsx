@@ -1,5 +1,22 @@
 import { useMemo, useState } from "react"
 import {
+  closestCenter,
+  DndContext,
+  type DragEndEvent,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core"
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
+import {
   Pencil,
   Plus,
   Smile,
@@ -16,8 +33,14 @@ import { Spinner } from "@/components/ui/spinner"
 import { Textarea } from "@/components/ui/textarea"
 import { useRelationship } from "@/hooks/useRelationship"
 import { useSaveMoods } from "@/hooks/useSaveMoods"
-import { getMoodCategory, MAX_MOODS, MIN_MOODS } from "@/lib/relationship"
+import {
+  assignMoodScoresByOrder,
+  getMoodCategory,
+  MAX_MOODS,
+  MIN_MOODS,
+} from "@/lib/relationship"
 import { cn } from "@/lib/utils"
+import type { MoodOption } from "@/types/relationship"
 
 interface MoodItem {
   key: string
@@ -73,13 +96,130 @@ function getScoreBadgeStyles(score: number, index: number, total: number) {
   }
 }
 
+interface SortableMoodRowProps {
+  mood: MoodItem
+  index: number
+  total: number
+  isSaving: boolean
+  canRemove: boolean
+  onEdit: () => void
+  onDelete: () => void
+}
+
+function SortableMoodRow({
+  mood,
+  index,
+  total,
+  isSaving,
+  canRemove,
+  onEdit,
+  onDelete,
+}: SortableMoodRowProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: mood.key, disabled: isSaving })
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  }
+
+  const badge = getScoreBadgeStyles(mood.score, index, total)
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className={cn(
+        "group flex touch-manipulation select-none items-center justify-between gap-3 rounded-2xl border border-border/70 bg-card px-3.5 py-2.5 transition-colors hover:border-border",
+        isDragging && "relative z-10 scale-[1.01] shadow-md ring-2 ring-primary/30"
+      )}
+    >
+      <button
+        type="button"
+        onClick={onEdit}
+        disabled={isSaving}
+        className="flex min-w-0 flex-1 items-center gap-3 text-left disabled:opacity-75"
+      >
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-muted/50 text-xl select-none">
+          {mood.emoji}
+        </span>
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <span className="truncate text-xs font-medium text-foreground">
+            {mood.label}
+          </span>
+          <div className="flex items-center gap-1.5">
+            <span
+              className={cn(
+                "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-mono text-[10px] font-medium",
+                badge.className
+              )}
+            >
+              <Sparkles className="size-2.5 opacity-70" />
+              {badge.text}
+              <span className="text-[9px] opacity-75">({badge.label})</span>
+            </span>
+          </div>
+        </div>
+      </button>
+
+      <div
+        className="flex shrink-0 items-center gap-1"
+        onPointerDown={(e) => e.stopPropagation()}
+      >
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          onClick={onEdit}
+          disabled={isSaving}
+          title="Edit mood"
+          className="size-8 text-muted-foreground hover:text-foreground"
+        >
+          <Pencil className="size-3.5" />
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          onClick={onDelete}
+          disabled={!canRemove || isSaving}
+          title={
+            canRemove ? "Remove mood" : `At least ${MIN_MOODS} mood is required`
+          }
+          className="size-8 text-muted-foreground hover:bg-destructive/15 hover:text-destructive disabled:opacity-30"
+        >
+          <Trash2 className="size-3.5" />
+        </Button>
+      </div>
+    </div>
+  )
+}
+
 /**
  * Standalone screen for managing relationship moods (1-10 items),
  * automatically scored (0.1-1.0) and sorted good-to-bad via AI.
  */
 export function MoodSettingScreen() {
-  const { relationship, moodOptions, hasRelationship } = useRelationship()
+  const {
+    relationship,
+    moodOptions,
+    hasRelationship,
+    updateRelationshipContentMutation,
+  } = useRelationship()
   const saveMoodsMutation = useSaveMoods()
+
+  // Optimistic local order while a drag-and-drop save is in flight
+  const [pendingReorderedMoods, setPendingReorderedMoods] = useState<
+    MoodOption[] | null
+  >(null)
 
   // Drawer state for adding or editing a mood
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -92,18 +232,36 @@ export function MoodSettingScreen() {
   const [aiMode, setAiMode] = useState<"rearrange" | "prompt">("rearrange")
   const [aiPrompt, setAiPrompt] = useState("")
 
+  // Delete confirmation drawer state
+  const [deleteIndex, setDeleteIndex] = useState<number | null>(null)
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        delay: 250,
+        tolerance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
+
+  const activeMoodOptions = pendingReorderedMoods ?? moodOptions
+
   const moodsList = useMemo<MoodItem[]>(
     () =>
-      moodOptions.map((m, idx) => ({
+      activeMoodOptions.map((m, idx) => ({
         key: `${m.label}-${idx}`,
         emoji: m.emoji,
         label: m.label,
         score: m.score,
       })),
-    [moodOptions]
+    [activeMoodOptions]
   )
 
-  const isSaving = saveMoodsMutation.isPending
+  const isSaving =
+    saveMoodsMutation.isPending || updateRelationshipContentMutation.isPending
   const canAddMore = moodsList.length < MAX_MOODS
   const canRemove = moodsList.length > MIN_MOODS
 
@@ -114,13 +272,6 @@ export function MoodSettingScreen() {
 
   if (!hasRelationship || !relationship) {
     return null
-  }
-
-  const triggerAutoScoreAndSave = (updated: Array<{ emoji: string; label: string; score?: number }>) => {
-    saveMoodsMutation.mutate({
-      relationshipId: relationship.id,
-      moods: updated,
-    })
   }
 
   const openAddDrawer = () => {
@@ -178,16 +329,25 @@ export function MoodSettingScreen() {
     }
   }
 
-  const handleRemoveMood = (index: number) => {
-    if (!canRemove || isSaving) return
+  const handleConfirmRemoveMood = async () => {
+    if (deleteIndex === null || !canRemove || isSaving) return false
     const nextMoods = moodsList
-      .filter((_, idx) => idx !== index)
+      .filter((_, idx) => idx !== deleteIndex)
       .map((item) => ({
         emoji: item.emoji,
         label: item.label,
         score: item.score,
       }))
-    triggerAutoScoreAndSave(nextMoods)
+
+    try {
+      await saveMoodsMutation.mutateAsync({
+        relationshipId: relationship.id,
+        moods: nextMoods,
+      })
+      return true
+    } catch {
+      return false
+    }
   }
 
   const openAiDrawer = () => {
@@ -217,6 +377,34 @@ export function MoodSettingScreen() {
     } catch {
       return false
     }
+  }
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+    if (!over || active.id === over.id || isSaving) return
+
+    const oldIndex = moodsList.findIndex((m) => m.key === active.id)
+    const newIndex = moodsList.findIndex((m) => m.key === over.id)
+    if (oldIndex === -1 || newIndex === -1) return
+
+    const reordered = arrayMove(moodsList, oldIndex, newIndex).map((item) => ({
+      emoji: item.emoji,
+      label: item.label,
+    }))
+    const reorderedWithScores = assignMoodScoresByOrder(reordered)
+
+    setPendingReorderedMoods(reorderedWithScores)
+    updateRelationshipContentMutation.mutate(
+      {
+        relationshipId: relationship.id,
+        content: { moods: reorderedWithScores },
+      },
+      {
+        onSettled: () => {
+          setPendingReorderedMoods(null)
+        },
+      }
+    )
   }
 
   return (
@@ -276,75 +464,35 @@ export function MoodSettingScreen() {
         </div>
       )}
 
-      {/* Mood List - Sorted Good (top) to Bad (bottom) */}
-      <div className="flex flex-col gap-2">
-        {moodsList.map((mood, idx) => {
-          const badge = getScoreBadgeStyles(mood.score, idx, moodsList.length)
-          return (
-            <div
-              key={mood.key}
-              className="group flex items-center justify-between gap-3 rounded-2xl border border-border/70 bg-card px-3.5 py-2.5 transition-colors hover:border-border"
-            >
-              <button
-                type="button"
-                onClick={() => openEditDrawer(idx)}
-                disabled={isSaving}
-                className="flex min-w-0 flex-1 items-center gap-3 text-left disabled:opacity-75"
-              >
-                <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-muted/50 text-xl select-none">
-                  {mood.emoji}
-                </span>
-                <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                  <span className="truncate text-sm font-medium text-foreground">
-                    {mood.label}
-                  </span>
-                  <div className="flex items-center gap-1.5">
-                    <span
-                      className={cn(
-                        "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-mono text-[10px] font-medium",
-                        badge.className
-                      )}
-                    >
-                      <Sparkles className="size-2.5 opacity-70" />
-                      {badge.text}
-                      <span className="text-[9px] opacity-75">({badge.label})</span>
-                    </span>
-                  </div>
-                </div>
-              </button>
-
-              <div className="flex shrink-0 items-center gap-1">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  onClick={() => openEditDrawer(idx)}
-                  disabled={isSaving}
-                  title="Edit mood"
-                  className="size-8 text-muted-foreground hover:text-foreground"
-                >
-                  <Pencil className="size-3.5" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  onClick={() => handleRemoveMood(idx)}
-                  disabled={!canRemove || isSaving}
-                  title={
-                    canRemove
-                      ? "Remove mood"
-                      : `At least ${MIN_MOODS} mood is required`
-                  }
-                  className="size-8 text-muted-foreground hover:bg-destructive/15 hover:text-destructive disabled:opacity-30"
-                >
-                  <Trash2 className="size-3.5" />
-                </Button>
-              </div>
-            </div>
-          )
-        })}
-      </div>
+      {/* Mood List - Sorted Good (top) to Bad (bottom), long-press to reorder */}
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={moodsList.map((m) => m.key)}
+          strategy={verticalListSortingStrategy}
+        >
+          <div className="flex flex-col gap-2">
+            {moodsList.map((mood, idx) => (
+              <SortableMoodRow
+                key={mood.key}
+                mood={mood}
+                index={idx}
+                total={moodsList.length}
+                isSaving={isSaving}
+                canRemove={canRemove}
+                onEdit={() => openEditDrawer(idx)}
+                onDelete={() => {
+                  saveMoodsMutation.reset()
+                  setDeleteIndex(idx)
+                }}
+              />
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
 
       {/* Add / Edit Mood FormDrawer */}
       <FormDrawer
@@ -391,7 +539,7 @@ export function MoodSettingScreen() {
               value={formLabel}
               onChange={(e) => setFormLabel(e.target.value)}
               maxLength={20}
-              className="h-11 rounded-2xl text-sm"
+              className="h-11 rounded-2xl text-xs"
             />
           </Field>
         </div>
@@ -473,6 +621,24 @@ export function MoodSettingScreen() {
           </Field>
         )}
       </FormDrawer>
+
+      {/* Delete Mood Confirmation FormDrawer */}
+      <FormDrawer
+        open={deleteIndex !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeleteIndex(null)
+        }}
+        title="Remove mood?"
+        description={
+          deleteIndex !== null && moodsList[deleteIndex]
+            ? `Remove "${moodsList[deleteIndex].emoji} ${moodsList[deleteIndex].label}" from your mood list?`
+            : undefined
+        }
+        submitLabel="Remove"
+        successLabel="Removed!"
+        isPending={isSaving}
+        onSubmit={handleConfirmRemoveMood}
+      />
     </div>
   )
 }

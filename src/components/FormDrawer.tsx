@@ -24,7 +24,7 @@ export interface FormDrawerProps {
   successLabel?: string
   isPending?: boolean
   submitDisabled?: boolean
-  children: React.ReactNode
+  children?: React.ReactNode
 }
 
 export function FormDrawer({
@@ -103,7 +103,11 @@ export function FormDrawer({
             ) : null}
           </DrawerHeader>
 
-          <div className="flex flex-col gap-3 px-1 py-3">{children}</div>
+          {children ? (
+            <div className="flex flex-col gap-3 px-1 py-3">{children}</div>
+          ) : (
+            <div className="py-1" />
+          )}
 
           <div className="p-1 pt-1 pb-0.5">
             <button

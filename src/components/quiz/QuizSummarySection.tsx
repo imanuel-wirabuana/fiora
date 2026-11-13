@@ -39,7 +39,7 @@ export function QuizSummarySection() {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground gap-2">
         <Sparkles className="size-8 opacity-40" />
-        <p className="text-xs">No daily quizzes for today.</p>
+        <p className="text-[11px]">No daily quizzes for today.</p>
       </div>
     )
   }
@@ -95,7 +95,7 @@ export function QuizSummarySection() {
           ) : (
             <div className="flex items-center gap-2 text-primary-foreground/85">
               <Lock className="size-4 shrink-0 text-primary-foreground/75" />
-              <span className="text-xs leading-tight">
+              <span className="text-[11px] leading-tight">
                 Waiting for {partnerName} to finish ({partnerAnsweredCount}/
                 {totalCount} answered). Both answers will reveal once done!
               </span>
@@ -157,12 +157,12 @@ export function QuizSummarySection() {
                 </div>
               )}
 
-              <p className="text-xs leading-snug font-medium break-words text-foreground">
+              <p className="text-[11px] leading-snug font-medium break-words text-foreground">
                 {qContent.question}
               </p>
 
               {/* Answers Comparison */}
-              <div className="grid gap-1.5 rounded-lg border border-border/50 bg-muted/20 p-2 text-xs">
+              <div className="grid gap-1.5 rounded-lg border border-border/50 bg-muted/20 p-2 text-[11px]">
                 <div className="flex min-w-0 items-start gap-1.5">
                   <span className="shrink-0 font-medium text-primary">
                     {myAvatar} You:

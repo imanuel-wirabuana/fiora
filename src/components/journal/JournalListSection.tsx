@@ -1,8 +1,9 @@
+import { useState } from "react"
 import { formatDistanceToNow } from "date-fns"
 import { BookOpen, Globe, Lock, Trash2 } from "lucide-react"
+import { useLocation } from "wouter"
 import { CustomItem } from "@/components/CustomItem"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { FormDrawer } from "@/components/FormDrawer"
 import { Spinner } from "@/components/ui/spinner"
 import { useAuth } from "@/hooks/useAuth"
 import { useRelationship } from "@/hooks/useRelationship"
@@ -26,8 +27,13 @@ export function JournalListSection({
   onTogglePrivacy,
   onDelete,
 }: JournalListSectionProps) {
+  const [, navigate] = useLocation()
   const { currentMember, partnerMember } = useRelationship()
   const { user } = useAuth()
+  const [deleteTarget, setDeleteTarget] = useState<{
+    id: number
+    title: string
+  } | null>(null)
 
   const getAuthorName = (authorId: string) => {
     if (authorId === user?.id) {
@@ -68,7 +74,7 @@ export function JournalListSection({
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="columns-3 gap-2 space-y-2">
       {journals.map((journal) => {
         const content = journal.content as JournalActivityContent | null
         const author = getAuthorName(journal.user_id)
@@ -85,33 +91,37 @@ export function JournalListSection({
           <CustomItem
             key={journal.id}
             variant={itemVariant}
-            className="gap-2"
-            icon={<span className="text-sm leading-none">{author.avatar}</span>}
+            onClick={() => navigate(`/journal/${journal.id}`)}
+            className="max-h-64 cursor-pointer break-inside-avoid gap-1.5 overflow-hidden p-2.5 transition-colors hover:bg-muted/30"
+            icon={<span className="text-xs leading-none">{author.avatar}</span>}
             title={content.title}
             topRightActions={
-              isShared ? (
-                <Badge
-                  variant="outline"
-                  className="gap-1 border-emerald-500/20 bg-emerald-500/10 px-1.5 py-0 text-[10px] font-normal text-emerald-600 dark:text-emerald-400"
+              author.isMe ? (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onTogglePrivacy(journal.id, content)
+                  }}
+                  title={isShared ? "Make private" : "Share with partner"}
+                  className="rounded p-0.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
                 >
-                  <Globe className="size-2.5" />
-                  Shared
-                </Badge>
+                  {isShared ? (
+                    <Globe className="size-3 text-emerald-500" />
+                  ) : (
+                    <Lock className="size-3 text-amber-500" />
+                  )}
+                </button>
+              ) : isShared ? (
+                <Globe className="size-3 shrink-0 text-emerald-500" />
               ) : (
-                <Badge
-                  variant="outline"
-                  className="gap-1 border-amber-500/20 bg-amber-500/10 px-1.5 py-0 text-[10px] font-normal text-amber-600 dark:text-amber-400"
-                >
-                  <Lock className="size-2.5" />
-                  Private
-                </Badge>
+                <Lock className="size-3 shrink-0 text-amber-500" />
               )
             }
-            description={content.body}
-            descriptionClassName="whitespace-pre-wrap leading-relaxed"
+            description={content.body || undefined}
+            descriptionClassName="line-clamp-8 whitespace-pre-wrap leading-snug"
             bottomLeftInfo={
-              <span className="truncate text-[11px] text-muted-foreground">
-                <span className="font-medium">{author.name}</span> ·{" "}
+              <span className="truncate text-[10px] text-muted-foreground">
                 {formatDistanceToNow(new Date(journal.created_at), {
                   addSuffix: true,
                 })}
@@ -119,32 +129,42 @@ export function JournalListSection({
             }
             bottomRightActions={
               author.isMe ? (
-                <>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => onTogglePrivacy(journal.id, content)}
-                    className="h-6 px-1.5 text-[10px] text-muted-foreground hover:text-foreground"
-                    title={isShared ? "Make private" : "Share with partner"}
-                  >
-                    {isShared ? "Make Private" : "Share"}
-                  </Button>
-
-                  <button
-                    type="button"
-                    onClick={() => onDelete(journal.id)}
-                    className="rounded p-1 text-muted-foreground transition hover:bg-destructive/20 hover:text-destructive"
-                    title="Delete journal"
-                  >
-                    <Trash2 className="size-3" />
-                  </button>
-                </>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setDeleteTarget({ id: journal.id, title: content.title })
+                  }}
+                  className="rounded p-0.5 text-muted-foreground transition hover:bg-destructive/20 hover:text-destructive"
+                  title="Delete journal"
+                >
+                  <Trash2 className="size-3" />
+                </button>
               ) : null
             }
           />
         )
       })}
+
+      <FormDrawer
+        open={deleteTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null)
+        }}
+        title="Delete journal entry?"
+        description={
+          deleteTarget
+            ? `Permanently delete "${deleteTarget.title}"?`
+            : undefined
+        }
+        submitLabel="Delete"
+        successLabel="Deleted!"
+        onSubmit={() => {
+          if (!deleteTarget) return false
+          onDelete(deleteTarget.id)
+          return true
+        }}
+      />
     </div>
   )
 }

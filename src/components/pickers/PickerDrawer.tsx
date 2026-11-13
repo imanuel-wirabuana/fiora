@@ -19,6 +19,10 @@ interface PickerDrawerProps {
   onConfirm: () => void
   confirmLabel?: string
   successLabel?: string
+  secondaryAction?: {
+    label: string
+    onClick: () => void
+  }
   children: React.ReactNode
 }
 
@@ -31,6 +35,7 @@ export function PickerDrawer({
   onConfirm,
   confirmLabel = "Done",
   successLabel = "Saved!",
+  secondaryAction,
   children,
 }: PickerDrawerProps) {
   const [isSuccess, setIsSuccess] = React.useState(false)
@@ -85,13 +90,23 @@ export function PickerDrawer({
 
         <div className="px-1 py-2">{children}</div>
 
-        <div className="p-1 pt-1 pb-0.5">
+        <div className="flex items-center gap-2 p-1 pt-1 pb-0.5">
+          {secondaryAction && (
+            <button
+              type="button"
+              disabled={isSuccess}
+              onClick={secondaryAction.onClick}
+              className="flex h-11 shrink-0 items-center justify-center rounded-2xl border border-border bg-background px-4 text-sm font-medium text-foreground shadow-xs transition hover:bg-muted/50 active:scale-[0.99] disabled:opacity-50"
+            >
+              {secondaryAction.label}
+            </button>
+          )}
           <button
             type="button"
             disabled={isSuccess}
             onClick={handleConfirmClick}
             className={cn(
-              "flex h-11 w-full items-center justify-center gap-2 rounded-2xl font-medium text-primary-foreground shadow-xs transition active:scale-[0.99]",
+              "flex h-11 flex-1 items-center justify-center gap-2 rounded-2xl font-medium text-primary-foreground shadow-xs transition active:scale-[0.99]",
               isSuccess
                 ? "bg-emerald-500"
                 : "bg-primary hover:bg-primary/90"
