@@ -18,79 +18,30 @@ export interface WheelPickerProps<T extends string | number = string> {
   value: T
   onChange: (value: T) => void
   loop?: boolean
-  dragFree?: boolean
-  itemHeight?: number
-  visibleCount?: number
-  renderOption?: (
-    option: WheelOption<T>,
-    state: { isSelected: boolean }
-  ) => React.ReactNode
   className?: string
   itemClassName?: string
   ariaLabel?: string
 }
 
-const DEFAULT_ITEM_HEIGHT = 44
-const DEFAULT_VISIBLE_COUNT = 5
-const WHEEL_STEP_THRESHOLD = 24
-
-function getClosestCenterIndex(api: NonNullable<CarouselApi>): number {
-  const rootRect = api.rootNode().getBoundingClientRect()
-  const centerY = rootRect.top + rootRect.height / 2
-  const slides = api.slideNodes()
-
-  let closestIdx = 0
-  let minDistance = Number.POSITIVE_INFINITY
-
-  for (let i = 0; i < slides.length; i++) {
-    const rect = slides[i].getBoundingClientRect()
-    const slideCenterY = rect.top + rect.height / 2
-    const distance = Math.abs(slideCenterY - centerY)
-    if (distance < minDistance) {
-      minDistance = distance
-      closestIdx = i
-    }
-  }
-
-  return closestIdx
-}
+const ITEM_HEIGHT = 44
 
 export function WheelPicker<T extends string | number = string>({
   options,
   value,
   onChange,
   loop = false,
-  dragFree = true,
-  itemHeight = DEFAULT_ITEM_HEIGHT,
-  visibleCount = DEFAULT_VISIBLE_COUNT,
-  renderOption,
   className,
   itemClassName,
   ariaLabel,
 }: WheelPickerProps<T>) {
   const [api, setApi] = React.useState<CarouselApi>()
-  const lastEmittedValueRef = React.useRef<T>(value)
+  const isInternalScrollRef = React.useRef(false)
   const hasInitializedRef = React.useRef(false)
-  const wheelDeltaRef = React.useRef(0)
 
   const selectedIndex = React.useMemo(() => {
     const idx = options.findIndex((opt) => opt.value === value)
     return idx >= 0 ? idx : 0
   }, [options, value])
-
-  const selectedIndexRef = React.useRef(selectedIndex)
-  React.useEffect(() => {
-    selectedIndexRef.current = selectedIndex
-  }, [selectedIndex])
-
-  const [liveIndex, setLiveIndex] = React.useState(selectedIndex)
-  const [prevSelectedIndex, setPrevSelectedIndex] =
-    React.useState(selectedIndex)
-
-  if (selectedIndex !== prevSelectedIndex) {
-    setPrevSelectedIndex(selectedIndex)
-    setLiveIndex(selectedIndex)
-  }
 
   const findNearestEnabledIndex = React.useCallback(
     (targetIndex: number) => {
@@ -110,152 +61,94 @@ export function WheelPicker<T extends string | number = string>({
     [options]
   )
 
-  // Sync Embla position only when value changes externally (never interrupt coasting)
+  // Sync Embla position when value or options change externally
   React.useEffect(() => {
     if (!api || options.length === 0) return
 
+    const currentSnap = api.selectedScrollSnap()
     if (!hasInitializedRef.current) {
       hasInitializedRef.current = true
-      lastEmittedValueRef.current = value
       api.scrollTo(selectedIndex, true)
       return
     }
 
-    if (value === lastEmittedValueRef.current) {
-      return
+    if (currentSnap !== selectedIndex && !isInternalScrollRef.current) {
+      api.scrollTo(selectedIndex, false)
     }
+    isInternalScrollRef.current = false
+  }, [api, selectedIndex, options.length])
 
-    lastEmittedValueRef.current = value
-    api.scrollTo(selectedIndex, false)
-  }, [api, selectedIndex, value, options.length])
-
-  // Re-initialize Embla only when options count changes (e.g. days in month)
+  // Re-initialize Embla when options count changes (e.g. days in month)
   React.useEffect(() => {
-    if (!api || !hasInitializedRef.current) return
+    if (!api) return
     api.reInit()
-    api.scrollTo(selectedIndexRef.current, true)
-  }, [api, options.length])
+    api.scrollTo(selectedIndex, true)
+  }, [api, options.length, selectedIndex])
 
-  // Track live center item during drag/coast & snap cleanly only on settle
+  // Listen to Embla select events
   React.useEffect(() => {
     if (!api) return
 
-    const handleScroll = () => {
-      const closestIndex = getClosestCenterIndex(api)
-      setLiveIndex((prev) => (prev === closestIndex ? prev : closestIndex))
+    const handleSelect = () => {
+      const snapIndex = api.selectedScrollSnap()
+      const validIndex = findNearestEnabledIndex(snapIndex)
 
-      const option = options[closestIndex]
-      if (
-        option &&
-        !option.disabled &&
-        option.value !== lastEmittedValueRef.current
-      ) {
-        lastEmittedValueRef.current = option.value
-        onChange(option.value)
-      }
-    }
-
-    const handleSettle = () => {
-      const closestIndex = getClosestCenterIndex(api)
-      const validIndex = findNearestEnabledIndex(closestIndex)
-
-      if (validIndex !== closestIndex) {
+      if (validIndex !== snapIndex) {
         api.scrollTo(validIndex, false)
         return
       }
 
-      setLiveIndex(validIndex)
       const option = options[validIndex]
-      if (
-        option &&
-        !option.disabled &&
-        option.value !== lastEmittedValueRef.current
-      ) {
-        lastEmittedValueRef.current = option.value
+      if (option && option.value !== value && !option.disabled) {
+        isInternalScrollRef.current = true
         onChange(option.value)
       }
     }
 
-    api.on("scroll", handleScroll)
-    api.on("settle", handleSettle)
+    api.on("select", handleSelect)
     return () => {
-      api.off("scroll", handleScroll)
-      api.off("settle", handleSettle)
+      api.off("select", handleSelect)
     }
-  }, [api, options, onChange, findNearestEnabledIndex])
+  }, [api, options, value, onChange, findNearestEnabledIndex])
 
   const handleItemClick = (index: number, option: WheelOption<T>) => {
     if (option.disabled) return
-    lastEmittedValueRef.current = option.value
-    setLiveIndex(index)
     api?.scrollTo(index)
     if (option.value !== value) {
+      isInternalScrollRef.current = true
       onChange(option.value)
     }
   }
 
-  const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-    if (!api) return
-    wheelDeltaRef.current += e.deltaY
-    if (Math.abs(wheelDeltaRef.current) < WHEEL_STEP_THRESHOLD) return
-
-    if (wheelDeltaRef.current > 0) {
-      api.scrollNext()
-    } else {
-      api.scrollPrev()
-    }
-    wheelDeltaRef.current = 0
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (!api) return
-    if (e.key === "ArrowUp") {
-      e.preventDefault()
-      api.scrollPrev()
-    } else if (e.key === "ArrowDown") {
-      e.preventDefault()
-      api.scrollNext()
-    }
-  }
-
-  const containerHeight = itemHeight * visibleCount
-  const fadeHeight = Math.max(itemHeight, (containerHeight - itemHeight) / 2)
-
   return (
     <div
-      tabIndex={0}
-      role="listbox"
+      className={cn(
+        "relative flex-1 overflow-hidden select-none touch-pan-y",
+        className
+      )}
+      style={{ height: ITEM_HEIGHT * 5 }}
       aria-label={ariaLabel}
-      onWheel={handleWheel}
-      onKeyDown={handleKeyDown}
       // Prevent parent Drawer's vertical swipe-to-dismiss from hijacking wheel drags
       onPointerDown={(e) => e.stopPropagation()}
       onTouchStart={(e) => e.stopPropagation()}
-      className={cn(
-        "relative flex-1 overflow-hidden outline-none select-none touch-pan-y",
-        className
-      )}
-      style={{ height: containerHeight }}
     >
       {/* Center selection highlight band */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-1 top-1/2 z-0 -translate-y-1/2 rounded-xl border border-primary/40 bg-primary/10"
-        style={{ height: itemHeight }}
+        style={{ height: ITEM_HEIGHT }}
       />
 
       {/* Top fade mask */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 z-20 bg-gradient-to-b from-popover via-popover/75 to-transparent"
-        style={{ height: fadeHeight }}
+        className="pointer-events-none absolute inset-x-0 top-0 z-20 h-16 bg-gradient-to-b from-popover via-popover/75 to-transparent"
       />
 
       {/* Bottom fade mask */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-popover via-popover/75 to-transparent"
-        style={{ height: fadeHeight }}
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-16 bg-gradient-to-t from-popover via-popover/75 to-transparent"
       />
 
       <Carousel
@@ -264,8 +157,7 @@ export function WheelPicker<T extends string | number = string>({
         opts={{
           align: "center",
           containScroll: false,
-          dragFree,
-          duration: 20,
+          dragFree: false,
           loop,
           startIndex: selectedIndex,
         }}
@@ -273,17 +165,15 @@ export function WheelPicker<T extends string | number = string>({
       >
         <CarouselContent className="mt-0 h-full">
           {options.map((option, index) => {
-            const isSelected = index === liveIndex
+            const isSelected = index === selectedIndex
             return (
               <CarouselItem
                 key={String(option.value)}
                 className="basis-auto pt-0"
-                style={{ height: itemHeight }}
+                style={{ height: ITEM_HEIGHT }}
               >
                 <button
                   type="button"
-                  role="option"
-                  aria-selected={isSelected}
                   disabled={option.disabled}
                   onClick={() => handleItemClick(index, option)}
                   className={cn(
@@ -295,11 +185,7 @@ export function WheelPicker<T extends string | number = string>({
                     itemClassName
                   )}
                 >
-                  {renderOption ? (
-                    renderOption(option, { isSelected })
-                  ) : (
-                    <span className="truncate">{option.label}</span>
-                  )}
+                  <span className="truncate">{option.label}</span>
                 </button>
               </CarouselItem>
             )
@@ -309,3 +195,4 @@ export function WheelPicker<T extends string | number = string>({
     </div>
   )
 }
+
