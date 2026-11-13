@@ -76,10 +76,6 @@ export function NudgesSection() {
     setIsAdding(false)
   }
 
-  const handleResetDefaults = () => {
-    handleSaveNudges(DEFAULT_NUDGE_OPTIONS)
-  }
-
   return (
     <CustomItem
       icon={<Send className="size-3.5 text-primary" />}
