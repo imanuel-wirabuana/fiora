@@ -26,7 +26,7 @@ export function ShareCodeStep({
   return (
     <div className="flex flex-col gap-4">
       <div className="space-y-1">
-        <h3 className="text-base font-semibold tracking-tight">Your Space is Ready!</h3>
+        <h3 className="text-base font-semibold tracking-tight">Your Relationship is Ready!</h3>
         <p className="text-xs text-muted-foreground">
           Share your 5-digit invite code with your partner to connect your spaces
         </p>

@@ -16,7 +16,8 @@ const customItemVariants = cva(
     variants: {
       variant: {
         default: "border-border text-foreground",
-        fill: "border-transparent bg-primary text-primary-foreground",
+        soft: "border-primary/20 bg-primary/10 text-foreground",
+        solid: "border-transparent bg-primary text-primary-foreground",
         outline: "border-2 border-primary/70 text-primary",
       },
     },
@@ -30,7 +31,8 @@ const customItemDescriptionVariants = cva("text-xs", {
   variants: {
     variant: {
       default: "text-muted-foreground",
-      fill: "text-primary-foreground/80",
+      soft: "text-muted-foreground",
+      solid: "text-primary-foreground/80",
       outline: "text-primary/80",
     },
   },
@@ -43,6 +45,22 @@ export type CustomItemVariant = NonNullable<
   VariantProps<typeof customItemVariants>["variant"]
 >
 
+export type CustomItemVerticalAlign = "start" | "center" | "end" | "between"
+export type CustomItemHorizontalAlign = "start" | "center" | "end"
+
+const verticalAlignClasses: Record<CustomItemVerticalAlign, string> = {
+  start: "justify-start",
+  center: "justify-center",
+  end: "justify-end",
+  between: "justify-between",
+}
+
+const horizontalAlignClasses: Record<CustomItemHorizontalAlign, string> = {
+  start: "items-start text-left",
+  center: "items-center text-center",
+  end: "items-end text-right",
+}
+
 export interface CustomItemProps extends Omit<
   React.ComponentProps<typeof Item>,
   "title" | "variant"
@@ -51,8 +69,12 @@ export interface CustomItemProps extends Omit<
   title: string
   /** Required icon or avatar rendered beside the title */
   icon: React.ReactNode
-  /** Visual style variant: default, fill (like PartnerPresence), or outline (like DailyQuiz) */
+  /** Visual style variant: default, soft, solid, or outline */
   variant?: CustomItemVariant
+  /** Optional vertical alignment for the body content (and description) */
+  contentVerticalAlign?: CustomItemVerticalAlign
+  /** Optional horizontal alignment for the body content (and description) */
+  contentHorizontalAlign?: CustomItemHorizontalAlign
   /** Optional subtitle / description rendered at the top of content */
   description?: React.ReactNode
   /** Actions, badges, or timestamps on the top-right of the header */
@@ -74,6 +96,8 @@ export function CustomItem({
   title,
   icon,
   variant = "default",
+  contentVerticalAlign = "start",
+  contentHorizontalAlign = "start",
   description,
   topRightActions,
   bottomLeftInfo,
@@ -91,7 +115,7 @@ export function CustomItem({
 
   return (
     <Item
-      variant={variant === "fill" ? "default" : "outline"}
+      variant={variant === "solid" || variant === "soft" ? "default" : "outline"}
       className={cn(customItemVariants({ variant }), className)}
       {...props}
     >
@@ -118,11 +142,23 @@ export function CustomItem({
       </ItemHeader>
 
       {hasContent && (
-        <ItemContent className={cn("w-full min-w-0", contentClassName)}>
+        <ItemContent
+          className={cn(
+            "w-full min-w-0",
+            verticalAlignClasses[contentVerticalAlign],
+            horizontalAlignClasses[contentHorizontalAlign],
+            contentClassName
+          )}
+        >
           {description && (
             <ItemDescription
               className={cn(
                 customItemDescriptionVariants({ variant }),
+                contentHorizontalAlign === "center"
+                  ? "text-center"
+                  : contentHorizontalAlign === "end"
+                    ? "text-right"
+                    : "text-left",
                 descriptionClassName
               )}
             >

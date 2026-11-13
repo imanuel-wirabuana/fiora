@@ -8,6 +8,8 @@ import { useRelationship } from "./useRelationship"
 const ROUTE_ACTIVITY_MAP: Record<string, string> = {
   "/home": "Viewing Home",
   "/timeline": "Viewing Timeline",
+  "/space/journal": "Reading Journal",
+  "/space": "Exploring Space",
   "/journal": "Reading Journal",
   "/setting": "In Settings",
   "/notification": "Checking Notifications",

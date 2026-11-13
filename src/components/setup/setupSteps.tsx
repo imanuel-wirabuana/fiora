@@ -121,7 +121,7 @@ export const SETUP_STEPS: SetupStepConfig[] = [
   {
     id: "connection",
     title: "Connection",
-    subtitle: "Join or create space",
+    subtitle: "Join or create relationship",
     validate: (state) => {
       if (state.connectionType === "join" && state.partnerCode.trim().length !== 5) {
         return "Please enter a valid 5-digit partner code."

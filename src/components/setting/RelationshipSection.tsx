@@ -39,15 +39,15 @@ export function RelationshipSection() {
 
   return (
     <CustomItem
-      variant="fill"
-      icon={<Heart className="size-3.5 text-primary-foreground" />}
+      variant="default"
+      icon={<Heart className="size-3.5 text-primary" />}
       title="Relationship"
       topRightActions={
         <span
           className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium ${
             hasPartner
-              ? "border-emerald-300/30 bg-emerald-400/25 text-white"
-              : "border-amber-300/30 bg-amber-400/25 text-white"
+              ? "border-emerald-500/25 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+              : "border-amber-500/25 bg-amber-500/10 text-amber-600 dark:text-amber-400"
           }`}
         >
           {hasPartner ? (
@@ -64,20 +64,20 @@ export function RelationshipSection() {
       contentClassName="space-y-2"
     >
       {/* Compact Members Status Row */}
-      <div className="grid grid-cols-2 gap-2 rounded-xl border border-primary-foreground/20 bg-primary-foreground/10 p-2.5 text-xs">
+      <div className="grid grid-cols-2 gap-2 rounded-xl border border-border bg-muted/40 p-2.5 text-xs">
         <div>
-          <span className="text-[10px] font-semibold tracking-wider text-primary-foreground/75 uppercase">
+          <span className="text-[10px] font-semibold tracking-wider text-muted-foreground uppercase">
             You
           </span>
-          <p className="truncate font-medium text-primary-foreground capitalize">
+          <p className="truncate font-medium text-foreground capitalize">
             {currentMember?.content?.name || "Member"}
           </p>
         </div>
         <div>
-          <span className="text-[10px] font-semibold tracking-wider text-primary-foreground/75 uppercase">
+          <span className="text-[10px] font-semibold tracking-wider text-muted-foreground uppercase">
             Partner
           </span>
-          <p className="truncate font-medium text-primary-foreground capitalize">
+          <p className="truncate font-medium text-foreground capitalize">
             {hasPartner
               ? partnerMember?.content?.name || "Connected"
               : "None"}
@@ -87,9 +87,9 @@ export function RelationshipSection() {
 
       {/* Invite Code: Only shown when no partner exists */}
       {!hasPartner && (
-        <div className="space-y-1.5 rounded-xl border border-dashed border-primary-foreground/35 bg-primary-foreground/10 p-2.5">
+        <div className="space-y-1.5 rounded-xl border border-dashed border-border bg-muted/30 p-2.5">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-medium text-primary-foreground/80">
+            <span className="text-[11px] font-medium text-muted-foreground">
               Invite Code
             </span>
             {relationship.invite_code && (
@@ -101,7 +101,7 @@ export function RelationshipSection() {
                   onClick={handleRegenerateCode}
                   disabled={regenerateInviteCodeMutation.isPending}
                   title="Regenerate invite code"
-                  className="h-6 w-6 text-primary-foreground/80 hover:bg-primary-foreground/15 hover:text-primary-foreground"
+                  className="h-6 w-6 text-muted-foreground hover:bg-muted hover:text-foreground"
                 >
                   {regenerateInviteCodeMutation.isPending ? (
                     <Spinner className="size-3" />
@@ -114,11 +114,11 @@ export function RelationshipSection() {
                   variant="outline"
                   size="xs"
                   onClick={handleCopyCode}
-                  className="h-6 gap-1 border-primary-foreground/30 bg-primary-foreground/15 px-2 text-[11px] text-primary-foreground hover:bg-primary-foreground/25 hover:text-primary-foreground"
+                  className="h-6 gap-1 px-2 text-[11px]"
                 >
                   {copied ? (
                     <>
-                      <Check className="size-3 text-emerald-300" /> Copied
+                      <Check className="size-3 text-emerald-500" /> Copied
                     </>
                   ) : (
                     <>
@@ -131,12 +131,12 @@ export function RelationshipSection() {
           </div>
 
           {relationship.invite_code ? (
-            <p className="font-mono text-base font-bold tracking-widest text-primary-foreground">
+            <p className="font-mono text-base font-bold tracking-widest text-foreground">
               {relationship.invite_code}
             </p>
           ) : (
             <div className="flex items-center justify-between pt-1">
-              <span className="text-xs text-primary-foreground/80">
+              <span className="text-xs text-muted-foreground">
                 No active code
               </span>
               <Button
@@ -145,7 +145,7 @@ export function RelationshipSection() {
                 size="xs"
                 onClick={handleRegenerateCode}
                 disabled={regenerateInviteCodeMutation.isPending}
-                className="h-6 gap-1 border-primary-foreground/30 bg-primary-foreground/15 px-2 text-[11px] text-primary-foreground hover:bg-primary-foreground/25 hover:text-primary-foreground"
+                className="h-6 gap-1 px-2 text-[11px]"
               >
                 {regenerateInviteCodeMutation.isPending ? (
                   <Spinner className="size-3" />

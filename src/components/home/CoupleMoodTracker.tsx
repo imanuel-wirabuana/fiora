@@ -80,6 +80,7 @@ function MoodCard({
       )}
       icon={<span className="text-sm leading-none">{avatar}</span>}
       title={title}
+      contentHorizontalAlign="center"
       contentClassName="flex-none items-center justify-center gap-2 py-0.5"
     >
       {/* Centered Big Icon & Mood Status */}
@@ -99,10 +100,10 @@ function MoodCard({
       </div>
 
       {/* Consistent 3-line text stack to preserve identical card height */}
-      <div className="flex w-full min-w-0 flex-col items-center gap-0.5">
+      <div className="flex w-full min-w-0 flex-col items-center justify-center text-center gap-0.5">
         <span
           className={cn(
-            "w-full truncate text-sm font-semibold",
+            "w-full truncate text-center text-sm font-semibold",
             moodContent ? "text-foreground" : "text-xs font-medium text-muted-foreground"
           )}
         >

@@ -1,8 +1,8 @@
 import { Bell, BellOff } from "lucide-react"
-import { CustomItem } from "@/components/CustomItem"
 import { Spinner } from "@/components/ui/spinner"
 import { Switch } from "@/components/ui/switch"
 import { usePushNotifications } from "@/hooks/usePushNotifications"
+import { SettingRow } from "./SettingRow"
 
 export function NotificationSection() {
   const {
@@ -35,38 +35,33 @@ export function NotificationSection() {
   }
 
   return (
-    <CustomItem
-      icon={
-        isSubscribed ? (
-          <Bell className="size-3.5 text-primary" />
-        ) : (
-          <BellOff className="size-3.5 text-muted-foreground" />
-        )
-      }
-      title="Phone Notifications"
-      description={description}
-      topRightActions={
-        isLoading || isPending ? (
-          <Spinner className="size-4 text-primary" />
-        ) : (
-          <Switch
-            checked={isSubscribed}
-            disabled={isDisabled}
-            onCheckedChange={() => {
-              void togglePush().catch(() => {
-                // Error state is exposed by hook
-              })
-            }}
-            aria-label="Toggle phone push notifications"
-          />
-        )
-      }
-      bottomLeftInfo={
-        error ? (
-          <p className="text-[11px] text-destructive">{error.message}</p>
-        ) : null
-      }
-    />
+    <div className="flex flex-col gap-1">
+      <SettingRow
+        icon={
+          isSubscribed ? (
+            <Bell className="size-3.5" />
+          ) : (
+            <BellOff className="size-3.5 text-muted-foreground" />
+          )
+        }
+        title="Phone Notifications"
+        description={description}
+        action={
+          isLoading || isPending ? (
+            <Spinner className="size-4 text-primary" />
+          ) : (
+            <Switch
+              checked={isSubscribed}
+              disabled={isDisabled}
+              onCheckedChange={() => {
+                void togglePush().catch(() => {})
+              }}
+              aria-label="Toggle phone push notifications"
+            />
+          )
+        }
+      />
+      {error && <p className="text-[11px] text-destructive">{error.message}</p>}
+    </div>
   )
 }
-

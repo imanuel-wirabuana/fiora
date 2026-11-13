@@ -51,7 +51,7 @@ export function QuizSummarySection() {
     <section className="flex flex-col gap-3">
       {/* Overall Score / Waiting Banner */}
       <CustomItem
-        variant="fill"
+        variant="solid"
         icon={<Sparkles className="size-3.5 text-primary-foreground" />}
         title="Today's Results"
         topRightActions={
@@ -115,7 +115,7 @@ export function QuizSummarySection() {
           return (
             <CustomItem
               key={item.quiz.id}
-              variant={item.isMatched ? "outline" : "default"}
+              variant={item.isMatched ? "soft" : "default"}
               className="gap-2 p-3"
               icon={<HelpCircle className="size-3.5 text-primary" />}
               title={`Question #${idx + 1}`}

@@ -115,12 +115,12 @@ export function TimelineFeedSection({
       return (
         <CustomItem
           key={key}
-          variant="fill"
+          variant="soft"
           className="gap-1.5 rounded-xl p-2.5 transition-colors"
           icon={<span className="text-sm leading-none">{member.avatar}</span>}
           title={`${member.name} → ${receiverName}`}
           topRightActions={
-            <span className="text-[10px] whitespace-nowrap text-primary-foreground/80">
+            <span className="text-[10px] whitespace-nowrap text-muted-foreground">
               {formatItemTime(activity.created_at)}
             </span>
           }
@@ -129,12 +129,12 @@ export function TimelineFeedSection({
             <span className="shrink-0 text-xs">{receiverAvatar}</span>
             <Badge
               variant="outline"
-              className="shrink-0 gap-1 border-primary-foreground/25 bg-primary-foreground/15 px-1.5 py-0 text-[10px] font-normal text-primary-foreground"
+              className="shrink-0 gap-1 border-primary/25 bg-primary/15 px-1.5 py-0 text-[10px] font-normal text-primary"
             >
-              <MessageCircle className="size-2.5 text-primary-foreground" />
+              <MessageCircle className="size-2.5 text-primary" />
               Nudge
             </Badge>
-            <span className="inline-flex items-center gap-1 rounded-md bg-primary-foreground/15 px-1.5 py-0.5 text-xs font-medium text-primary-foreground">
+            <span className="inline-flex items-center gap-1 rounded-md bg-background/70 px-1.5 py-0.5 text-xs font-medium text-foreground">
               <span>{content.emoji}</span>
               <span>{content.label}</span>
             </span>

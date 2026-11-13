@@ -1,69 +1,57 @@
 import { HelpCircle } from "lucide-react"
-import { CustomItem } from "@/components/CustomItem"
-import { Button } from "@/components/ui/button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { useQuiz } from "@/hooks/useQuiz"
 import { useRelationship } from "@/hooks/useRelationship"
 import { DAILY_QUIZ_COUNT_OPTIONS } from "@/lib/relationship"
-import { cn } from "@/lib/utils"
+import { SettingRow } from "./SettingRow"
 
 export function QuizSection() {
   const { relationship, dailyQuizCount, hasRelationship } = useRelationship()
-
   const { updateDailyQuizCount } = useQuiz()
 
   if (!hasRelationship || !relationship) {
     return null
   }
 
-  return (
-    <CustomItem
-      variant="outline"
-      icon={<HelpCircle className="size-3.5 text-primary" />}
-      title="Daily Quiz"
-      topRightActions={
-        <span className="text-[11px] font-medium text-primary/80">
-          {dailyQuizCount} {dailyQuizCount === 1 ? "question" : "questions"} /
-          day
-        </span>
-      }
-      contentClassName="space-y-2"
-    >
-      <div className="flex items-center justify-between gap-3 rounded-xl border border-primary/20 bg-primary/5 p-2.5">
-        <div className="flex min-w-0 items-start gap-2">
-          <div className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            <HelpCircle className="size-3.5" />
-          </div>
-          <div className="min-w-0 space-y-0.5">
-            <span className="text-xs font-medium text-foreground">
-              Questions Per Day
-            </span>
-            <p className="text-[11px] leading-tight text-muted-foreground">
-              Control how many daily quizzes appear on the home screen.
-            </p>
-          </div>
-        </div>
+  const handleValueChange = (val: string | null) => {
+    if (!val) return
+    const num = Number.parseInt(val, 10)
+    if (!Number.isNaN(num)) {
+      updateDailyQuizCount(num)
+    }
+  }
 
-        <div className="flex shrink-0 items-center gap-1">
-          {DAILY_QUIZ_COUNT_OPTIONS.map((count) => {
-            const isSelected = dailyQuizCount === count
-            return (
-              <Button
-                key={count}
-                type="button"
-                variant={isSelected ? "default" : "outline"}
-                size="xs"
-                onClick={() => updateDailyQuizCount(count)}
-                className={cn(
-                  "size-7 rounded-lg p-0 text-xs font-semibold",
-                  !isSelected && "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {count}
-              </Button>
-            )
-          })}
-        </div>
-      </div>
-    </CustomItem>
+  return (
+    <SettingRow
+      icon={<HelpCircle className="size-3.5" />}
+      title="Daily Quiz"
+      description="Questions per day on home screen."
+      action={
+        <Select
+          value={String(dailyQuizCount)}
+          onValueChange={handleValueChange}
+        >
+          <SelectTrigger
+            size="sm"
+            className="h-7 w-auto min-w-[95px] rounded-xl border border-input bg-background px-2.5 text-xs font-medium text-foreground hover:bg-muted/40"
+          >
+            <SelectValue placeholder="Questions" />
+          </SelectTrigger>
+          <SelectContent align="end" className="min-w-[120px] rounded-xl p-1 text-xs">
+            {DAILY_QUIZ_COUNT_OPTIONS.map((count) => (
+              <SelectItem key={count} value={String(count)} className="text-xs">
+                {count} {count === 1 ? "question" : "questions"}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      }
+    />
   )
 }

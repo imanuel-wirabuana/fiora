@@ -35,6 +35,7 @@ export function NudgeSection() {
 
   return (
     <CustomItem
+      variant="soft"
       icon={<Send className="size-3.5 text-primary" />}
       title="Quick Nudge"
       topRightActions={

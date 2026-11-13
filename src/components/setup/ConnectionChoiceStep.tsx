@@ -29,7 +29,7 @@ export function ConnectionChoiceStep({
           Connect with Partner
         </h3>
         <p className="text-xs text-muted-foreground">
-          Join your partner&apos;s existing space or create a brand new one
+          Join your partner&apos;s existing relationship or create a brand new one
         </p>
       </div>
 
@@ -53,7 +53,7 @@ export function ConnectionChoiceStep({
             className="rounded-xl text-xs font-semibold"
           >
             <Users className="mr-1.5 size-3.5" />
-            Create Space
+            Create Relationship
           </TabsTrigger>
         </TabsList>
 
@@ -107,7 +107,7 @@ export function ConnectionChoiceStep({
             </div>
             <div className="space-y-1">
               <span className="text-sm font-semibold text-foreground">
-                Start a New Couple Space
+                Start a New Relationship
               </span>
               <p className="mx-auto max-w-xs text-xs text-muted-foreground">
                 You&apos;ll be able to customize your anniversary, moods, and

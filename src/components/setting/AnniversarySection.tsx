@@ -1,6 +1,5 @@
 import { differenceInCalendarDays, format, parseISO } from "date-fns"
 import { Calendar as CalendarIcon, X } from "lucide-react"
-import { CustomItem } from "@/components/CustomItem"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import {
@@ -11,6 +10,7 @@ import {
 import { useRelationship } from "@/hooks/useRelationship"
 import { cn } from "@/lib/utils"
 import { useState } from "react"
+import { SettingRow } from "./SettingRow"
 
 export function AnniversarySection() {
   const {
@@ -28,7 +28,6 @@ export function AnniversarySection() {
 
   const selectedDate = anniversary ? parseISO(anniversary) : undefined
 
-  // Calculate days together if anniversary exists
   const daysTogether = selectedDate
     ? Math.max(0, differenceInCalendarDays(new Date(), selectedDate))
     : null
@@ -50,11 +49,10 @@ export function AnniversarySection() {
   }
 
   return (
-    <CustomItem
-      variant="outline"
-      icon={<CalendarIcon className="size-3.5 text-primary" />}
+    <SettingRow
+      icon={<CalendarIcon className="size-3.5" />}
       title="Anniversary"
-      topRightActions={
+      action={
         daysTogether !== null ? (
           <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
             {daysTogether === 0
@@ -63,7 +61,6 @@ export function AnniversarySection() {
           </span>
         ) : null
       }
-      contentClassName="space-y-2"
     >
       <div className="flex w-full items-center gap-2">
         <Popover open={open} onOpenChange={setOpen}>
@@ -113,6 +110,6 @@ export function AnniversarySection() {
           </Button>
         )}
       </div>
-    </CustomItem>
+    </SettingRow>
   )
 }

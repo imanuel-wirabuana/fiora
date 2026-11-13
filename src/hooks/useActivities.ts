@@ -363,7 +363,7 @@ export function useActivities() {
         type: "journal",
         title: `${senderName} added a new journal entry`,
         body: payload.title || "Shared a memory",
-        url: "/journal",
+        url: "/space/journal",
         emoji: "📖",
       })
     }
@@ -390,7 +390,7 @@ export function useActivities() {
         type: "journal",
         title: `${senderName} shared a journal entry`,
         body: currentContent.title || "Shared a memory",
-        url: "/journal",
+        url: "/space/journal",
         emoji: "📖",
       })
     }

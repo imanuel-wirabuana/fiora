@@ -25,8 +25,8 @@ export default defineConfig({
         short_name: "Fiora",
         description:
           "Private mood tracking, connection, and relationship timeline for couples.",
-        theme_color: "#FDF6F0",
-        background_color: "#FDF6F0",
+        theme_color: "#FAFAFB",
+        background_color: "#FAFAFB",
         display: "standalone",
         orientation: "portrait",
         start_url: "/",

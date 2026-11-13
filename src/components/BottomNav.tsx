@@ -1,9 +1,9 @@
 import { useState } from "react"
 import { Link, useLocation } from "wouter"
 import {
-  BookOpen,
   Clock,
   Home,
+  LayoutGrid,
   Plus,
   Settings,
   type LucideIcon,
@@ -24,7 +24,7 @@ const navItemsLeft: NavItem[] = [
 ]
 
 const navItemsRight: NavItem[] = [
-  { href: "/journal", label: "Journal", icon: BookOpen },
+  { href: "/space", label: "Space", icon: LayoutGrid },
   { href: "/setting", label: "Setting", icon: Settings },
 ]
 

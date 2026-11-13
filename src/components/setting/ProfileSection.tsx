@@ -1,6 +1,5 @@
 import { Check, ChevronDown, User } from "lucide-react"
 import { useState } from "react"
-import { CustomItem } from "@/components/CustomItem"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -12,6 +11,7 @@ import { Spinner } from "@/components/ui/spinner"
 import { useRelationship } from "@/hooks/useRelationship"
 import { DEFAULT_AVATARS_BY_GENDER, getDefaultAvatar } from "@/lib/relationship"
 import { cn } from "@/lib/utils"
+import { SettingRow } from "./SettingRow"
 
 export function ProfileSection() {
   const { currentMember, updateMemberContentMutation } = useRelationship()
@@ -25,7 +25,6 @@ export function ProfileSection() {
   const [saved, setSaved] = useState(false)
   const [avatarOpen, setAvatarOpen] = useState(false)
 
-  // Sync state if remote savedName changes without cascading renders
   if (savedName !== prevSavedName) {
     setPrevSavedName(savedName)
     setName(savedName)
@@ -66,17 +65,16 @@ export function ProfileSection() {
   }
 
   return (
-    <CustomItem
-      icon={<User className="size-3.5 text-primary" />}
+    <SettingRow
+      icon={<User className="size-3.5" />}
       title="Profile"
-      topRightActions={
+      action={
         <span className="inline-flex items-center rounded-full bg-muted/60 px-2 py-0.5 text-[10px] font-medium text-muted-foreground capitalize">
           {currentMember.content?.gender || "Member"}
         </span>
       }
     >
       <form onSubmit={handleSaveName} className="flex w-full items-center gap-2">
-        {/* Avatar Selector Trigger */}
         <Popover open={avatarOpen} onOpenChange={setAvatarOpen}>
           <PopoverTrigger
             render={
@@ -116,7 +114,6 @@ export function ProfileSection() {
           </PopoverContent>
         </Popover>
 
-        {/* Name Input */}
         <Input
           type="text"
           placeholder="Your name or nickname"
@@ -126,7 +123,6 @@ export function ProfileSection() {
           className="h-8 flex-1 px-2.5 text-xs"
         />
 
-        {/* Save Name Button */}
         <Button
           type="submit"
           size="xs"
@@ -144,6 +140,6 @@ export function ProfileSection() {
           )}
         </Button>
       </form>
-    </CustomItem>
+    </SettingRow>
   )
 }

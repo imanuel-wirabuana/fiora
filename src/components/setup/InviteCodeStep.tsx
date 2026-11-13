@@ -111,7 +111,7 @@ export function InviteCodeStep({
             </div>
           </div>
           <p className="text-center text-[11px] text-muted-foreground">
-            Give this code to your partner so they can join your space. You can always see it in Settings.
+            Give this code to your partner so they can join your relationship. You can always see it in Settings.
           </p>
         </TabsContent>
 

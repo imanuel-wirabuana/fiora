@@ -48,7 +48,7 @@ export function PWAInstallPrompt() {
 
   return (
     <div className="fixed inset-x-0 bottom-4 z-50 mx-auto max-w-sm px-4">
-      <div className="relative flex flex-col gap-3 rounded-2xl border border-rose-200/60 bg-[#FDF6F0]/95 p-4 shadow-xl backdrop-blur-md">
+      <div className="relative flex flex-col gap-3 rounded-2xl border border-border/80 bg-card/95 p-4 shadow-xl backdrop-blur-md">
         {/* Dismiss Button */}
         <button
           type="button"
@@ -63,7 +63,7 @@ export function PWAInstallPrompt() {
           <img
             src="/pwa-192x192.png"
             alt="Fiora"
-            className="size-12 shrink-0 rounded-xl shadow-xs border border-rose-100"
+            className="size-12 shrink-0 rounded-xl shadow-xs border border-border"
           />
           <div className="flex flex-col">
             <span className="font-semibold text-sm text-foreground">

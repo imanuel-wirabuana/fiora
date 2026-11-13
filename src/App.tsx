@@ -9,9 +9,11 @@ import { useIsMobile } from "./hooks/use-mobile"
 import { usePresenceTracker } from "./hooks/usePartnerPresence"
 import { useAutoPushSubscription } from "./hooks/usePushNotifications"
 import { useRelationship } from "./hooks/useRelationship"
+import { useDynamicFavicon } from "./hooks/useDynamicFavicon"
 import {
   HomeScreen,
   JournalScreen,
+  SpaceScreen,
   LocationSharingScreen,
   LoginScreen,
   NotFoundScreen,
@@ -19,6 +21,10 @@ import {
   QuizSummaryScreen,
   RegisterScreen,
   SettingScreen,
+  MoodSettingScreen,
+  NudgeSettingScreen,
+  ImportantDatesSettingScreen,
+  AppAppearanceSettingScreen,
   SetupScreen,
   TimelineScreen,
 } from "./screens"
@@ -106,14 +112,30 @@ function AppRoutes() {
       </Route>
 
       <Route path="/journal">
+        <Redirect to="/space/journal" />
+      </Route>
+
+      <Route path="/space">
         {!isAuthenticated ? (
           <Redirect to="/" />
         ) : !hasRelationship ? (
           <Redirect to="/setup" />
         ) : (
           <MainLayout>
-            <JournalScreen />
+            <SpaceScreen />
           </MainLayout>
+        )}
+      </Route>
+
+      <Route path="/space/journal">
+        {!isAuthenticated ? (
+          <Redirect to="/" />
+        ) : !hasRelationship ? (
+          <Redirect to="/setup" />
+        ) : (
+          <DetailLayout title="Journal" backHref="/space">
+            <JournalScreen />
+          </DetailLayout>
         )}
       </Route>
 
@@ -126,6 +148,54 @@ function AppRoutes() {
           <MainLayout>
             <SettingScreen />
           </MainLayout>
+        )}
+      </Route>
+
+      <Route path="/setting/mood">
+        {!isAuthenticated ? (
+          <Redirect to="/" />
+        ) : !hasRelationship ? (
+          <Redirect to="/setup" />
+        ) : (
+          <DetailLayout title="Mood Options" backHref="/setting">
+            <MoodSettingScreen />
+          </DetailLayout>
+        )}
+      </Route>
+
+      <Route path="/setting/nudge">
+        {!isAuthenticated ? (
+          <Redirect to="/" />
+        ) : !hasRelationship ? (
+          <Redirect to="/setup" />
+        ) : (
+          <DetailLayout title="Nudges" backHref="/setting">
+            <NudgeSettingScreen />
+          </DetailLayout>
+        )}
+      </Route>
+
+      <Route path="/setting/important-dates">
+        {!isAuthenticated ? (
+          <Redirect to="/" />
+        ) : !hasRelationship ? (
+          <Redirect to="/setup" />
+        ) : (
+          <DetailLayout title="Important Dates" backHref="/setting">
+            <ImportantDatesSettingScreen />
+          </DetailLayout>
+        )}
+      </Route>
+
+      <Route path="/setting/app-appearance">
+        {!isAuthenticated ? (
+          <Redirect to="/" />
+        ) : !hasRelationship ? (
+          <Redirect to="/setup" />
+        ) : (
+          <DetailLayout title="App Appearance" backHref="/setting">
+            <AppAppearanceSettingScreen />
+          </DetailLayout>
         )}
       </Route>
 
@@ -174,6 +244,7 @@ function AppRoutes() {
 }
 
 export function App() {
+  useDynamicFavicon()
   const isMobile = useIsMobile()
   const { initialize } = useAuth()
 

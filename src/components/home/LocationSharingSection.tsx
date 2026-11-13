@@ -35,37 +35,17 @@ export function LocationSharingSection() {
   const mapInstanceRef = useRef<L.Map | null>(null)
   const markersLayerRef = useRef<L.LayerGroup | null>(null)
   const pointsRef = useRef<L.LatLngExpression[]>([])
-  const recenterTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const isProgrammaticMoveRef = useRef(false)
-  const programmaticResetTimeoutRef = useRef<ReturnType<
-    typeof setTimeout
-  > | null>(null)
 
   const fitMapToPoints = useCallback((map: L.Map) => {
     const pts = pointsRef.current
     if (pts.length === 0) return
 
-    if (recenterTimeoutRef.current) {
-      clearTimeout(recenterTimeoutRef.current)
-      recenterTimeoutRef.current = null
-    }
-    if (programmaticResetTimeoutRef.current) {
-      clearTimeout(programmaticResetTimeoutRef.current)
-    }
-
-    isProgrammaticMoveRef.current = true
     if (pts.length === 1) {
       map.setView(pts[0], 14, { animate: true })
     } else {
       const bounds = L.latLngBounds(pts)
       map.fitBounds(bounds, { padding: [35, 35], maxZoom: 15, animate: true })
     }
-
-    // Fallback reset in case fitBounds/setView is a no-op and does not fire moveend
-    programmaticResetTimeoutRef.current = setTimeout(() => {
-      isProgrammaticMoveRef.current = false
-      programmaticResetTimeoutRef.current = null
-    }, 500)
   }, [])
 
   const myAvatar = currentMember?.content?.avatar || "🙋"
@@ -129,7 +109,7 @@ export function LocationSharingSection() {
     )
   }
 
-  // Initialize Leaflet Map
+  // Initialize Read-Only Leaflet Map
   useEffect(() => {
     if (!locationSharing || !mapContainerRef.current) return
 
@@ -142,6 +122,12 @@ export function LocationSharingSection() {
         zoom: defaultZoom,
         zoomControl: false,
         attributionControl: false,
+        dragging: false,
+        touchZoom: false,
+        scrollWheelZoom: false,
+        doubleClickZoom: false,
+        boxZoom: false,
+        keyboard: false,
       })
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -151,72 +137,16 @@ export function LocationSharingSection() {
       const markersLayer = L.layerGroup().addTo(map)
       markersLayerRef.current = markersLayer
       mapInstanceRef.current = map
-
-      const clearRecenterTimer = () => {
-        if (recenterTimeoutRef.current) {
-          clearTimeout(recenterTimeoutRef.current)
-          recenterTimeoutRef.current = null
-        }
-      }
-
-      const scheduleRecenter = () => {
-        clearRecenterTimer()
-        recenterTimeoutRef.current = setTimeout(() => {
-          recenterTimeoutRef.current = null
-          if (mapInstanceRef.current) {
-            fitMapToPoints(mapInstanceRef.current)
-          }
-        }, 3000)
-      }
-
-      map.on("dragstart", () => {
-        isProgrammaticMoveRef.current = false
-        clearRecenterTimer()
-      })
-
-      map.on("dragend", () => {
-        scheduleRecenter()
-      })
-
-      map.on("zoomstart", () => {
-        if (!isProgrammaticMoveRef.current) {
-          clearRecenterTimer()
-        }
-      })
-
-      map.on("zoomend", () => {
-        if (!isProgrammaticMoveRef.current) {
-          scheduleRecenter()
-        }
-      })
-
-      map.on("moveend", () => {
-        if (isProgrammaticMoveRef.current) {
-          isProgrammaticMoveRef.current = false
-          if (programmaticResetTimeoutRef.current) {
-            clearTimeout(programmaticResetTimeoutRef.current)
-            programmaticResetTimeoutRef.current = null
-          }
-        }
-      })
     }
 
     return () => {
-      if (recenterTimeoutRef.current) {
-        clearTimeout(recenterTimeoutRef.current)
-        recenterTimeoutRef.current = null
-      }
-      if (programmaticResetTimeoutRef.current) {
-        clearTimeout(programmaticResetTimeoutRef.current)
-        programmaticResetTimeoutRef.current = null
-      }
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove()
         mapInstanceRef.current = null
         markersLayerRef.current = null
       }
     }
-  }, [locationSharing, fitMapToPoints])
+  }, [locationSharing])
 
   // Update Markers & Zoom bounds whenever locations change
   useEffect(() => {
@@ -278,7 +208,7 @@ export function LocationSharingSection() {
       L.marker(partnerLatLng, { icon: partnerIcon }).addTo(layer)
     }
 
-    // 3. Connect line & Always Fit Both points to keep home map in view
+    // 3. Connect line & fit points
     pointsRef.current = points
     if (points.length > 1) {
       L.polyline(points, {
@@ -342,9 +272,12 @@ export function LocationSharingSection() {
       }
       contentClassName="space-y-2"
     >
-      {/* Leaflet Map Frame */}
+      {/* Read-only Leaflet Map Frame */}
       <div className="relative h-44 w-full overflow-hidden rounded-xl border border-border/70 bg-muted/40 shadow-inner">
-        <div ref={mapContainerRef} className="z-0 h-full w-full" />
+        <div
+          ref={mapContainerRef}
+          className="pointer-events-none z-0 h-full w-full select-none"
+        />
 
         {/* Overlay when waiting for initial coordinates */}
         {!myLocation && !partnerLocation && (
@@ -375,7 +308,7 @@ export function LocationSharingSection() {
 
         {formattedDistance && (
           <div className="flex shrink-0 flex-col items-center justify-center gap-1">
-            <span className="inline-flex items-center rounded-full bg-rose-500/10 px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap text-rose-600 dark:text-rose-400">
+            <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap text-primary">
               {formattedDistance} apart
             </span>
           </div>

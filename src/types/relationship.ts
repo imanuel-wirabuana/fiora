@@ -33,6 +33,7 @@ export interface RelationshipContent {
   daily_quiz_count?: number
   daily_quiz?: DailyQuizState | null
   locations?: Record<string, MemberLocation>
+  aliases?: Record<string, string>
 }
 
 export interface RelationshipMemberContent {

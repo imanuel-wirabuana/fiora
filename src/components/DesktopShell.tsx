@@ -16,7 +16,7 @@ export function DesktopShell({ children }: { children: ReactNode }) {
           />
 
           <p className="max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-            Fiora is a personal space designed exclusively for couples to track
+            Fiora is a private relationship app designed exclusively for couples to track
             daily feelings, understand emotional rhythms, and connect deeper
             without pressure.
           </p>

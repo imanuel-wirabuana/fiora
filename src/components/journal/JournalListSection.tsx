@@ -76,11 +76,10 @@ export function JournalListSection({
 
         const isShared = !!content.isShared
         const itemVariant = !author.isMe
-          ? "fill"
+          ? "soft"
           : isShared
             ? "outline"
             : "default"
-        const isFill = itemVariant === "fill"
 
         return (
           <CustomItem
@@ -93,11 +92,7 @@ export function JournalListSection({
               isShared ? (
                 <Badge
                   variant="outline"
-                  className={
-                    isFill
-                      ? "gap-1 border-primary-foreground/25 bg-primary-foreground/15 px-1.5 py-0 text-[10px] font-normal text-primary-foreground"
-                      : "gap-1 border-emerald-500/20 bg-emerald-500/10 px-1.5 py-0 text-[10px] font-normal text-emerald-600 dark:text-emerald-400"
-                  }
+                  className="gap-1 border-emerald-500/20 bg-emerald-500/10 px-1.5 py-0 text-[10px] font-normal text-emerald-600 dark:text-emerald-400"
                 >
                   <Globe className="size-2.5" />
                   Shared
@@ -115,13 +110,7 @@ export function JournalListSection({
             description={content.body}
             descriptionClassName="whitespace-pre-wrap leading-relaxed"
             bottomLeftInfo={
-              <span
-                className={
-                  isFill
-                    ? "truncate text-[11px] text-primary-foreground/80"
-                    : "truncate text-[11px] text-muted-foreground"
-                }
-              >
+              <span className="truncate text-[11px] text-muted-foreground">
                 <span className="font-medium">{author.name}</span> ·{" "}
                 {formatDistanceToNow(new Date(journal.created_at), {
                   addSuffix: true,

@@ -23,7 +23,7 @@ export function SplashScreen() {
       <div className="flex flex-1 flex-col items-center justify-end pb-8">
         <div className="flex items-center gap-2.5 text-xs font-medium tracking-wide text-primary-foreground/80">
           <Spinner className="size-4 text-primary-foreground" />
-          <span>Loading your space...</span>
+          <span>Loading your relationship...</span>
         </div>
       </div>
     </div>
