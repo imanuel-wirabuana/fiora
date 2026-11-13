@@ -1,8 +1,8 @@
 import { useState } from "react"
-import { Check, HeartHandshake, UserPlus } from "lucide-react"
+import { HeartHandshake, UserPlus } from "lucide-react"
+import { FormDrawer } from "@/components/FormDrawer"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Spinner } from "@/components/ui/spinner"
 import { useRelationship } from "@/hooks/useRelationship"
 import { SettingRow } from "./SettingRow"
 
@@ -18,39 +18,11 @@ export function PartnerAliasSection() {
   const savedAlias =
     (partnerUserId && relationship?.content?.aliases?.[partnerUserId]) || ""
 
-  const [alias, setAlias] = useState(savedAlias)
-  const [prevSavedAlias, setPrevSavedAlias] = useState(savedAlias)
-  const [saved, setSaved] = useState(false)
-
-  if (savedAlias !== prevSavedAlias) {
-    setPrevSavedAlias(savedAlias)
-    setAlias(savedAlias)
-  }
+  const [open, setOpen] = useState(false)
+  const [draftAlias, setDraftAlias] = useState(savedAlias)
 
   if (!hasRelationship || !relationship) {
     return null
-  }
-
-  const isPending = updateRelationshipContentMutation.isPending
-  const isChanged = alias.trim() !== savedAlias
-
-  const handleSaveAlias = (e?: React.FormEvent) => {
-    e?.preventDefault()
-    if (!partnerUserId) return
-    const trimmed = alias.trim()
-
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
-
-    const updatedAliases = {
-      ...(relationship.content?.aliases || {}),
-      [partnerUserId]: trimmed,
-    }
-
-    updateRelationshipContentMutation.mutate({
-      relationshipId: relationship.id,
-      content: { aliases: updatedAliases },
-    })
   }
 
   if (!partnerMember) {
@@ -68,39 +40,70 @@ export function PartnerAliasSection() {
     )
   }
 
+  const isPending = updateRelationshipContentMutation.isPending
+  const trimmedAlias = draftAlias.trim()
+  const isChanged = trimmedAlias !== savedAlias
+
+  const handleOpenChange = (next: boolean) => {
+    if (next) {
+      setDraftAlias(savedAlias)
+    }
+    setOpen(next)
+  }
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (!partnerUserId || !isChanged) {
+      return false
+    }
+
+    const updatedAliases = {
+      ...(relationship.content?.aliases || {}),
+      [partnerUserId]: trimmedAlias,
+    }
+
+    updateRelationshipContentMutation.mutate({
+      relationshipId: relationship.id,
+      content: { aliases: updatedAliases },
+    })
+  }
+
   return (
     <SettingRow
       icon={<HeartHandshake className="size-3.5" />}
       title="Partner Alias"
-      description={`Give ${partnerMember.content?.name || "your partner"} a nickname visible to both of you.`}
-    >
-      <form onSubmit={handleSaveAlias} className="flex w-full items-center gap-2">
-        <Input
-          type="text"
-          placeholder="e.g. My Honey, Babe"
-          value={alias}
-          onChange={(e) => setAlias(e.target.value)}
-          maxLength={30}
-          className="h-8 flex-1 px-2.5 text-xs"
-        />
-
-        <Button
-          type="submit"
-          size="xs"
-          disabled={!isChanged}
-          className="h-8 gap-1 px-3 text-[11px]"
+      description={`Nickname for ${partnerMember.content?.name || "your partner"}.`}
+      action={
+        <FormDrawer
+          open={open}
+          onOpenChange={handleOpenChange}
+          title="Partner Alias"
+          description={`Give ${partnerMember.content?.name || "your partner"} a nickname visible to both of you.`}
+          onSubmit={handleSubmit}
+          submitLabel="Save"
+          isPending={isPending}
+          submitDisabled={!isChanged}
+          trigger={
+            <Button
+              type="button"
+              variant="default"
+              size="sm"
+              className="h-7 max-w-[140px] rounded-xl px-2.5 text-xs font-medium"
+            >
+              <span className="truncate">{savedAlias || "Set alias"}</span>
+            </Button>
+          }
         >
-          {saved ? (
-            <>
-              <Check className="size-3 text-emerald-400" /> Saved
-            </>
-          ) : isPending ? (
-            <Spinner className="size-3" />
-          ) : (
-            "Save"
-          )}
-        </Button>
-      </form>
-    </SettingRow>
+          <Input
+            type="text"
+            placeholder="e.g. My Honey, Babe"
+            value={draftAlias}
+            onChange={(e) => setDraftAlias(e.target.value)}
+            maxLength={30}
+            className="h-10 rounded-2xl px-3.5 text-xs"
+          />
+        </FormDrawer>
+      }
+    />
   )
 }

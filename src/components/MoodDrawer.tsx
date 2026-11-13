@@ -61,20 +61,13 @@ export function MoodDrawer({ open, onOpenChange, children }: MoodDrawerProps) {
       <DrawerContent className="mx-auto flex flex-col inset-x-0 bottom-0 m-0 rounded-b-none rounded-t-4xl border-b-0 p-4 pt-2 pb-[max(1rem,env(safe-area-inset-bottom))] sm:max-w-md [--drawer-inset:0px]">
         {/* Top Header */}
         <div>
-          <DrawerHeader className="pb-1 text-left">
-            <div className="flex items-center gap-2">
-              <div className="flex size-8 items-center justify-center rounded-full bg-primary/10 text-primary">
-                <Heart className="size-4 fill-current" />
-              </div>
-              <div>
-                <DrawerTitle className="text-base font-semibold">
-                  Quick Mood Check-in
-                </DrawerTitle>
-                <DrawerDescription className="text-xs">
-                  Let your partner know how you feel right now
-                </DrawerDescription>
-              </div>
-            </div>
+          <DrawerHeader className="items-center pb-1 text-center md:text-center">
+            <DrawerTitle className="text-base font-semibold">
+              Quick Mood Check-in
+            </DrawerTitle>
+            <DrawerDescription className="text-xs">
+              Let your partner know how you feel right now
+            </DrawerDescription>
           </DrawerHeader>
 
           {/* Mood Emoji Selector (dynamically loaded from relationship) */}

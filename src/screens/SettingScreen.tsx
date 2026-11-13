@@ -45,6 +45,8 @@ export function SettingScreen() {
         <Separator />
         <ThemeSection />
         <Separator />
+        <NotificationSection />
+        <Separator />
         <SettingRow
           href="/setting/app-appearance"
           icon={<Palette className="size-3.5" />}
@@ -59,8 +61,6 @@ export function SettingScreen() {
             </div>
           }
         />
-        <Separator />
-        <NotificationSection />
         <Separator />
         <SettingRow
           icon={<Timer className="size-3.5" />}

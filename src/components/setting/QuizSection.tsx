@@ -1,11 +1,6 @@
 import { HelpCircle } from "lucide-react"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { CustomSelect } from "@/components/pickers"
+import { Button } from "@/components/ui/button"
 import { useQuiz } from "@/hooks/useQuiz"
 import { useRelationship } from "@/hooks/useRelationship"
 import { DAILY_QUIZ_COUNT_OPTIONS } from "@/lib/relationship"
@@ -19,13 +14,14 @@ export function QuizSection() {
     return null
   }
 
-  const handleValueChange = (val: string | null) => {
-    if (!val) return
-    const num = Number.parseInt(val, 10)
-    if (!Number.isNaN(num)) {
-      updateDailyQuizCount(num)
-    }
-  }
+  const quizOptions = DAILY_QUIZ_COUNT_OPTIONS.map((count) => ({
+    label: `${count} ${count === 1 ? "question" : "questions"}`,
+    value: count,
+  }))
+
+  const currentLabel =
+    quizOptions.find((opt) => opt.value === dailyQuizCount)?.label ??
+    "Questions"
 
   return (
     <SettingRow
@@ -33,24 +29,24 @@ export function QuizSection() {
       title="Daily Quiz"
       description="Questions per day on home screen."
       action={
-        <Select
-          value={String(dailyQuizCount)}
-          onValueChange={handleValueChange}
-        >
-          <SelectTrigger
-            size="sm"
-            className="h-7 w-auto min-w-[95px] rounded-xl border border-input bg-background px-2.5 text-xs font-medium text-foreground hover:bg-muted/40"
-          >
-            <SelectValue placeholder="Questions" />
-          </SelectTrigger>
-          <SelectContent align="end" className="min-w-[120px] rounded-xl p-1 text-xs">
-            {DAILY_QUIZ_COUNT_OPTIONS.map((count) => (
-              <SelectItem key={count} value={String(count)} className="text-xs">
-                {count} {count === 1 ? "question" : "questions"}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <CustomSelect
+          value={dailyQuizCount}
+          onValueChange={updateDailyQuizCount}
+          options={quizOptions}
+          placeholder="Questions"
+          title="Daily Quiz"
+          description="Questions per day on home screen."
+          trigger={
+            <Button
+              type="button"
+              variant="default"
+              size="sm"
+              className="h-7 rounded-xl px-2.5 text-xs font-medium"
+            >
+              {currentLabel}
+            </Button>
+          }
+        />
       }
     />
   )
