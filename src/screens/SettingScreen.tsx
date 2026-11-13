@@ -13,12 +13,14 @@ import {
   User,
 } from "lucide-react"
 import { CustomItem } from "@/components/CustomItem"
+import { useTheme } from "@/components/theme-provider"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { useAuth } from "@/hooks/useAuth"
 import { useRelationship } from "@/hooks/useRelationship"
+import { getAppThemeById } from "@/lib/themes"
 import {
   AnniversarySection,
   LocationSharingSection,
@@ -33,6 +35,8 @@ import {
 export function SettingScreen() {
   const { user, signOutMutation } = useAuth()
   const { moodOptions, nudgeOptions } = useRelationship()
+  const { appTheme } = useTheme()
+  const activeTheme = getAppThemeById(appTheme)
 
   return (
     <div className="flex flex-col gap-4 pb-8">
@@ -67,9 +71,9 @@ export function SettingScreen() {
           description="Theme colors, accents, and visual styling."
           action={
             <div className="flex items-center gap-1.5">
-              <span className="inline-flex items-center rounded-full bg-muted/60 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                Coming soon
-              </span>
+              <Badge variant="secondary" className="text-[10px] font-medium">
+                {activeTheme.name}
+              </Badge>
               <ChevronRight className="size-4 text-muted-foreground transition-transform duration-200 group-hover:translate-x-0.5" />
             </div>
           }

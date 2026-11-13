@@ -8,7 +8,7 @@ export function fireEmojiConfetti(emoji: string, score = 0.5) {
   if (typeof window === "undefined" || !emoji.trim()) return
 
   try {
-    const scalar = 8
+    const scalar = 5
     const particleCount = Math.max(1, Math.round(100 * score))
     const emojiShape = confetti.shapeFromText({
       text: emoji.trim(),
@@ -31,4 +31,3 @@ export function fireEmojiConfetti(emoji: string, score = 0.5) {
     // Ignore canvas/confetti errors in unsupported environments
   }
 }
-

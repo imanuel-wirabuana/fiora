@@ -1,5 +1,7 @@
 import * as React from "react"
 import { flushSync } from "react-dom"
+import { isAppThemeId } from "@/lib/themes"
+import type { AppThemeId } from "@/types/theme"
 
 type Theme = "dark" | "light" | "system"
 type ResolvedTheme = "dark" | "light"
@@ -8,13 +10,17 @@ export type ThemeTransitionOrigin = { x: number; y: number }
 type ThemeProviderProps = {
   children: React.ReactNode
   defaultTheme?: Theme
+  defaultAppTheme?: AppThemeId
   storageKey?: string
+  appThemeStorageKey?: string
   disableTransitionOnChange?: boolean
 }
 
 type ThemeProviderState = {
   theme: Theme
   setTheme: (theme: Theme, origin?: ThemeTransitionOrigin) => void
+  appTheme: AppThemeId
+  setAppTheme: (appTheme: AppThemeId, origin?: ThemeTransitionOrigin) => void
 }
 
 const COLOR_SCHEME_QUERY = "(prefers-color-scheme: dark)"
@@ -81,7 +87,9 @@ function isEditableTarget(target: EventTarget | null) {
 export function ThemeProvider({
   children,
   defaultTheme = "system",
+  defaultAppTheme = "default",
   storageKey = "theme",
+  appThemeStorageKey = "app-theme",
   disableTransitionOnChange = false,
   ...props
 }: ThemeProviderProps) {
@@ -92,6 +100,15 @@ export function ThemeProvider({
     }
 
     return defaultTheme
+  })
+
+  const [appTheme, setAppThemeState] = React.useState<AppThemeId>(() => {
+    const storedAppTheme = localStorage.getItem(appThemeStorageKey)
+    if (isAppThemeId(storedAppTheme)) {
+      return storedAppTheme
+    }
+
+    return defaultAppTheme
   })
 
   const applyTheme = React.useCallback(
@@ -113,13 +130,28 @@ export function ThemeProvider({
     [disableTransitionOnChange]
   )
 
-  const setTheme = React.useCallback(
-    (nextTheme: Theme, origin?: ThemeTransitionOrigin) => {
-      const commit = () => {
-        localStorage.setItem(storageKey, nextTheme)
-        setThemeState(nextTheme)
+  const applyAppTheme = React.useCallback(
+    (nextAppTheme: AppThemeId) => {
+      const root = document.documentElement
+      const restoreTransitions = disableTransitionOnChange
+        ? disableTransitionsTemporarily()
+        : null
+
+      if (nextAppTheme === "default") {
+        root.removeAttribute("data-theme")
+      } else {
+        root.setAttribute("data-theme", nextAppTheme)
       }
 
+      if (restoreTransitions) {
+        restoreTransitions()
+      }
+    },
+    [disableTransitionOnChange]
+  )
+
+  const runWithViewTransition = React.useCallback(
+    (commitAndApply: () => void, origin?: ThemeTransitionOrigin) => {
       const prefersReducedMotion = window.matchMedia(
         "(prefers-reduced-motion: reduce)"
       ).matches
@@ -128,7 +160,7 @@ export function ThemeProvider({
         typeof document.startViewTransition !== "function" ||
         prefersReducedMotion
       ) {
-        commit()
+        commitAndApply()
         return
       }
 
@@ -140,8 +172,7 @@ export function ThemeProvider({
       )
 
       const transition = document.startViewTransition(() => {
-        flushSync(commit)
-        applyTheme(nextTheme)
+        flushSync(commitAndApply)
       })
 
       transition.ready
@@ -164,8 +195,34 @@ export function ThemeProvider({
           // Ignore aborted transitions when toggled rapidly
         })
     },
-    [applyTheme, storageKey]
+    []
   )
+
+  const setTheme = React.useCallback(
+    (nextTheme: Theme, origin?: ThemeTransitionOrigin) => {
+      runWithViewTransition(() => {
+        localStorage.setItem(storageKey, nextTheme)
+        setThemeState(nextTheme)
+        applyTheme(nextTheme)
+      }, origin)
+    },
+    [applyTheme, runWithViewTransition, storageKey]
+  )
+
+  const setAppTheme = React.useCallback(
+    (nextAppTheme: AppThemeId, origin?: ThemeTransitionOrigin) => {
+      runWithViewTransition(() => {
+        localStorage.setItem(appThemeStorageKey, nextAppTheme)
+        setAppThemeState(nextAppTheme)
+        applyAppTheme(nextAppTheme)
+      }, origin)
+    },
+    [appThemeStorageKey, applyAppTheme, runWithViewTransition]
+  )
+
+  React.useEffect(() => {
+    applyAppTheme(appTheme)
+  }, [appTheme, applyAppTheme])
 
   React.useEffect(() => {
     applyTheme(theme)
@@ -229,16 +286,24 @@ export function ThemeProvider({
         return
       }
 
-      if (event.key !== storageKey) {
+      if (event.key === storageKey) {
+        if (isTheme(event.newValue)) {
+          setThemeState(event.newValue)
+          return
+        }
+
+        setThemeState(defaultTheme)
         return
       }
 
-      if (isTheme(event.newValue)) {
-        setThemeState(event.newValue)
-        return
-      }
+      if (event.key === appThemeStorageKey) {
+        if (isAppThemeId(event.newValue)) {
+          setAppThemeState(event.newValue)
+          return
+        }
 
-      setThemeState(defaultTheme)
+        setAppThemeState(defaultAppTheme)
+      }
     }
 
     window.addEventListener("storage", handleStorageChange)
@@ -246,14 +311,16 @@ export function ThemeProvider({
     return () => {
       window.removeEventListener("storage", handleStorageChange)
     }
-  }, [defaultTheme, storageKey])
+  }, [appThemeStorageKey, defaultAppTheme, defaultTheme, storageKey])
 
   const value = React.useMemo(
     () => ({
       theme,
       setTheme,
+      appTheme,
+      setAppTheme,
     }),
-    [theme, setTheme]
+    [theme, setTheme, appTheme, setAppTheme]
   )
 
   return (
