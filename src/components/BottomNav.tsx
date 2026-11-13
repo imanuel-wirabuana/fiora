@@ -12,20 +12,29 @@ import { MoodDrawer } from "./MoodDrawer"
 import { cn } from "../lib/utils"
 import { usePresenceStore } from "../stores/presenceStore"
 
+type NavAlign = "left" | "center" | "right"
+
 interface NavItem {
   href: string
   label: string
   icon: LucideIcon
+  align: NavAlign
+}
+
+const alignClassMap: Record<NavAlign, string> = {
+  left: "justify-start",
+  center: "justify-center",
+  right: "justify-end",
 }
 
 const navItemsLeft: NavItem[] = [
-  { href: "/home", label: "Home", icon: Home },
-  { href: "/timeline", label: "Timeline", icon: Clock },
+  { href: "/home", label: "Home", icon: Home, align: "center" },
+  { href: "/timeline", label: "Timeline", icon: Clock, align: "right" },
 ]
 
 const navItemsRight: NavItem[] = [
-  { href: "/space", label: "Space", icon: LayoutGrid },
-  { href: "/setting", label: "Setting", icon: Settings },
+  { href: "/space", label: "Space", icon: LayoutGrid, align: "left" },
+  { href: "/setting", label: "Setting", icon: Settings, align: "center" },
 ]
 
 function BottomNavItem({
@@ -42,7 +51,8 @@ function BottomNavItem({
       href={item.href}
       aria-label={item.label}
       className={cn(
-        "flex flex-1 items-center justify-center py-1 text-center transition-colors",
+        "flex h-full w-full items-center py-1 text-center transition-colors",
+        alignClassMap[item.align],
         isActive
           ? "text-primary"
           : "text-muted-foreground hover:text-foreground"
@@ -86,7 +96,7 @@ export function BottomNav({ className }: BottomNavProps) {
         className
       )}
     >
-      <div className="mx-auto flex h-13 max-w-md items-center justify-around px-2 sm:max-w-2xl">
+      <div className="mx-auto grid h-13 max-w-md grid-cols-6 items-center px-2 sm:max-w-2xl">
         {/* Left Navigation Items */}
         {navItemsLeft.map((item) => (
           <BottomNavItem
@@ -97,7 +107,7 @@ export function BottomNav({ className }: BottomNavProps) {
         ))}
 
         {/* Standout Center Action with Dedicated MoodDrawer */}
-        <div className="relative -top-3.5 flex flex-col items-center">
+        <div className="relative -top-3.5 col-span-2 flex flex-col items-center justify-center">
           <button
             type="button"
             onClick={() => handleMoodDrawerOpenChange(true)}

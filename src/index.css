@@ -192,3 +192,14 @@
 .dark .leaflet-tile-pane {
   filter: brightness(0.65) invert(1) contrast(2.6) hue-rotate(205deg) saturate(0.35);
 }
+
+/* Clip-circle View Transition for theme switching */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-new(root) {
+  z-index: 9999;
+}

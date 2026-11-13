@@ -13,6 +13,7 @@ import {
   User,
 } from "lucide-react"
 import { CustomItem } from "@/components/CustomItem"
+import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
@@ -48,6 +49,18 @@ export function SettingScreen() {
         <NotificationSection />
         <Separator />
         <SettingRow
+          icon={<Timer className="size-3.5" />}
+          title="Mood Reminder Interval"
+          description="Get periodic nudges to log how you feel."
+          action={
+            <span className="inline-flex items-center rounded-full bg-muted/60 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+              Coming soon
+            </span>
+          }
+          className="opacity-75"
+        />
+        <Separator />
+        <SettingRow
           href="/setting/app-appearance"
           icon={<Palette className="size-3.5" />}
           title="App Appearance"
@@ -60,18 +73,6 @@ export function SettingScreen() {
               <ChevronRight className="size-4 text-muted-foreground transition-transform duration-200 group-hover:translate-x-0.5" />
             </div>
           }
-        />
-        <Separator />
-        <SettingRow
-          icon={<Timer className="size-3.5" />}
-          title="Mood Reminder Interval"
-          description="Get periodic nudges to log how you feel."
-          action={
-            <span className="inline-flex items-center rounded-full bg-muted/60 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-              Coming soon
-            </span>
-          }
-          className="opacity-75"
         />
       </CustomItem>
 
@@ -97,9 +98,9 @@ export function SettingScreen() {
           description="Customize emojis and emotions for you and your partner."
           action={
             <div className="flex items-center gap-1.5">
-              <span className="font-mono text-[11px] text-muted-foreground">
-                ({moodOptions.length})
-              </span>
+              <Badge variant="default" className="font-mono text-[11px]">
+                {moodOptions.length}
+              </Badge>
               <ChevronRight className="size-4 text-muted-foreground transition-transform duration-200 group-hover:translate-x-0.5" />
             </div>
           }
@@ -112,9 +113,9 @@ export function SettingScreen() {
           description="Manage quick-tap reactions sent across to your partner."
           action={
             <div className="flex items-center gap-1.5">
-              <span className="font-mono text-[11px] text-muted-foreground">
-                ({nudgeOptions.length})
-              </span>
+              <Badge variant="default" className="font-mono text-[11px]">
+                {nudgeOptions.length}
+              </Badge>
               <ChevronRight className="size-4 text-muted-foreground transition-transform duration-200 group-hover:translate-x-0.5" />
             </div>
           }

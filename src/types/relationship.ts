@@ -5,6 +5,7 @@ export type Gender = "male" | "female"
 export interface MoodOption {
   emoji: string
   label: string
+  score: number
 }
 
 export interface NudgeOption {

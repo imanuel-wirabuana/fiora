@@ -3,6 +3,7 @@ export type ActivityType = "mood" | "nudge" | "journal"
 export interface MoodActivityContent {
   emoji: string
   label: string
+  score?: number
   note?: string
 }
 

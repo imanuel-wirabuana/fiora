@@ -19,7 +19,8 @@ export function NotificationSection() {
 
   const needsIOSInstall = isIOS && !isStandalone
   const isBlocked = permission === "denied"
-  const isDisabled = !isSupported || needsIOSInstall || isBlocked || isPending
+  const isBusy = isLoading || isPending
+  const isDisabled = !isSupported || needsIOSInstall || isBlocked || isBusy
 
   let description = "Receive alerts on this phone even when Fiora is closed."
   if (needsIOSInstall) {
@@ -47,9 +48,8 @@ export function NotificationSection() {
         title="Phone Notifications"
         description={description}
         action={
-          isLoading || isPending ? (
-            <Spinner className="size-4 text-primary" />
-          ) : (
+          <div className="flex items-center gap-2">
+            {isBusy && <Spinner className="size-3.5 text-primary" />}
             <Switch
               checked={isSubscribed}
               disabled={isDisabled}
@@ -58,7 +58,7 @@ export function NotificationSection() {
               }}
               aria-label="Toggle phone push notifications"
             />
-          )
+          </div>
         }
       />
       {error && <p className="text-[11px] text-destructive">{error.message}</p>}

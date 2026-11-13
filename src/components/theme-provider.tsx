@@ -1,7 +1,9 @@
 import * as React from "react"
+import { flushSync } from "react-dom"
 
 type Theme = "dark" | "light" | "system"
 type ResolvedTheme = "dark" | "light"
+export type ThemeTransitionOrigin = { x: number; y: number }
 
 type ThemeProviderProps = {
   children: React.ReactNode
@@ -12,7 +14,7 @@ type ThemeProviderProps = {
 
 type ThemeProviderState = {
   theme: Theme
-  setTheme: (theme: Theme) => void
+  setTheme: (theme: Theme, origin?: ThemeTransitionOrigin) => void
 }
 
 const COLOR_SCHEME_QUERY = "(prefers-color-scheme: dark)"
@@ -80,7 +82,7 @@ export function ThemeProvider({
   children,
   defaultTheme = "system",
   storageKey = "theme",
-  disableTransitionOnChange = true,
+  disableTransitionOnChange = false,
   ...props
 }: ThemeProviderProps) {
   const [theme, setThemeState] = React.useState<Theme>(() => {
@@ -91,14 +93,6 @@ export function ThemeProvider({
 
     return defaultTheme
   })
-
-  const setTheme = React.useCallback(
-    (nextTheme: Theme) => {
-      localStorage.setItem(storageKey, nextTheme)
-      setThemeState(nextTheme)
-    },
-    [storageKey]
-  )
 
   const applyTheme = React.useCallback(
     (nextTheme: Theme) => {
@@ -117,6 +111,60 @@ export function ThemeProvider({
       }
     },
     [disableTransitionOnChange]
+  )
+
+  const setTheme = React.useCallback(
+    (nextTheme: Theme, origin?: ThemeTransitionOrigin) => {
+      const commit = () => {
+        localStorage.setItem(storageKey, nextTheme)
+        setThemeState(nextTheme)
+      }
+
+      const prefersReducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)"
+      ).matches
+
+      if (
+        typeof document.startViewTransition !== "function" ||
+        prefersReducedMotion
+      ) {
+        commit()
+        return
+      }
+
+      const x = origin?.x ?? window.innerWidth / 2
+      const y = origin?.y ?? window.innerHeight / 2
+      const endRadius = Math.hypot(
+        Math.max(x, window.innerWidth - x),
+        Math.max(y, window.innerHeight - y)
+      )
+
+      const transition = document.startViewTransition(() => {
+        flushSync(commit)
+        applyTheme(nextTheme)
+      })
+
+      transition.ready
+        .then(() => {
+          document.documentElement.animate(
+            {
+              clipPath: [
+                `circle(0px at ${x}px ${y}px)`,
+                `circle(${endRadius}px at ${x}px ${y}px)`,
+              ],
+            },
+            {
+              duration: 450,
+              easing: "ease-in-out",
+              pseudoElement: "::view-transition-new(root)",
+            }
+          )
+        })
+        .catch(() => {
+          // Ignore aborted transitions when toggled rapidly
+        })
+    },
+    [applyTheme, storageKey]
   )
 
   React.useEffect(() => {
@@ -156,19 +204,16 @@ export function ThemeProvider({
         return
       }
 
-      setThemeState((currentTheme) => {
-        const nextTheme =
-          currentTheme === "dark"
-            ? "light"
-            : currentTheme === "light"
-              ? "dark"
-              : getSystemTheme() === "dark"
-                ? "light"
-                : "dark"
+      const nextTheme =
+        theme === "dark"
+          ? "light"
+          : theme === "light"
+            ? "dark"
+            : getSystemTheme() === "dark"
+              ? "light"
+              : "dark"
 
-        localStorage.setItem(storageKey, nextTheme)
-        return nextTheme
-      })
+      setTheme(nextTheme)
     }
 
     window.addEventListener("keydown", handleKeyDown)
@@ -176,7 +221,7 @@ export function ThemeProvider({
     return () => {
       window.removeEventListener("keydown", handleKeyDown)
     }
-  }, [storageKey])
+  }, [setTheme, theme])
 
   React.useEffect(() => {
     const handleStorageChange = (event: StorageEvent) => {

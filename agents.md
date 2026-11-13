@@ -121,6 +121,7 @@ src/
 - **Tailwind CSS v4:** Utilize utility classes and theme tokens (`bg-primary`, `text-card-foreground`, etc.).
 - **Mobile-First Responsive Frame:** The app features a mobile-optimized shell (`PhoneMockup` / `DesktopShell`). New screens must be responsive within mobile viewport bounds (`max-w-md` mobile container or phone preview).
 - **Navigation:** Bottom navigation tabs are defined in `src/components/BottomNav.tsx` and orchestrated via `MainLayout.tsx`.
+- **Drawer Forms:** Always use `FormDrawer` (`src/components/FormDrawer.tsx`) for drawer-based forms. Do not add a Cancel button (users dismiss via swipe or backdrop), and rely on `FormDrawer`'s built-in `isPending` spinner and `isSuccess` emerald confirmation state.
 
 ---
 
