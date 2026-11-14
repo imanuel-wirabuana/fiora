@@ -31,6 +31,7 @@ import {
   MAX_PINNED_NUDGES,
   MIN_NUDGES,
 } from "@/lib/relationship"
+import { restrictToVerticalAxis } from "@/lib/dnd"
 import { cn } from "@/lib/utils"
 import type { NudgeOption } from "@/types/relationship"
 
@@ -402,6 +403,7 @@ export function NudgeSettingScreen() {
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
+        modifiers={[restrictToVerticalAxis]}
         onDragEnd={handleDragEnd}
       >
         <SortableContext

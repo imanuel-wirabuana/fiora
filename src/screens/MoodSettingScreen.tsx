@@ -41,6 +41,7 @@ import {
   MAX_MOODS,
   MIN_MOODS,
 } from "@/lib/relationship"
+import { restrictToVerticalAxis } from "@/lib/dnd"
 import { cn } from "@/lib/utils"
 import type { MoodOption } from "@/types/relationship"
 
@@ -483,6 +484,7 @@ export function MoodSettingScreen() {
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
+        modifiers={[restrictToVerticalAxis]}
         onDragEnd={handleDragEnd}
       >
         <SortableContext
