@@ -1,10 +1,4 @@
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react"
+import { useMemo, useState, type ReactNode } from "react"
 import { Heart, Send } from "lucide-react"
 import { AnimatedEmoji } from "./AnimatedEmoji"
 import { fireEmojiConfetti } from "../lib/confetti"
@@ -12,12 +6,7 @@ import { getMoodCategory } from "../lib/relationship"
 import { cn } from "../lib/utils"
 import { useRelationship } from "../hooks/useRelationship"
 import { useActivities } from "../hooks/useActivities"
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  type CarouselApi,
-} from "./ui/carousel"
+import { WheelPicker, type WheelOption } from "./pickers"
 import {
   Drawer,
   DrawerContent,
@@ -40,9 +29,6 @@ export function MoodDrawer({ open, onOpenChange, children }: MoodDrawerProps) {
   const [manualSelection, setManualSelection] = useState<string | null>(null)
   const [note, setNote] = useState("")
   const [isSent, setIsSent] = useState(false)
-  const [carouselApi, setCarouselApi] = useState<CarouselApi>()
-  const isInternalScrollRef = useRef(false)
-  const hasInitializedRef = useRef(false)
 
   const defaultMoodLabel = useMemo(() => {
     const latestLabel = myLatestMood?.content?.label?.trim().toLowerCase()
@@ -64,71 +50,39 @@ export function MoodDrawer({ open, onOpenChange, children }: MoodDrawerProps) {
 
   const selectedMood = manualSelection ?? defaultMoodLabel
 
-  const selectedIndex = useMemo(() => {
-    const idx = moodOptions.findIndex((m) => m.label === selectedMood)
-    return idx >= 0 ? idx : 0
-  }, [moodOptions, selectedMood])
+  const wheelOptions = useMemo<WheelOption<string>[]>(
+    () =>
+      moodOptions.map((mood) => {
+        const isSelected = mood.label === selectedMood
+        return {
+          value: mood.label,
+          textValue: mood.label,
+          label: (
+            <span className="flex items-center justify-center gap-2.5">
+              {isSelected ? (
+                <AnimatedEmoji
+                  emoji={mood.emoji}
+                  size={32}
+                  replayOnTap={false}
+                  fallbackClassName="text-3xl leading-none"
+                />
+              ) : (
+                <span className="text-3xl leading-none">{mood.emoji}</span>
+              )}
+              <span className="truncate text-sm">{mood.label}</span>
+            </span>
+          ),
+        }
+      }),
+    [moodOptions, selectedMood]
+  )
 
   const handleOpenChange = (nextOpen: boolean) => {
     setManualSelection(null)
-    if (nextOpen) {
-      hasInitializedRef.current = false
-    }
     onOpenChange(nextOpen)
   }
 
-  // Sync Embla position when drawer opens or selection changes externally
-  useEffect(() => {
-    if (!open || !carouselApi || moodOptions.length === 0) return
-
-    const currentSnap = carouselApi.selectedScrollSnap()
-    if (!hasInitializedRef.current) {
-      hasInitializedRef.current = true
-      carouselApi.scrollTo(selectedIndex, true)
-      return
-    }
-
-    if (currentSnap !== selectedIndex && !isInternalScrollRef.current) {
-      carouselApi.scrollTo(selectedIndex, false)
-    }
-    isInternalScrollRef.current = false
-  }, [open, carouselApi, selectedIndex, moodOptions.length])
-
-  // Re-initialize Embla when moodOptions count changes
-  useEffect(() => {
-    if (!carouselApi) return
-    carouselApi.reInit()
-    carouselApi.scrollTo(selectedIndex, true)
-  }, [carouselApi, moodOptions.length, selectedIndex])
-
-  // Listen to Embla select snaps
-  useEffect(() => {
-    if (!carouselApi) return
-
-    const handleSelect = () => {
-      const snapIndex = carouselApi.selectedScrollSnap()
-      const picked = moodOptions[snapIndex]
-      if (picked && picked.label !== selectedMood) {
-        isInternalScrollRef.current = true
-        setManualSelection(picked.label)
-      }
-    }
-
-    carouselApi.on("select", handleSelect)
-    return () => {
-      carouselApi.off("select", handleSelect)
-    }
-  }, [carouselApi, moodOptions, selectedMood])
-
   const isPending = createActivityMutation.isPending
-
-  const handleMoodClick = (index: number, label: string) => {
-    carouselApi?.scrollTo(index)
-    if (label !== selectedMood) {
-      isInternalScrollRef.current = true
-      setManualSelection(label)
-    }
-  }
 
   const handleSendMood = () => {
     const currentOption = moodOptions.find((m) => m.label === selectedMood) || {
@@ -173,72 +127,19 @@ export function MoodDrawer({ open, onOpenChange, children }: MoodDrawerProps) {
             </DrawerDescription>
           </DrawerHeader>
 
-          {/* Horizontal Wheel-Style Mood Picker (5 visible, unboxed, WheelPicker pattern) */}
-          <div
-            className="relative my-2 overflow-hidden py-2 select-none touch-pan-x"
-            onPointerDown={(e) => e.stopPropagation()}
-            onTouchStart={(e) => e.stopPropagation()}
-          >
-            {/* Center selection highlight band */}
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-y-1 left-1/2 z-0 w-1/5 -translate-x-1/2 rounded-2xl border border-primary/35 bg-primary/10"
-            />
-
-            <Carousel
-              orientation="horizontal"
-              setApi={setCarouselApi}
-              opts={{
-                align: "center",
-                containScroll: false,
-                dragFree: false,
-                startIndex: selectedIndex,
-              }}
-              className="relative z-10 w-full [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]"
-            >
-              <CarouselContent className="-ml-1 items-center">
-                {moodOptions.map((mood, idx) => {
-                  const isSelected = idx === selectedIndex
-                  return (
-                    <CarouselItem key={mood.label} className="basis-1/5 pl-1">
-                      <button
-                        type="button"
-                        onClick={() => handleMoodClick(idx, mood.label)}
-                        className={cn(
-                          "relative z-10 flex w-full flex-col items-center justify-center gap-1 py-1.5 transition-all duration-150 outline-none active:scale-95",
-                          isSelected
-                            ? "scale-110 opacity-100"
-                            : "scale-75 opacity-40 hover:opacity-75"
-                        )}
-                      >
-                        {isSelected ? (
-                          <AnimatedEmoji
-                            emoji={mood.emoji}
-                            size={48}
-                            replayOnTap={false}
-                            fallbackClassName="text-5xl"
-                          />
-                        ) : (
-                          <span className="text-5xl leading-none">
-                            {mood.emoji}
-                          </span>
-                        )}
-                        <span
-                          className={cn(
-                            "w-full truncate text-center text-xs leading-tight",
-                            isSelected
-                              ? "font-semibold text-primary"
-                              : "font-normal text-muted-foreground"
-                          )}
-                        >
-                          {mood.label}
-                        </span>
-                      </button>
-                    </CarouselItem>
-                  )
-                })}
-              </CarouselContent>
-            </Carousel>
+          {/* Vertical Wheel Mood Picker */}
+          <div className="my-2">
+            {wheelOptions.length > 0 && (
+              <WheelPicker
+                options={wheelOptions}
+                value={selectedMood}
+                onChange={setManualSelection}
+                optionItemHeight={52}
+                visibleCount={12}
+                highlightClassName="rounded-2xl border-primary/35 bg-[color-mix(in_oklab,var(--primary)_10%,var(--popover))]"
+                ariaLabel="Mood picker"
+              />
+            )}
           </div>
 
           {/* Optional Short Note */}
