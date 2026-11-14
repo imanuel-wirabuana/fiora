@@ -1,8 +1,16 @@
-import { useMemo, useState, type ReactNode } from "react"
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react"
 import { Heart, Send } from "lucide-react"
 import { AnimatedEmoji } from "./AnimatedEmoji"
 import { fireEmojiConfetti } from "../lib/confetti"
-import { getMoodCategory } from "../lib/relationship"
+import { getMoodCategory, getMoodCategoryBadge } from "../lib/relationship"
 import { cn } from "../lib/utils"
 import { useRelationship } from "../hooks/useRelationship"
 import { useActivities } from "../hooks/useActivities"
@@ -16,6 +24,46 @@ import {
   DrawerTrigger,
 } from "./ui/drawer"
 import { Spinner } from "./ui/spinner"
+
+const SelectedMoodContext = createContext<string>("")
+
+function MoodWheelEmoji({ emoji, label }: { emoji: string; label: string }) {
+  const selectedMood = useContext(SelectedMoodContext)
+  const isSelected = selectedMood === label
+  const spanRef = useRef<HTMLSpanElement>(null)
+  const [settledLabel, setSettledLabel] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!isSelected) return
+    if (!spanRef.current?.closest("[data-rwp-highlight-item]")) return
+
+    const timer = setTimeout(() => {
+      setSettledLabel(label)
+    }, 150)
+
+    return () => clearTimeout(timer)
+  }, [isSelected, label])
+
+  const showLottie = isSelected && settledLabel === label
+
+  return (
+    <span
+      ref={spanRef}
+      className="flex h-12 w-12 items-center justify-center text-5xl leading-none"
+    >
+      {showLottie ? (
+        <AnimatedEmoji
+          emoji={emoji}
+          size={48}
+          replayOnTap={false}
+          fallbackClassName="text-5xl leading-none"
+        />
+      ) : (
+        emoji
+      )}
+    </span>
+  )
+}
 
 interface MoodDrawerProps {
   open: boolean
@@ -52,29 +100,34 @@ export function MoodDrawer({ open, onOpenChange, children }: MoodDrawerProps) {
 
   const wheelOptions = useMemo<WheelOption<string>[]>(
     () =>
-      moodOptions.map((mood) => {
-        const isSelected = mood.label === selectedMood
+      moodOptions.map((mood, idx) => {
+        const badge = getMoodCategoryBadge(idx, moodOptions.length)
         return {
           value: mood.label,
           textValue: mood.label,
           label: (
-            <span className="flex items-center justify-center gap-2.5">
-              {isSelected ? (
-                <AnimatedEmoji
-                  emoji={mood.emoji}
-                  size={32}
-                  replayOnTap={false}
-                  fallbackClassName="text-3xl leading-none"
-                />
-              ) : (
-                <span className="text-3xl leading-none">{mood.emoji}</span>
-              )}
-              <span className="truncate text-sm">{mood.label}</span>
-            </span>
+            <div className="grid w-full grid-cols-[1fr_auto_1fr] items-center gap-2 px-4">
+              <div className="flex min-w-0 items-center justify-start">
+                <span
+                  className={cn(
+                    "inline-flex shrink-0 items-center rounded-full border px-2.5 py-1 text-xs font-medium leading-none",
+                    badge.className
+                  )}
+                >
+                  {badge.label}
+                </span>
+              </div>
+
+              <MoodWheelEmoji emoji={mood.emoji} label={mood.label} />
+
+              <span className="min-w-0 truncate text-right text-lg">
+                {mood.label}
+              </span>
+            </div>
           ),
         }
       }),
-    [moodOptions, selectedMood]
+    [moodOptions]
   )
 
   const handleOpenChange = (nextOpen: boolean) => {
@@ -130,15 +183,18 @@ export function MoodDrawer({ open, onOpenChange, children }: MoodDrawerProps) {
           {/* Vertical Wheel Mood Picker */}
           <div className="my-2">
             {wheelOptions.length > 0 && (
-              <WheelPicker
-                options={wheelOptions}
-                value={selectedMood}
-                onChange={setManualSelection}
-                optionItemHeight={52}
-                visibleCount={12}
-                highlightClassName="rounded-2xl border-primary/35 bg-[color-mix(in_oklab,var(--primary)_10%,var(--popover))]"
-                ariaLabel="Mood picker"
-              />
+              <SelectedMoodContext.Provider value={selectedMood}>
+                <WheelPicker
+                  options={wheelOptions}
+                  value={selectedMood}
+                  onChange={setManualSelection}
+                  optionItemHeight={84}
+                  visibleCount={8}
+                  itemClassName="scale-100"
+                  highlightClassName="inset-x-0 rounded-none border-0 bg-popover before:pointer-events-none before:absolute before:inset-x-0 before:inset-y-3 before:z-0 before:rounded-2xl before:border before:border-primary/35 before:bg-primary/10 *:data-rwp-highlight-list:z-10"
+                  ariaLabel="Mood picker"
+                />
+              </SelectedMoodContext.Provider>
             )}
           </div>
 

@@ -83,6 +83,60 @@ export function getMoodCategory(index: number, total: number): MoodCategory {
   return "neutral"
 }
 
+export interface MoodCategoryBadge {
+  category: MoodCategory
+  label: string
+  className: string
+}
+
+/**
+ * Return display label and Tailwind pill classes for a mood's 5-tier category.
+ */
+export function getMoodCategoryBadge(
+  index: number,
+  total: number
+): MoodCategoryBadge {
+  const category = getMoodCategory(index, total)
+
+  switch (category) {
+    case "very-good":
+      return {
+        category,
+        label: "Very Good",
+        className:
+          "border-teal-500/30 bg-teal-500/15 text-teal-600 dark:text-teal-400",
+      }
+    case "good":
+      return {
+        category,
+        label: "Good",
+        className:
+          "border-emerald-500/25 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+      }
+    case "neutral":
+      return {
+        category,
+        label: "Neutral",
+        className:
+          "border-amber-500/25 bg-amber-500/10 text-amber-600 dark:text-amber-400",
+      }
+    case "bad":
+      return {
+        category,
+        label: "Bad",
+        className:
+          "border-orange-500/25 bg-orange-500/10 text-orange-600 dark:text-orange-400",
+      }
+    case "very-bad":
+      return {
+        category,
+        label: "Very Bad",
+        className:
+          "border-destructive/30 bg-destructive/15 text-destructive",
+      }
+  }
+}
+
 /**
  * Ensure legacy or partial mood entries have valid unique scores and respect 5-33 limits.
  */

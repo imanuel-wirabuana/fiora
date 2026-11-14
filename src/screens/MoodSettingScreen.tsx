@@ -17,14 +17,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
-import {
-  Pencil,
-  Plus,
-  Smile,
-  Sparkles,
-  Trash2,
-  Wand2,
-} from "lucide-react"
+import { Pencil, Plus, Smile, Sparkles, Trash2, Wand2 } from "lucide-react"
 import { AnimatedEmoji } from "@/components/AnimatedEmoji"
 import { CustomItem } from "@/components/CustomItem"
 import { FormDrawer } from "@/components/FormDrawer"
@@ -37,7 +30,7 @@ import { useRelationship } from "@/hooks/useRelationship"
 import { useSaveMoods } from "@/hooks/useSaveMoods"
 import {
   assignMoodScoresByOrder,
-  getMoodCategory,
+  getMoodCategoryBadge,
   MAX_MOODS,
   MIN_MOODS,
 } from "@/lib/relationship"
@@ -57,45 +50,11 @@ function formatScoreText(score: number): string {
 }
 
 function getScoreBadgeStyles(score: number, index: number, total: number) {
-  const category = getMoodCategory(index, total)
-  const text = formatScoreText(score)
-
-  switch (category) {
-    case "very-good":
-      return {
-        text,
-        label: "Very Good",
-        className:
-          "border-teal-500/30 bg-teal-500/15 text-teal-600 dark:text-teal-400",
-      }
-    case "good":
-      return {
-        text,
-        label: "Good",
-        className:
-          "border-emerald-500/25 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-      }
-    case "neutral":
-      return {
-        text,
-        label: "Neutral",
-        className:
-          "border-amber-500/25 bg-amber-500/10 text-amber-600 dark:text-amber-400",
-      }
-    case "bad":
-      return {
-        text,
-        label: "Bad",
-        className:
-          "border-orange-500/25 bg-orange-500/10 text-orange-600 dark:text-orange-400",
-      }
-    case "very-bad":
-      return {
-        text,
-        label: "Very Bad",
-        className:
-          "border-destructive/30 bg-destructive/15 text-destructive",
-      }
+  const badge = getMoodCategoryBadge(index, total)
+  return {
+    text: formatScoreText(score),
+    label: badge.label,
+    className: badge.className,
   }
 }
 
@@ -142,7 +101,7 @@ function SortableMoodRow({
       {...listeners}
       onContextMenu={(e) => e.preventDefault()}
       className={cn(
-        "group flex select-none items-center justify-between gap-3 rounded-2xl border border-border/70 bg-card px-3.5 py-2.5 transition-colors [-webkit-touch-callout:none] hover:border-border",
+        "group flex items-center justify-between gap-3 rounded-2xl border border-border/70 bg-card px-3.5 py-2.5 transition-colors select-none [-webkit-touch-callout:none] hover:border-border",
         isDragging
           ? "relative z-10 scale-[1.01] touch-none shadow-md ring-2 ring-primary/30"
           : "touch-manipulation"
@@ -518,7 +477,9 @@ export function MoodSettingScreen() {
         title={editingIndex !== null ? "Edit Mood" : "Add Mood"}
         description="AI will automatically score and sort this mood from good to bad based on its icon and label."
         onSubmit={handleApplyDrawer}
-        submitLabel={editingIndex !== null ? "Save & Rearrange" : "Add & Rearrange"}
+        submitLabel={
+          editingIndex !== null ? "Save & Rearrange" : "Add & Rearrange"
+        }
         successLabel="Rearranged!"
         isPending={isSaving}
         submitDisabled={!formValid}
@@ -589,7 +550,9 @@ export function MoodSettingScreen() {
         title="AI Mood Assistant"
         description="Rearrange your current moods or prompt AI to customize your mood list."
         onSubmit={handleApplyAiDrawer}
-        submitLabel={aiMode === "rearrange" ? "Rearrange Moods" : "Apply AI Prompt"}
+        submitLabel={
+          aiMode === "rearrange" ? "Rearrange Moods" : "Apply AI Prompt"
+        }
         successLabel="Done!"
         isPending={isSaving}
         submitDisabled={aiMode === "prompt" && !aiPrompt.trim()}
