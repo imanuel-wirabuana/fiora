@@ -513,7 +513,6 @@ export function NudgeSettingScreen() {
         }
         onSubmit={handleConfirmRemoveNudge}
         submitLabel="Remove"
-        submitVariant="destructive"
         successLabel="Removed"
         isPending={isSaving}
       />

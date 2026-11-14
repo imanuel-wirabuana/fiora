@@ -37,13 +37,6 @@ export function ProfileStep({
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="space-y-1">
-        <h3 className="text-base font-semibold tracking-tight">Your Profile</h3>
-        <p className="text-xs text-muted-foreground">
-          Choose an avatar icon and set the name your partner sees
-        </p>
-      </div>
-
       {/* Avatar Picker */}
       <div className="space-y-2">
         <span className="text-xs font-medium text-muted-foreground">

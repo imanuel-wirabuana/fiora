@@ -34,16 +34,8 @@ export function MoodsStep({ moods, onChangeMoods }: MoodsStepProps) {
   const activeMood = moods[activeMoodIndex] || moods[0]
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-start justify-between gap-2">
-        <div className="space-y-1">
-          <h3 className="text-base font-semibold tracking-tight">
-            Customize Moods (Optional)
-          </h3>
-          <p className="text-xs text-muted-foreground">
-            Tap a mood button to edit its emoji and label
-          </p>
-        </div>
+    <div className="flex flex-col gap-3">
+      <div className="flex justify-end">
         <Button
           type="button"
           variant="ghost"

@@ -10,6 +10,8 @@ export function DesktopShell({ children }: { children: ReactNode }) {
         {/* Left column: App Description & PWA Notice */}
         <div className="space-y-6 lg:col-span-7">
           <Brand
+            showLogo
+            logoVariant="primary"
             align="left"
             size="lg"
             subtitle="Track your moods and stay close together"

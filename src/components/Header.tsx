@@ -1,6 +1,7 @@
 import type { ReactNode } from "react"
 import { Link } from "wouter"
 import { ArrowLeft, Bell } from "lucide-react"
+import { FioraLogo } from "./Brand"
 import { useNotifications } from "../hooks/useNotifications"
 import { useStickyHeader } from "../hooks/useStickyHeader"
 import { cn } from "../lib/utils"
@@ -75,11 +76,9 @@ export function Header({
             href="/home"
             className="flex items-center gap-2 text-base font-bold tracking-tight"
           >
-            <img
-              src="/pwa-192x192.png"
-              alt="Fiora"
-              className="size-6 rounded-lg object-cover shadow-xs"
-            />
+            <span className="flex size-6 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary">
+              <FioraLogo className="size-4" />
+            </span>
             <span>Fiora</span>
           </Link>
         )}

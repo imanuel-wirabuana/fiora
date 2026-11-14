@@ -34,16 +34,8 @@ export function NudgesStep({ nudges, onChangeNudges }: NudgesStepProps) {
   const activeNudge = nudges[activeNudgeIndex] || nudges[0]
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-start justify-between gap-2">
-        <div className="space-y-1">
-          <h3 className="text-base font-semibold tracking-tight">
-            Quick Nudges (Optional)
-          </h3>
-          <p className="text-xs text-muted-foreground">
-            Tap a nudge pill to edit its emoji and message
-          </p>
-        </div>
+    <div className="flex flex-col gap-3">
+      <div className="flex justify-end">
         <Button
           type="button"
           variant="ghost"

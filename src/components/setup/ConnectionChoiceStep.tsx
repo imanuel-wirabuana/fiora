@@ -24,15 +24,6 @@ export function ConnectionChoiceStep({
 }: ConnectionChoiceStepProps) {
   return (
     <div className="flex flex-col gap-4">
-      <div className="space-y-1">
-        <h3 className="text-base font-semibold tracking-tight">
-          Connect with Partner
-        </h3>
-        <p className="text-xs text-muted-foreground">
-          Join your partner&apos;s existing relationship or create a brand new one
-        </p>
-      </div>
-
       <Tabs
         value={connectionType}
         onValueChange={(val) =>

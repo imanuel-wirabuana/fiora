@@ -86,13 +86,8 @@ const QuizSummaryScreen = lazy(() =>
     default: m.QuizSummaryScreen,
   }))
 )
-const LoginScreen = lazy(() =>
-  import("./screens/LoginScreen").then((m) => ({ default: m.LoginScreen }))
-)
-const RegisterScreen = lazy(() =>
-  import("./screens/RegisterScreen").then((m) => ({
-    default: m.RegisterScreen,
-  }))
+const AuthScreen = lazy(() =>
+  import("./screens/AuthScreen").then((m) => ({ default: m.AuthScreen }))
 )
 const SetupScreen = lazy(() =>
   import("./screens/SetupScreen").then((m) => ({ default: m.SetupScreen }))
@@ -130,7 +125,7 @@ function AppRoutes() {
           <Route path="/">
             {!isAuthenticated ? (
               <Suspense fallback={<AuthScreenSkeleton />}>
-                <LoginScreen />
+                <AuthScreen defaultTab="login" />
               </Suspense>
             ) : !hasRelationship ? (
               <Redirect to="/setup" />
@@ -142,7 +137,7 @@ function AppRoutes() {
           <Route path="/register">
             {!isAuthenticated ? (
               <Suspense fallback={<AuthScreenSkeleton />}>
-                <RegisterScreen />
+                <AuthScreen defaultTab="register" />
               </Suspense>
             ) : !hasRelationship ? (
               <Redirect to="/setup" />

@@ -37,6 +37,8 @@ export interface StepRenderProps {
 export interface SetupStepConfig {
   id: string
   title: string
+  question: string
+  description: string
   subtitle?: string
   /**
    * Conditional rule: return false if this step should be skipped based on wizard state.
@@ -70,6 +72,8 @@ export const SETUP_STEPS: SetupStepConfig[] = [
   {
     id: "gender",
     title: "Gender",
+    question: "Who are you?",
+    description: "Select your gender so we can personalize the experience",
     subtitle: "Select your identity",
     validate: (state) => {
       if (!state.gender) {
@@ -95,6 +99,8 @@ export const SETUP_STEPS: SetupStepConfig[] = [
   {
     id: "profile",
     title: "Profile",
+    question: "Your Profile",
+    description: "Choose an avatar icon and set the name your partner sees",
     subtitle: "Name and icon",
     validate: (state) => {
       if (!state.name.trim()) {
@@ -121,6 +127,9 @@ export const SETUP_STEPS: SetupStepConfig[] = [
   {
     id: "connection",
     title: "Connection",
+    question: "Connect with Partner",
+    description:
+      "Join your partner's existing relationship or create a brand new one",
     subtitle: "Join or create relationship",
     validate: (state) => {
       if (state.connectionType === "join" && state.partnerCode.trim().length !== 5) {
@@ -149,6 +158,8 @@ export const SETUP_STEPS: SetupStepConfig[] = [
   {
     id: "anniversary",
     title: "Anniversary",
+    question: "Anniversary Date (Optional)",
+    description: "When did your story begin? You can change this anytime later.",
     subtitle: "Special date",
     isVisible: (state) => state.connectionType === "create",
     render: ({ state, updateState }) => (
@@ -163,6 +174,8 @@ export const SETUP_STEPS: SetupStepConfig[] = [
   {
     id: "moods",
     title: "Moods",
+    question: "Customize Moods (Optional)",
+    description: "Tap a mood button to edit its emoji and label",
     subtitle: "Mood check-ins",
     isVisible: (state) => state.connectionType === "create",
     render: ({ state, updateState }) => (
@@ -177,6 +190,8 @@ export const SETUP_STEPS: SetupStepConfig[] = [
   {
     id: "nudges",
     title: "Nudges",
+    question: "Quick Nudges (Optional)",
+    description: "Tap a nudge pill to edit its emoji and message",
     subtitle: "Quick alerts",
     isVisible: (state) => state.connectionType === "create",
     render: ({ state, updateState }) => (
@@ -191,6 +206,9 @@ export const SETUP_STEPS: SetupStepConfig[] = [
   {
     id: "invite-code",
     title: "Invite Code",
+    question: "Your Relationship is Ready!",
+    description:
+      "Share your 5-digit invite code with your partner to connect your spaces",
     subtitle: "Share with partner",
     isVisible: (state) => state.connectionType === "create",
     render: ({ state, updateState }) => (

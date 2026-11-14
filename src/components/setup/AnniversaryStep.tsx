@@ -22,17 +22,9 @@ export function AnniversaryStep({
   const selectedDate = anniversary ? parseISO(anniversary) : undefined
 
   return (
-    <div className="flex flex-col gap-5">
-      <div className="flex items-start justify-between gap-2">
-        <div className="space-y-1">
-          <h3 className="text-base font-semibold tracking-tight">
-            Anniversary Date (Optional)
-          </h3>
-          <p className="text-xs text-muted-foreground">
-            When did your story begin? You can change this anytime later.
-          </p>
-        </div>
-        {anniversary && (
+    <div className="flex flex-col gap-4">
+      {anniversary && (
+        <div className="flex justify-end">
           <Button
             type="button"
             variant="ghost"
@@ -43,8 +35,8 @@ export function AnniversaryStep({
             <X className="mr-1 size-3.5" />
             Clear
           </Button>
-        )}
-      </div>
+        </div>
+      )}
 
       <div className="space-y-3">
         <Field className="gap-1.5">

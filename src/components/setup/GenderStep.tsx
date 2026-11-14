@@ -9,14 +9,7 @@ interface GenderStepProps {
 export function GenderStep({ gender, onSelectGender }: GenderStepProps) {
   return (
     <div className="flex flex-col gap-4">
-      <div className="space-y-1">
-        <h3 className="text-base font-semibold tracking-tight">Who are you?</h3>
-        <p className="text-xs text-muted-foreground">
-          Select your gender so we can personalize the experience
-        </p>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3 pt-2">
+      <div className="grid grid-cols-2 gap-3">
         {/* Male */}
         <button
           type="button"
@@ -68,4 +61,3 @@ export function GenderStep({ gender, onSelectGender }: GenderStepProps) {
     </div>
   )
 }
-

@@ -25,13 +25,6 @@ export function ShareCodeStep({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="space-y-1">
-        <h3 className="text-base font-semibold tracking-tight">Your Relationship is Ready!</h3>
-        <p className="text-xs text-muted-foreground">
-          Share your 5-digit invite code with your partner to connect your spaces
-        </p>
-      </div>
-
       <div className="flex flex-col items-center justify-center gap-3 rounded-3xl border border-border bg-muted/20 p-6 text-center">
         <div className="flex items-center gap-2 text-xs font-semibold text-primary">
           <Send className="size-3.5" />
