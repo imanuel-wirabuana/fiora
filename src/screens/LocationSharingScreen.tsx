@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { useLocationSharing } from "@/hooks/useLocationSharing"
 import { useRelationship } from "@/hooks/useRelationship"
-import { createMapTileLayer } from "@/lib/map"
+import { createMapTileLayer, getGenderMarkerBg } from "@/lib/map"
 import { cn } from "@/lib/utils"
 
 export function LocationSharingScreen() {
@@ -52,8 +52,10 @@ export function LocationSharingScreen() {
     focusState.key === locationKey ? focusState.focus : "both"
 
   const myAvatar = currentMember?.content?.avatar || "💙"
+  const myGender = currentMember?.content?.gender
   const partnerAvatar = partnerMember?.content?.avatar || "🤍"
   const partnerName = partnerMember?.content?.name || "Partner"
+  const partnerGender = partnerMember?.content?.gender
 
   // Initialize Leaflet Map
   useEffect(() => {
@@ -133,7 +135,7 @@ export function LocationSharingScreen() {
         className: "custom-leaflet-marker",
         html: `
           <div class="flex flex-col items-center">
-            <div class="flex size-8 items-center justify-center rounded-full bg-primary text-white shadow-lg ring-2 ring-background text-base">
+            <div class="flex size-8 items-center justify-center rounded-full ${getGenderMarkerBg(myGender)} shadow-lg ring-2 ring-background text-base">
               ${myAvatar}
             </div>
             <div class="mt-0.5 rounded-md bg-background/95 px-1.5 py-0.5 text-[10px] font-semibold text-foreground shadow-xs border border-border/80">
@@ -159,7 +161,7 @@ export function LocationSharingScreen() {
         className: "custom-leaflet-marker",
         html: `
           <div class="flex flex-col items-center">
-            <div class="flex size-8 items-center justify-center rounded-full bg-secondary text-secondary-foreground shadow-lg ring-2 ring-background text-base">
+            <div class="flex size-8 items-center justify-center rounded-full ${getGenderMarkerBg(partnerGender)} shadow-lg ring-2 ring-background text-base">
               ${partnerAvatar}
             </div>
             <div class="mt-0.5 rounded-md bg-background/95 px-1.5 py-0.5 text-[10px] font-semibold text-foreground shadow-xs border border-border/80">
@@ -197,7 +199,15 @@ export function LocationSharingScreen() {
         animate: true,
       })
     }
-  }, [myLocation, partnerLocation, myAvatar, partnerAvatar, partnerName])
+  }, [
+    myLocation,
+    partnerLocation,
+    myAvatar,
+    myGender,
+    partnerAvatar,
+    partnerName,
+    partnerGender,
+  ])
 
   // Camera navigation controls
   const locateMe = () => {
@@ -333,14 +343,13 @@ export function LocationSharingScreen() {
 
           <Button
             type="button"
-            variant={activeFocus === "both" ? "secondary" : "ghost"}
+            variant="default"
             size="xs"
             onClick={fitBoth}
             className={cn(
-              "h-7 gap-1 rounded-full px-2.5 text-[11px]",
-              activeFocus === "both"
-                ? "bg-primary/10 font-semibold text-primary hover:bg-primary/15"
-                : "text-muted-foreground hover:text-foreground"
+              "h-7 gap-1 rounded-full px-2.5 text-[11px] font-semibold",
+              activeFocus === "both" &&
+                "ring-2 ring-primary/40 ring-offset-1 ring-offset-card"
             )}
             title="Fit both markers"
           >
@@ -377,8 +386,8 @@ export function LocationSharingScreen() {
                   "flex flex-col items-start gap-1.5 rounded-2xl border p-3 text-left transition-all",
                   myLocation
                     ? activeFocus === "me"
-                      ? "border-primary bg-primary/10 ring-1 ring-primary/30"
-                      : "border-primary/25 bg-primary/5 hover:border-primary/50 hover:bg-primary/10 active:scale-[0.98]"
+                      ? "border-primary/40 bg-primary/15 ring-2 ring-primary/40"
+                      : "border-primary/20 bg-primary/10 hover:bg-primary/15 active:scale-[0.98]"
                     : "cursor-not-allowed border-border/50 bg-muted/20 opacity-60"
                 )}
               >
@@ -431,8 +440,8 @@ export function LocationSharingScreen() {
                   "flex flex-col items-start gap-1.5 rounded-2xl border p-3 text-left transition-all",
                   partnerLocation
                     ? activeFocus === "partner"
-                      ? "border-secondary bg-secondary/35 ring-1 ring-secondary-foreground/25"
-                      : "border-secondary/50 bg-secondary/15 hover:border-secondary hover:bg-secondary/25 active:scale-[0.98]"
+                      ? "border-primary/40 bg-primary/15 ring-2 ring-primary/40"
+                      : "border-primary/20 bg-primary/10 hover:bg-primary/15 active:scale-[0.98]"
                     : "cursor-not-allowed border-border/50 bg-muted/20 opacity-60"
                 )}
               >
@@ -447,13 +456,13 @@ export function LocationSharingScreen() {
                     />
                     <span className="truncate">{partnerName}</span>
                   </div>
-                  <Crosshair className="size-3.5 shrink-0 text-secondary-foreground" />
+                  <Crosshair className="size-3.5 shrink-0 text-primary" />
                 </div>
 
                 {partnerLocation ? (
                   <div className="w-full space-y-1">
                     <div className="flex items-center gap-1 text-[11px] font-medium text-foreground">
-                      <MapPin className="size-2.5 shrink-0 text-secondary-foreground/80" />
+                      <MapPin className="size-2.5 shrink-0 text-primary/80" />
                       <span
                         className="truncate"
                         title={partnerLocation.placeName || ""}

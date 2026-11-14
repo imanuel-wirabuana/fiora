@@ -6,14 +6,7 @@ import { CustomItem } from "@/components/CustomItem"
 import { CustomSkeleton } from "@/components/CustomSkeleton"
 import { useLocationSharing } from "@/hooks/useLocationSharing"
 import { useRelationship } from "@/hooks/useRelationship"
-import { createMapTileLayer } from "@/lib/map"
-import type { Gender } from "@/types/relationship"
-
-function getGenderMarkerBg(gender?: Gender | null) {
-  if (gender === "male") return "bg-blue-500"
-  if (gender === "female") return "bg-secondary"
-  return "bg-primary"
-}
+import { createMapTileLayer, getGenderMarkerBg } from "@/lib/map"
 
 export function LocationSharingSection() {
   const {
@@ -106,7 +99,7 @@ export function LocationSharingSection() {
         className: "custom-leaflet-marker",
         html: `
           <div class="flex flex-col items-center">
-            <div class="flex size-7 items-center justify-center rounded-full ${getGenderMarkerBg(myGender)} text-white shadow-md ring-2 ring-background text-sm">
+            <div class="flex size-7 items-center justify-center rounded-full ${getGenderMarkerBg(myGender)} shadow-md ring-2 ring-background text-sm">
               ${myAvatar}
             </div>
             <div class="mt-0.5 rounded bg-background/90 px-1 py-0.2 text-[9px] font-semibold text-foreground shadow-xs border border-border/60">
@@ -133,7 +126,7 @@ export function LocationSharingSection() {
         className: "custom-leaflet-marker",
         html: `
           <div class="flex flex-col items-center">
-            <div class="flex size-7 items-center justify-center rounded-full ${getGenderMarkerBg(partnerGender)} text-white shadow-md ring-2 ring-background text-sm">
+            <div class="flex size-7 items-center justify-center rounded-full ${getGenderMarkerBg(partnerGender)} shadow-md ring-2 ring-background text-sm">
               ${partnerAvatar}
             </div>
             <div class="mt-0.5 rounded bg-background/90 px-1 py-0.2 text-[9px] font-semibold text-foreground shadow-xs border border-border/60">
