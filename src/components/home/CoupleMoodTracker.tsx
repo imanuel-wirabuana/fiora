@@ -2,7 +2,7 @@ import type { ReactNode } from "react"
 import { formatDistanceToNow } from "date-fns"
 import { Heart, Smile, UserPlus } from "lucide-react"
 import { CustomItem } from "@/components/CustomItem"
-import { Skeleton } from "@/components/ui/skeleton"
+import { CustomSkeleton } from "@/components/CustomSkeleton"
 import { cn } from "@/lib/utils"
 import { useActivities } from "@/hooks/useActivities"
 import { useRelationship } from "@/hooks/useRelationship"
@@ -86,7 +86,7 @@ function MoodCard({
     >
       {/* Centered Big Icon & Mood Status */}
       {isLoading ? (
-        <Skeleton className="size-14 shrink-0 rounded-full" />
+        <CustomSkeleton className="size-14 shrink-0 rounded-full" />
       ) : (
         <div
           className={cn(
@@ -108,9 +108,9 @@ function MoodCard({
       <div className="flex w-full min-w-0 flex-col items-center justify-center text-center gap-0.5">
         {isLoading ? (
           <>
-            <Skeleton className="my-0.5 h-3.5 w-16 rounded-md" />
-            <Skeleton className="my-0.5 h-3 w-20 rounded-md" />
-            <Skeleton className="my-0.5 h-2.5 w-14 rounded-md" />
+            <CustomSkeleton className="my-0.5 h-3.5 w-16 rounded-md" />
+            <CustomSkeleton className="my-0.5 h-3 w-20 rounded-md" />
+            <CustomSkeleton className="my-0.5 h-2.5 w-14 rounded-md" />
           </>
         ) : (
           <>

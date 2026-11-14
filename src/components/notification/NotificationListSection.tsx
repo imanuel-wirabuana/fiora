@@ -19,7 +19,7 @@ import { useLocation } from "wouter"
 import { CustomItem } from "@/components/CustomItem"
 import { FormDrawer } from "@/components/FormDrawer"
 import { Button } from "@/components/ui/button"
-import { Skeleton } from "@/components/ui/skeleton"
+import { CustomSkeleton } from "@/components/CustomSkeleton"
 import { Spinner } from "@/components/ui/spinner"
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll"
 import { useNotifications } from "@/hooks/useNotifications"
@@ -147,13 +147,13 @@ export function NotificationListSection() {
     return (
       <div className="flex flex-col gap-3">
         <div className="flex gap-1.5">
-          <Skeleton className="h-7 w-12 rounded-full" />
-          <Skeleton className="h-7 w-16 rounded-full" />
-          <Skeleton className="h-7 w-16 rounded-full" />
-          <Skeleton className="h-7 w-16 rounded-full" />
+          <CustomSkeleton className="h-7 w-12 rounded-full" />
+          <CustomSkeleton className="h-7 w-16 rounded-full" />
+          <CustomSkeleton className="h-7 w-16 rounded-full" />
+          <CustomSkeleton className="h-7 w-16 rounded-full" />
         </div>
         {Array.from({ length: 5 }).map((_, idx) => (
-          <Skeleton key={idx} className="h-18 w-full" />
+          <CustomSkeleton key={idx} className="h-18 w-full" />
         ))}
       </div>
     )
@@ -314,8 +314,8 @@ export function NotificationListSection() {
           <div ref={sentinelRef} className="h-1" />
           {isFetchingNextPage && (
             <div className="flex flex-col gap-2">
-              <Skeleton className="h-18 w-full" />
-              <Skeleton className="h-18 w-full" />
+              <CustomSkeleton className="h-18 w-full" />
+              <CustomSkeleton className="h-18 w-full" />
             </div>
           )}
         </div>

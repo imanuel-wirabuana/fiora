@@ -1,24 +1,16 @@
 import { useCallback, useMemo, useState } from "react"
 import { format, formatDistanceToNow, isToday, isYesterday } from "date-fns"
-import {
-  Heart,
-  HelpCircle,
-  Send,
-  Sparkles,
-} from "lucide-react"
+import { Heart, Send, Sparkles } from "lucide-react"
 import { CustomItem } from "@/components/CustomItem"
-import { Badge } from "@/components/ui/badge"
-import { Skeleton } from "@/components/ui/skeleton"
+import { CustomSkeleton } from "@/components/CustomSkeleton"
 import { useAuth } from "@/hooks/useAuth"
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll"
 import { useRelationship } from "@/hooks/useRelationship"
-import { cn } from "@/lib/utils"
 import type {
   Activity,
   MoodActivityContent,
   NudgeActivityContent,
 } from "@/types/activity"
-import type { QuizTimelineEntry } from "@/types/quiz"
 import type { TimelineItem } from "@/types/timeline"
 
 const TIMELINE_WINDOW_SIZE = 20
@@ -161,91 +153,6 @@ export function TimelineFeedSection({
     return null
   }
 
-  const renderQuizItem = (
-    entry: QuizTimelineEntry,
-    createdAt: string,
-    key: string
-  ) => {
-    const qContent = entry.quiz.content
-    if (!qContent) return null
-
-    const myChoice = entry.myAnswer?.content?.selectedOption
-    const partnerChoice = entry.partnerAnswer?.content?.selectedOption
-    const tag = qContent.tags?.[0]
-
-    return (
-      <CustomItem
-        key={key}
-        variant="outline"
-        className="gap-1.5 rounded-2xl p-3 transition-colors"
-        icon={<Sparkles className="size-4 text-violet-500" />}
-        title={`${myAvatar}${partnerAvatar} Daily Quiz`}
-        topRightActions={
-          <span className="text-[10px] whitespace-nowrap text-primary/75">
-            {formatItemTime(createdAt)}
-          </span>
-        }
-        contentClassName="space-y-1.5 pl-6"
-      >
-        <div className="flex flex-wrap items-center gap-1.5">
-          {tag && (
-            <span className="py-0.2 shrink-0 rounded bg-muted/70 px-1.5 text-[10px] font-medium text-muted-foreground">
-              #{tag}
-            </span>
-          )}
-          <Badge
-            variant="outline"
-            className={cn(
-              "shrink-0 gap-1 px-1.5 py-0 text-[10px] font-normal",
-              entry.isMatched
-                ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                : "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400"
-            )}
-          >
-            <HelpCircle className="size-2.5 text-primary" />
-            {entry.isMatched ? "Match ✨" : "Diff 💬"}
-          </Badge>
-        </div>
-
-        {/* Question */}
-        <p className="text-[11px] leading-snug font-medium break-words text-foreground">
-          {qContent.question}
-        </p>
-
-        {/* Stacked Full Answers */}
-        <div className="flex flex-col gap-1 rounded-lg border border-border/50 bg-muted/20 p-2 pt-1.5 text-[11px]">
-          <div className="flex min-w-0 items-start gap-1.5">
-            <span className="flex shrink-0 items-center gap-1 font-medium text-primary">
-              <span>{myAvatar}</span> You:
-            </span>
-            <span className="flex-1 leading-snug font-medium break-words text-foreground/90">
-              {myChoice || (
-                <span className="font-normal text-muted-foreground italic">
-                  Not answered yet
-                </span>
-              )}
-            </span>
-          </div>
-
-          <div className="flex min-w-0 items-start gap-1.5">
-            <span className="flex shrink-0 items-center gap-1 font-medium text-primary">
-              <span>{partnerAvatar}</span> {partnerName}:
-            </span>
-            {entry.isBothAnswered ? (
-              <span className="flex-1 leading-snug font-medium break-words text-foreground/90">
-                {partnerChoice}
-              </span>
-            ) : (
-              <span className="leading-snug font-normal text-muted-foreground italic">
-                Locked until both answer 🔒
-              </span>
-            )}
-          </div>
-        </div>
-      </CustomItem>
-    )
-  }
-
   const groupedSections = useMemo(() => {
     const todayItems: TimelineItem[] = []
     const yesterdayItems: TimelineItem[] = []
@@ -274,11 +181,11 @@ export function TimelineFeedSection({
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between px-1">
-            <Skeleton className="h-3.5 w-14 rounded-md" />
-            <Skeleton className="h-3 w-5 rounded-md" />
+            <CustomSkeleton className="h-3.5 w-14 rounded-md" />
+            <CustomSkeleton className="h-3 w-5 rounded-md" />
           </div>
           {Array.from({ length: 4 }).map((_, idx) => (
-            <Skeleton key={idx} className="h-20 w-full" />
+            <CustomSkeleton key={idx} className="h-20 w-full" />
           ))}
         </div>
       </div>
@@ -319,9 +226,7 @@ export function TimelineFeedSection({
                 key={item.id}
                 className="[content-visibility:auto] [contain-intrinsic-size:auto_96px]"
               >
-                {item.type === "quiz"
-                  ? renderQuizItem(item.quizEntry, item.created_at, item.id)
-                  : renderActivityItem(item.activity, item.id)}
+                {renderActivityItem(item.activity, item.id)}
               </div>
             ))}
           </div>
@@ -331,8 +236,8 @@ export function TimelineFeedSection({
       <div ref={sentinelRef} className="h-1" />
       {isFetchingNextPage && (
         <div className="flex flex-col gap-2">
-          <Skeleton className="h-20 w-full" />
-          <Skeleton className="h-20 w-full" />
+          <CustomSkeleton className="h-20 w-full" />
+          <CustomSkeleton className="h-20 w-full" />
         </div>
       )}
     </div>

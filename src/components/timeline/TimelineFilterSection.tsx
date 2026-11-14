@@ -33,7 +33,7 @@ export function TimelineFilterSection({
   return (
     <div className="flex items-center justify-between gap-2">
       <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
-        {(["all", "mood", "nudge", "quiz"] as const).map((tab) => (
+        {(["all", "mood", "nudge"] as const).map((tab) => (
           <Button
             key={tab}
             variant={typeFilter === tab ? "default" : "outline"}

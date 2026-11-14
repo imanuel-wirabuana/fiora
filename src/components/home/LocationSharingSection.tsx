@@ -5,7 +5,7 @@ import L from "leaflet"
 import { Clock, MapPin, Maximize2, RefreshCw } from "lucide-react"
 import { CustomItem } from "@/components/CustomItem"
 import { Button } from "@/components/ui/button"
-import { Skeleton } from "@/components/ui/skeleton"
+import { CustomSkeleton } from "@/components/CustomSkeleton"
 import { Spinner } from "@/components/ui/spinner"
 import { useLocationSharing } from "@/hooks/useLocationSharing"
 import { useRelationship } from "@/hooks/useRelationship"
@@ -282,7 +282,7 @@ export function LocationSharingSection() {
         {/* Overlay when waiting for initial coordinates */}
         {!myLocation && !partnerLocation && (
           isLocating ? (
-            <Skeleton className="absolute inset-0 z-10 h-full w-full rounded-none" />
+            <CustomSkeleton className="absolute inset-0 z-10 h-full w-full rounded-none" />
           ) : (
             <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-1.5 bg-background/60 p-4 text-center text-xs text-muted-foreground backdrop-blur-xs">
               <MapPin className="size-5 opacity-40" />

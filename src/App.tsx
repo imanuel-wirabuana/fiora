@@ -2,8 +2,21 @@ import { lazy, Suspense, useEffect } from "react"
 import { Redirect, Route, Switch } from "wouter"
 import { DetailLayout, MainLayout } from "./components/layouts"
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt"
+import {
+  AuthScreenSkeleton,
+  HomeScreenSkeleton,
+  JournalDetailScreenSkeleton,
+  JournalScreenSkeleton,
+  LocationSharingScreenSkeleton,
+  NotificationScreenSkeleton,
+  QuizSummaryScreenSkeleton,
+  SettingScreenSkeleton,
+  SettingSubScreenSkeleton,
+  SetupScreenSkeleton,
+  SpaceScreenSkeleton,
+  TimelineScreenSkeleton,
+} from "./components/ScreenSkeletons"
 import { SplashScreen } from "./components/SplashScreen"
-import { Skeleton } from "./components/ui/skeleton"
 import { useAuth } from "./hooks/useAuth"
 import { useIsMobile } from "./hooks/use-mobile"
 import { usePresenceTracker } from "./hooks/usePartnerPresence"
@@ -90,20 +103,6 @@ const NotFoundScreen = lazy(() =>
   }))
 )
 
-function RouteFallback() {
-  return (
-    <div className="mx-auto flex w-full max-w-md flex-col gap-4 px-4 pt-6 pb-20 sm:max-w-2xl">
-      <div className="flex items-center justify-between">
-        <Skeleton className="h-6 w-28 rounded-lg" />
-        <Skeleton className="size-8 rounded-full" />
-      </div>
-      <Skeleton className="h-28 w-full" />
-      <Skeleton className="h-36 w-full" />
-      <Skeleton className="h-24 w-full" />
-    </div>
-  )
-}
-
 function AppRoutes() {
   const { isAuthenticated, isInitialized } = useAuth()
   const { hasRelationship, isLoading: isRelationshipLoading } =
@@ -126,205 +125,237 @@ function AppRoutes() {
     <div className="relative min-h-svh w-full md:min-h-full">
       <SplashScreen isVisible={!isAppReady} />
       {isAppReady ? (
-        <Suspense fallback={<RouteFallback />}>
-          <Switch>
-      {/* 1. Auth routes (Login / Register) */}
-      <Route path="/">
-        {!isAuthenticated ? (
-          <LoginScreen />
-        ) : !hasRelationship ? (
-          <Redirect to="/setup" />
-        ) : (
-          <Redirect to="/home" />
-        )}
-      </Route>
+        <Switch>
+          {/* 1. Auth routes (Login / Register) */}
+          <Route path="/">
+            {!isAuthenticated ? (
+              <Suspense fallback={<AuthScreenSkeleton />}>
+                <LoginScreen />
+              </Suspense>
+            ) : !hasRelationship ? (
+              <Redirect to="/setup" />
+            ) : (
+              <Redirect to="/home" />
+            )}
+          </Route>
 
-      <Route path="/register">
-        {!isAuthenticated ? (
-          <RegisterScreen />
-        ) : !hasRelationship ? (
-          <Redirect to="/setup" />
-        ) : (
-          <Redirect to="/home" />
-        )}
-      </Route>
+          <Route path="/register">
+            {!isAuthenticated ? (
+              <Suspense fallback={<AuthScreenSkeleton />}>
+                <RegisterScreen />
+              </Suspense>
+            ) : !hasRelationship ? (
+              <Redirect to="/setup" />
+            ) : (
+              <Redirect to="/home" />
+            )}
+          </Route>
 
-      {/* 2. Setup route */}
-      <Route path="/setup">
-        {!isAuthenticated ? (
-          <Redirect to="/" />
-        ) : hasRelationship ? (
-          <Redirect to="/home" />
-        ) : (
-          <SetupScreen />
-        )}
-      </Route>
+          {/* 2. Setup route */}
+          <Route path="/setup">
+            {!isAuthenticated ? (
+              <Redirect to="/" />
+            ) : hasRelationship ? (
+              <Redirect to="/home" />
+            ) : (
+              <Suspense fallback={<SetupScreenSkeleton />}>
+                <SetupScreen />
+              </Suspense>
+            )}
+          </Route>
 
-      {/* 3. Main layout routes */}
-      <Route path="/home">
-        {!isAuthenticated ? (
-          <Redirect to="/" />
-        ) : !hasRelationship ? (
-          <Redirect to="/setup" />
-        ) : (
-          <MainLayout>
-            <HomeScreen />
-          </MainLayout>
-        )}
-      </Route>
+          {/* 3. Main layout routes */}
+          <Route path="/home">
+            {!isAuthenticated ? (
+              <Redirect to="/" />
+            ) : !hasRelationship ? (
+              <Redirect to="/setup" />
+            ) : (
+              <MainLayout>
+                <Suspense fallback={<HomeScreenSkeleton />}>
+                  <HomeScreen />
+                </Suspense>
+              </MainLayout>
+            )}
+          </Route>
 
-      <Route path="/timeline">
-        {!isAuthenticated ? (
-          <Redirect to="/" />
-        ) : !hasRelationship ? (
-          <Redirect to="/setup" />
-        ) : (
-          <MainLayout>
-            <TimelineScreen />
-          </MainLayout>
-        )}
-      </Route>
+          <Route path="/timeline">
+            {!isAuthenticated ? (
+              <Redirect to="/" />
+            ) : !hasRelationship ? (
+              <Redirect to="/setup" />
+            ) : (
+              <MainLayout>
+                <Suspense fallback={<TimelineScreenSkeleton />}>
+                  <TimelineScreen />
+                </Suspense>
+              </MainLayout>
+            )}
+          </Route>
 
-      <Route path="/journal">
-        <Redirect to="/space/journal" />
-      </Route>
+          <Route path="/journal">
+            <Redirect to="/space/journal" />
+          </Route>
 
-      <Route path="/space">
-        {!isAuthenticated ? (
-          <Redirect to="/" />
-        ) : !hasRelationship ? (
-          <Redirect to="/setup" />
-        ) : (
-          <MainLayout>
-            <SpaceScreen />
-          </MainLayout>
-        )}
-      </Route>
+          <Route path="/space">
+            {!isAuthenticated ? (
+              <Redirect to="/" />
+            ) : !hasRelationship ? (
+              <Redirect to="/setup" />
+            ) : (
+              <MainLayout>
+                <Suspense fallback={<SpaceScreenSkeleton />}>
+                  <SpaceScreen />
+                </Suspense>
+              </MainLayout>
+            )}
+          </Route>
 
-      <Route path="/space/journal">
-        {!isAuthenticated ? (
-          <Redirect to="/" />
-        ) : !hasRelationship ? (
-          <Redirect to="/setup" />
-        ) : (
-          <DetailLayout title="Journal" backHref="/space">
-            <JournalScreen />
-          </DetailLayout>
-        )}
-      </Route>
+          <Route path="/space/journal">
+            {!isAuthenticated ? (
+              <Redirect to="/" />
+            ) : !hasRelationship ? (
+              <Redirect to="/setup" />
+            ) : (
+              <DetailLayout title="Journal" backHref="/space">
+                <Suspense fallback={<JournalScreenSkeleton />}>
+                  <JournalScreen />
+                </Suspense>
+              </DetailLayout>
+            )}
+          </Route>
 
-      <Route path="/setting">
-        {!isAuthenticated ? (
-          <Redirect to="/" />
-        ) : !hasRelationship ? (
-          <Redirect to="/setup" />
-        ) : (
-          <MainLayout>
-            <SettingScreen />
-          </MainLayout>
-        )}
-      </Route>
+          <Route path="/setting">
+            {!isAuthenticated ? (
+              <Redirect to="/" />
+            ) : !hasRelationship ? (
+              <Redirect to="/setup" />
+            ) : (
+              <MainLayout>
+                <Suspense fallback={<SettingScreenSkeleton />}>
+                  <SettingScreen />
+                </Suspense>
+              </MainLayout>
+            )}
+          </Route>
 
-      <Route path="/setting/mood">
-        {!isAuthenticated ? (
-          <Redirect to="/" />
-        ) : !hasRelationship ? (
-          <Redirect to="/setup" />
-        ) : (
-          <DetailLayout title="Mood Options" backHref="/setting">
-            <MoodSettingScreen />
-          </DetailLayout>
-        )}
-      </Route>
+          <Route path="/setting/mood">
+            {!isAuthenticated ? (
+              <Redirect to="/" />
+            ) : !hasRelationship ? (
+              <Redirect to="/setup" />
+            ) : (
+              <DetailLayout title="Mood Options" backHref="/setting">
+                <Suspense fallback={<SettingSubScreenSkeleton />}>
+                  <MoodSettingScreen />
+                </Suspense>
+              </DetailLayout>
+            )}
+          </Route>
 
-      <Route path="/setting/nudge">
-        {!isAuthenticated ? (
-          <Redirect to="/" />
-        ) : !hasRelationship ? (
-          <Redirect to="/setup" />
-        ) : (
-          <DetailLayout title="Nudges" backHref="/setting">
-            <NudgeSettingScreen />
-          </DetailLayout>
-        )}
-      </Route>
+          <Route path="/setting/nudge">
+            {!isAuthenticated ? (
+              <Redirect to="/" />
+            ) : !hasRelationship ? (
+              <Redirect to="/setup" />
+            ) : (
+              <DetailLayout title="Nudges" backHref="/setting">
+                <Suspense fallback={<SettingSubScreenSkeleton />}>
+                  <NudgeSettingScreen />
+                </Suspense>
+              </DetailLayout>
+            )}
+          </Route>
 
-      <Route path="/setting/important-dates">
-        {!isAuthenticated ? (
-          <Redirect to="/" />
-        ) : !hasRelationship ? (
-          <Redirect to="/setup" />
-        ) : (
-          <DetailLayout title="Important Dates" backHref="/setting">
-            <ImportantDatesSettingScreen />
-          </DetailLayout>
-        )}
-      </Route>
+          <Route path="/setting/important-dates">
+            {!isAuthenticated ? (
+              <Redirect to="/" />
+            ) : !hasRelationship ? (
+              <Redirect to="/setup" />
+            ) : (
+              <DetailLayout title="Important Dates" backHref="/setting">
+                <Suspense fallback={<SettingSubScreenSkeleton />}>
+                  <ImportantDatesSettingScreen />
+                </Suspense>
+              </DetailLayout>
+            )}
+          </Route>
 
-      <Route path="/setting/app-appearance">
-        {!isAuthenticated ? (
-          <Redirect to="/" />
-        ) : !hasRelationship ? (
-          <Redirect to="/setup" />
-        ) : (
-          <DetailLayout title="App Appearance" backHref="/setting">
-            <AppAppearanceSettingScreen />
-          </DetailLayout>
-        )}
-      </Route>
+          <Route path="/setting/app-appearance">
+            {!isAuthenticated ? (
+              <Redirect to="/" />
+            ) : !hasRelationship ? (
+              <Redirect to="/setup" />
+            ) : (
+              <DetailLayout title="App Appearance" backHref="/setting">
+                <Suspense fallback={<SettingSubScreenSkeleton />}>
+                  <AppAppearanceSettingScreen />
+                </Suspense>
+              </DetailLayout>
+            )}
+          </Route>
 
-      <Route path="/notification">
-        {!isAuthenticated ? (
-          <Redirect to="/" />
-        ) : !hasRelationship ? (
-          <Redirect to="/setup" />
-        ) : (
-          <DetailLayout title="Notification">
-            <NotificationScreen />
-          </DetailLayout>
-        )}
-      </Route>
+          <Route path="/notification">
+            {!isAuthenticated ? (
+              <Redirect to="/" />
+            ) : !hasRelationship ? (
+              <Redirect to="/setup" />
+            ) : (
+              <DetailLayout title="Notification">
+                <Suspense fallback={<NotificationScreenSkeleton />}>
+                  <NotificationScreen />
+                </Suspense>
+              </DetailLayout>
+            )}
+          </Route>
 
-      <Route path="/location">
-        {!isAuthenticated ? (
-          <Redirect to="/" />
-        ) : !hasRelationship ? (
-          <Redirect to="/setup" />
-        ) : (
-          <LocationSharingScreen />
-        )}
-      </Route>
+          <Route path="/location">
+            {!isAuthenticated ? (
+              <Redirect to="/" />
+            ) : !hasRelationship ? (
+              <Redirect to="/setup" />
+            ) : (
+              <Suspense fallback={<LocationSharingScreenSkeleton />}>
+                <LocationSharingScreen />
+              </Suspense>
+            )}
+          </Route>
 
-      <Route path="/journal/:id">
-        {!isAuthenticated ? (
-          <Redirect to="/" />
-        ) : !hasRelationship ? (
-          <Redirect to="/setup" />
-        ) : (
-          <JournalDetailScreen />
-        )}
-      </Route>
+          <Route path="/journal/:id">
+            {!isAuthenticated ? (
+              <Redirect to="/" />
+            ) : !hasRelationship ? (
+              <Redirect to="/setup" />
+            ) : (
+              <Suspense fallback={<JournalDetailScreenSkeleton />}>
+                <JournalDetailScreen />
+              </Suspense>
+            )}
+          </Route>
 
-      <Route path="/quiz-summary">
-        {!isAuthenticated ? (
-          <Redirect to="/" />
-        ) : !hasRelationship ? (
-          <Redirect to="/setup" />
-        ) : (
-          <DetailLayout title="Quiz Summary" backHref="/home">
-            <QuizSummaryScreen />
-          </DetailLayout>
-        )}
-      </Route>
+          <Route path="/quiz-summary">
+            {!isAuthenticated ? (
+              <Redirect to="/" />
+            ) : !hasRelationship ? (
+              <Redirect to="/setup" />
+            ) : (
+              <DetailLayout title="Quiz Summary" backHref="/home">
+                <Suspense fallback={<QuizSummaryScreenSkeleton />}>
+                  <QuizSummaryScreen />
+                </Suspense>
+              </DetailLayout>
+            )}
+          </Route>
 
           {/* Fallback */}
           <Route>
             <div className="flex min-h-svh items-center justify-center p-4">
-              <NotFoundScreen />
+              <Suspense fallback={<AuthScreenSkeleton />}>
+                <NotFoundScreen />
+              </Suspense>
             </div>
           </Route>
         </Switch>
-        </Suspense>
       ) : null}
     </div>
   )
@@ -352,7 +383,7 @@ export function App() {
   }
 
   return (
-    <Suspense fallback={<RouteFallback />}>
+    <Suspense fallback={null}>
       <DesktopShell>
         <AppRoutes />
       </DesktopShell>

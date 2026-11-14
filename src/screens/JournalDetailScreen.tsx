@@ -5,7 +5,7 @@ import { useLocation, useRoute } from "wouter"
 import { FormDrawer } from "@/components/FormDrawer"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Skeleton } from "@/components/ui/skeleton"
+import { CustomSkeleton } from "@/components/CustomSkeleton"
 import { Spinner } from "@/components/ui/spinner"
 import { useActivities } from "@/hooks/useActivities"
 import { useAuth } from "@/hooks/useAuth"
@@ -210,21 +210,21 @@ export function JournalDetailScreen() {
           <div className="mx-auto flex max-w-md flex-col gap-4">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <Skeleton className="size-8 rounded-full" />
+                <CustomSkeleton className="size-8 rounded-full" />
                 <div className="flex flex-col gap-1.5">
-                  <Skeleton className="h-3.5 w-20 rounded-md" />
-                  <Skeleton className="h-3 w-32 rounded-md" />
+                  <CustomSkeleton className="h-3.5 w-20 rounded-md" />
+                  <CustomSkeleton className="h-3 w-32 rounded-md" />
                 </div>
               </div>
-              <Skeleton className="h-5 w-16 rounded-full" />
+              <CustomSkeleton className="h-5 w-16 rounded-full" />
             </div>
-            <Skeleton className="h-7 w-3/4 rounded-lg" />
+            <CustomSkeleton className="h-7 w-3/4 rounded-lg" />
             <div className="space-y-2.5 pt-2">
-              <Skeleton className="h-4 w-full rounded-md" />
-              <Skeleton className="h-4 w-11/12 rounded-md" />
-              <Skeleton className="h-4 w-4/5 rounded-md" />
-              <Skeleton className="h-4 w-full rounded-md" />
-              <Skeleton className="h-4 w-2/3 rounded-md" />
+              <CustomSkeleton className="h-4 w-full rounded-md" />
+              <CustomSkeleton className="h-4 w-11/12 rounded-md" />
+              <CustomSkeleton className="h-4 w-4/5 rounded-md" />
+              <CustomSkeleton className="h-4 w-full rounded-md" />
+              <CustomSkeleton className="h-4 w-2/3 rounded-md" />
             </div>
           </div>
         ) : !journal || !content ? (

@@ -4,7 +4,7 @@ import { BookOpen, Globe, Lock, Trash2 } from "lucide-react"
 import { useLocation } from "wouter"
 import { CustomItem } from "@/components/CustomItem"
 import { FormDrawer } from "@/components/FormDrawer"
-import { Skeleton } from "@/components/ui/skeleton"
+import { CustomSkeleton } from "@/components/CustomSkeleton"
 import { useAuth } from "@/hooks/useAuth"
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll"
 import { useRelationship } from "@/hooks/useRelationship"
@@ -68,7 +68,7 @@ export function JournalListSection({
     return (
       <div className="columns-3 gap-2 space-y-2">
         {Array.from({ length: 6 }).map((_, idx) => (
-          <Skeleton
+          <CustomSkeleton
             key={idx}
             className="w-full break-inside-avoid"
             style={{ height: idx % 2 === 0 ? 112 : 144 }}
@@ -169,9 +169,9 @@ export function JournalListSection({
       <div ref={sentinelRef} className="h-1 w-full" />
       {isFetchingNextPage && (
         <div className="mt-2 columns-3 gap-2 space-y-2">
-          <Skeleton className="h-28 w-full break-inside-avoid" />
-          <Skeleton className="h-32 w-full break-inside-avoid" />
-          <Skeleton className="h-24 w-full break-inside-avoid" />
+          <CustomSkeleton className="h-28 w-full break-inside-avoid" />
+          <CustomSkeleton className="h-32 w-full break-inside-avoid" />
+          <CustomSkeleton className="h-24 w-full break-inside-avoid" />
         </div>
       )}
 

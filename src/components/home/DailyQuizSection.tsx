@@ -12,7 +12,7 @@ import {
 import { CustomItem } from "@/components/CustomItem"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Skeleton } from "@/components/ui/skeleton"
+import { CustomSkeleton } from "@/components/CustomSkeleton"
 import { useQuiz } from "@/hooks/useQuiz"
 import { useRelationship } from "@/hooks/useRelationship"
 import { cn } from "@/lib/utils"
@@ -55,10 +55,10 @@ export function DailyQuizSection() {
         className="p-3"
         contentClassName="gap-2.5 py-1"
       >
-        <Skeleton className="h-4 w-3/4 rounded-md" />
+        <CustomSkeleton className="h-4 w-3/4 rounded-md" />
         <div className="grid grid-cols-2 gap-2">
-          <Skeleton className="h-8 w-full rounded-xl" />
-          <Skeleton className="h-8 w-full rounded-xl" />
+          <CustomSkeleton className="h-8 w-full rounded-xl" />
+          <CustomSkeleton className="h-8 w-full rounded-xl" />
         </div>
       </CustomItem>
     )
