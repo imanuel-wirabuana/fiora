@@ -3,6 +3,7 @@ import { useLocation } from "wouter"
 import { format, isToday } from "date-fns"
 import L from "leaflet"
 import { Clock, MapPin, Maximize2, RefreshCw } from "lucide-react"
+import { AnimatedEmoji } from "@/components/AnimatedEmoji"
 import { CustomItem } from "@/components/CustomItem"
 import { Button } from "@/components/ui/button"
 import { CustomSkeleton } from "@/components/CustomSkeleton"
@@ -74,7 +75,13 @@ export function LocationSharingSection() {
     return (
       <div className="flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 text-center text-xs">
         <div className="flex max-w-full items-center justify-center gap-1.5 font-semibold text-foreground">
-          <span className="shrink-0 text-xs leading-none">{avatar}</span>
+          <AnimatedEmoji
+            emoji={avatar}
+            size={16}
+            replayOnTap={false}
+            className="shrink-0"
+            fallbackClassName="text-xs leading-none"
+          />
           <span className="truncate capitalize">{name}</span>
         </div>
 

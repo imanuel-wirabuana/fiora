@@ -2,6 +2,7 @@ import { useState } from "react"
 import { formatDistanceToNow } from "date-fns"
 import { BookOpen, Globe, Lock, Trash2 } from "lucide-react"
 import { useLocation } from "wouter"
+import { AnimatedEmoji } from "@/components/AnimatedEmoji"
 import { CustomItem } from "@/components/CustomItem"
 import { FormDrawer } from "@/components/FormDrawer"
 import { CustomSkeleton } from "@/components/CustomSkeleton"
@@ -113,7 +114,14 @@ export function JournalListSection({
             variant={itemVariant}
             onClick={() => navigate(`/journal/${journal.id}`)}
             className="max-h-64 cursor-pointer break-inside-avoid gap-1.5 overflow-hidden p-2.5 transition-colors hover:bg-muted/30 [content-visibility:auto] [contain-intrinsic-size:auto_140px]"
-            icon={<span className="text-xs leading-none">{author.avatar}</span>}
+            icon={
+              <AnimatedEmoji
+                emoji={author.avatar}
+                size={16}
+                replayOnTap={false}
+                fallbackClassName="text-xs leading-none"
+              />
+            }
             title={content.title}
             topRightActions={
               author.isMe ? (

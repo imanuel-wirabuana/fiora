@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import { format, formatDistanceToNow } from "date-fns"
 import { ArrowLeft, BookOpen, Check, Globe, Lock, Trash2 } from "lucide-react"
 import { useLocation, useRoute } from "wouter"
+import { AnimatedEmoji } from "@/components/AnimatedEmoji"
 import { FormDrawer } from "@/components/FormDrawer"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -246,8 +247,13 @@ export function JournalDetailScreen() {
             {/* Meta row: Author + Privacy Badge */}
             <div className="flex items-center justify-between gap-2">
               <div className="flex min-w-0 items-center gap-2">
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted/60 text-sm">
-                  {authorAvatar}
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted/60">
+                  <AnimatedEmoji
+                    emoji={authorAvatar}
+                    size={20}
+                    replayOnTap={false}
+                    fallbackClassName="text-sm"
+                  />
                 </span>
                 <div className="flex min-w-0 flex-col">
                   <span className="truncate text-xs font-semibold text-foreground">

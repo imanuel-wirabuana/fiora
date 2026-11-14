@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from "react"
 import { format, formatDistanceToNow, isToday, isYesterday } from "date-fns"
 import { Heart, Send, Sparkles } from "lucide-react"
+import { AnimatedEmoji } from "@/components/AnimatedEmoji"
 import { CustomItem } from "@/components/CustomItem"
 import { CustomSkeleton } from "@/components/CustomSkeleton"
 import { useAuth } from "@/hooks/useAuth"
@@ -99,7 +100,17 @@ export function TimelineFeedSection({
           variant="default"
           className="gap-1.5 rounded-2xl p-3 transition-colors"
           icon={<Heart className="size-4 fill-primary text-primary" />}
-          title={`${member.avatar} ${member.name} · Mood`}
+          title={
+            <span className="inline-flex items-center gap-1">
+              <AnimatedEmoji
+                emoji={member.avatar}
+                size={16}
+                replayOnTap={false}
+                fallbackClassName="text-xs"
+              />
+              <span>{member.name} · Mood</span>
+            </span>
+          }
           topRightActions={
             <span className="text-[10px] whitespace-nowrap text-muted-foreground">
               {formatItemTime(activity.created_at)}
@@ -108,7 +119,12 @@ export function TimelineFeedSection({
           contentClassName="space-y-1.5 pl-6"
         >
           <span className="inline-flex items-center gap-1 rounded-md bg-muted/60 px-1.5 py-0.5 text-[11px] font-medium text-foreground">
-            <span>{content.emoji}</span>
+            <AnimatedEmoji
+              emoji={content.emoji}
+              size={16}
+              replayOnTap={false}
+              fallbackClassName="text-xs"
+            />
             <span>{content.label}</span>
           </span>
 
@@ -134,7 +150,24 @@ export function TimelineFeedSection({
           variant="soft"
           className="gap-1.5 rounded-2xl p-3 transition-colors"
           icon={<Send className="size-4 text-amber-500" />}
-          title={`${member.avatar} ${member.name} → ${receiverAvatar} ${receiverName}`}
+          title={
+            <span className="inline-flex items-center gap-1">
+              <AnimatedEmoji
+                emoji={member.avatar}
+                size={16}
+                replayOnTap={false}
+                fallbackClassName="text-xs"
+              />
+              <span>{member.name} →</span>
+              <AnimatedEmoji
+                emoji={receiverAvatar}
+                size={16}
+                replayOnTap={false}
+                fallbackClassName="text-xs"
+              />
+              <span>{receiverName}</span>
+            </span>
+          }
           topRightActions={
             <span className="text-[10px] whitespace-nowrap text-muted-foreground">
               {formatItemTime(activity.created_at)}
@@ -143,7 +176,12 @@ export function TimelineFeedSection({
           contentClassName="pl-6"
         >
           <span className="inline-flex items-center gap-1 rounded-md bg-background/70 px-1.5 py-0.5 text-[11px] font-medium text-foreground">
-            <span>{content.emoji}</span>
+            <AnimatedEmoji
+              emoji={content.emoji}
+              size={16}
+              replayOnTap={false}
+              fallbackClassName="text-xs"
+            />
             <span>{content.label}</span>
           </span>
         </CustomItem>

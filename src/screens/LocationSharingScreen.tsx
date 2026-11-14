@@ -12,6 +12,7 @@ import {
   RefreshCw,
   Users,
 } from "lucide-react"
+import { AnimatedEmoji } from "@/components/AnimatedEmoji"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { useLocationSharing } from "@/hooks/useLocationSharing"
@@ -316,7 +317,13 @@ export function LocationSharingScreen() {
               >
                 <div className="flex w-full items-center justify-between">
                   <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
-                    <span className="text-sm">{myAvatar}</span>
+                    <AnimatedEmoji
+                      emoji={myAvatar}
+                      size={18}
+                      replayOnTap={false}
+                      className="shrink-0"
+                      fallbackClassName="text-sm"
+                    />
                     <span>You</span>
                   </div>
                   <Crosshair className="size-3.5 shrink-0 text-primary" />
@@ -359,7 +366,13 @@ export function LocationSharingScreen() {
               >
                 <div className="flex w-full items-center justify-between">
                   <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
-                    <span className="text-sm">{partnerAvatar}</span>
+                    <AnimatedEmoji
+                      emoji={partnerAvatar}
+                      size={18}
+                      replayOnTap={false}
+                      className="shrink-0"
+                      fallbackClassName="text-sm"
+                    />
                     <span className="truncate">{partnerName}</span>
                   </div>
                   <Crosshair className="size-3.5 shrink-0 text-secondary-foreground" />

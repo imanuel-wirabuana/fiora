@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { RotateCcw } from "lucide-react"
+import { AnimatedEmoji } from "@/components/AnimatedEmoji"
 import { Button } from "@/components/ui/button"
 import { Field, FieldLabel } from "@/components/ui/field"
 import {
@@ -71,9 +72,12 @@ export function MoodsStep({ moods, onChangeMoods }: MoodsStepProps) {
                   : "border-border hover:bg-muted/40"
               )}
             >
-              <span className="text-2xl leading-none">
-                {mood.emoji || "❓"}
-              </span>
+              <AnimatedEmoji
+                emoji={mood.emoji || "❓"}
+                size={28}
+                replayOnTap={false}
+                fallbackClassName="text-2xl leading-none"
+              />
               <span
                 className={cn(
                   "w-full truncate text-center text-[10px] leading-none font-medium",

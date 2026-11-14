@@ -9,6 +9,7 @@ import {
   Lock,
   Sparkles,
 } from "lucide-react"
+import { AnimatedEmoji } from "@/components/AnimatedEmoji"
 import { CustomItem } from "@/components/CustomItem"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -298,7 +299,13 @@ export function DailyQuizSection() {
                     title="You chose this"
                     className="py-0.2 flex shrink-0 items-center gap-0.5 rounded-full bg-primary/20 px-1.5 text-[9px] font-medium text-primary"
                   >
-                    <span>{myAvatar}</span> You
+                    <AnimatedEmoji
+                      emoji={myAvatar}
+                      size={12}
+                      replayOnTap={false}
+                      fallbackClassName="text-[9px]"
+                    />{" "}
+                    You
                   </span>
                 </div>
               )}

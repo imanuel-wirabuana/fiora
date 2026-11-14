@@ -11,6 +11,7 @@ export interface MoodOption {
 export interface NudgeOption {
   emoji: string
   label: string
+  pinned?: boolean
 }
 
 export interface MemberLocation {

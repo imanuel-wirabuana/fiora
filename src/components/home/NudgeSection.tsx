@@ -1,6 +1,7 @@
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { formatDistanceToNow } from "date-fns"
-import { Send } from "lucide-react"
+import { Pin, Send } from "lucide-react"
+import { AnimatedEmoji } from "@/components/AnimatedEmoji"
 import { CustomItem } from "@/components/CustomItem"
 import { Button } from "@/components/ui/button"
 import { useActivities } from "@/hooks/useActivities"
@@ -15,6 +16,12 @@ export function NudgeSection() {
   const [justSentLabel, setJustSentLabel] = useState<string | null>(null)
 
   const partnerName = partnerMember?.content?.name || "Partner"
+
+  const orderedNudges = useMemo(() => {
+    const pinned = nudgeOptions.filter((n) => n.pinned)
+    const unpinned = nudgeOptions.filter((n) => !n.pinned)
+    return [...pinned, ...unpinned]
+  }, [nudgeOptions])
 
   const handleSendNudge = (nudge: NudgeOption) => {
     if (!partnerMember) return
@@ -60,7 +67,13 @@ export function NudgeSection() {
       {/* Latest Nudge Status Preview */}
       {latestNudge && latestNudge.content && (
         <div className="flex w-full items-center gap-2 rounded-xl bg-muted/40 px-3 py-2 text-[11px]">
-          <span className="text-sm">{latestNudge.content.emoji}</span>
+          <AnimatedEmoji
+            emoji={latestNudge.content.emoji}
+            size={18}
+            replayOnTap={false}
+            className="shrink-0"
+            fallbackClassName="text-sm"
+          />
           <div className="flex-1 truncate">
             <span className="font-medium text-foreground">
               {isSentByMe ? "You sent: " : `${partnerName} sent: `}
@@ -74,7 +87,7 @@ export function NudgeSection() {
 
       {/* Nudge Buttons */}
       <div className="grid w-full grid-cols-2 gap-2">
-        {nudgeOptions.map((nudge, idx) => {
+        {orderedNudges.map((nudge, idx) => {
           const isJustSent = justSentLabel === nudge.label
           return (
             <Button
@@ -86,11 +99,21 @@ export function NudgeSection() {
               onClick={() => handleSendNudge(nudge)}
               className="h-9 justify-start gap-2 px-2.5 text-[11px] font-normal transition active:scale-95"
             >
-              <span className="shrink-0 text-sm">{nudge.emoji}</span>
+              <AnimatedEmoji
+                emoji={nudge.emoji}
+                size={18}
+                replayOnTap={false}
+                className="shrink-0"
+                fallbackClassName="text-sm"
+              />
               <span className="flex-1 truncate text-left">
                 {isJustSent ? "Sent! 💌" : nudge.label}
               </span>
-              <Send className="size-3 shrink-0 opacity-40" />
+              {nudge.pinned ? (
+                <Pin className="size-3 shrink-0 text-primary/70" />
+              ) : (
+                <Send className="size-3 shrink-0 opacity-40" />
+              )}
             </Button>
           )
         })}

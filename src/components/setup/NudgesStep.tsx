@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { RotateCcw } from "lucide-react"
+import { AnimatedEmoji } from "@/components/AnimatedEmoji"
 import { Button } from "@/components/ui/button"
 import { Field, FieldLabel } from "@/components/ui/field"
 import {
@@ -71,9 +72,13 @@ export function NudgesStep({ nudges, onChangeNudges }: NudgesStepProps) {
                   : "border-border hover:bg-muted/40"
               )}
             >
-              <span className="shrink-0 text-2xl leading-none">
-                {nudge.emoji || "💬"}
-              </span>
+              <AnimatedEmoji
+                emoji={nudge.emoji || "💬"}
+                size={28}
+                replayOnTap={false}
+                className="shrink-0"
+                fallbackClassName="text-2xl leading-none"
+              />
               <span
                 className={cn(
                   "truncate text-xs font-medium",

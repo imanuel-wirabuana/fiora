@@ -1,5 +1,10 @@
+import { AnimatedEmoji } from "@/components/AnimatedEmoji"
 import { Field, FieldLabel } from "@/components/ui/field"
-import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group"
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/components/ui/input-group"
 import { cn } from "@/lib/utils"
 import { DEFAULT_AVATARS_BY_GENDER } from "@/lib/relationship"
 import type { Gender } from "@/types/relationship"
@@ -36,7 +41,9 @@ export function ProfileStep({
 
       {/* Avatar Picker */}
       <div className="space-y-2">
-        <span className="text-xs font-medium text-muted-foreground">Select Avatar</span>
+        <span className="text-xs font-medium text-muted-foreground">
+          Select Avatar
+        </span>
         <div className="grid grid-cols-6 gap-2">
           {avatarOptions.map((opt) => {
             const isSelected = avatar === opt
@@ -53,7 +60,12 @@ export function ProfileStep({
                 )}
                 aria-label={`Avatar ${opt}`}
               >
-                {opt}
+                <AnimatedEmoji
+                  emoji={opt}
+                  size={28}
+                  replayOnTap={false}
+                  fallbackClassName="text-2xl"
+                />
               </button>
             )
           })}
@@ -62,11 +74,17 @@ export function ProfileStep({
 
       {/* Name Input */}
       <Field className="gap-1.5" data-invalid={!!error}>
-        <FieldLabel htmlFor="profile-name" className="text-xs font-medium text-muted-foreground">
+        <FieldLabel
+          htmlFor="profile-name"
+          className="text-xs font-medium text-muted-foreground"
+        >
           Your Name / Nickname
         </FieldLabel>
         <InputGroup className="h-10 rounded-2xl border border-input bg-background focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
-          <InputGroupAddon align="inline-start" className="text-muted-foreground/60 pl-3">
+          <InputGroupAddon
+            align="inline-start"
+            className="pl-3 text-muted-foreground/60"
+          >
             <User className="size-4" />
           </InputGroupAddon>
           <InputGroupInput
@@ -82,4 +100,3 @@ export function ProfileStep({
     </div>
   )
 }
-

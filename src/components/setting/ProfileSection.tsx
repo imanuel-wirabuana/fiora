@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { User } from "lucide-react"
+import { AnimatedEmoji } from "@/components/AnimatedEmoji"
 import { FormDrawer } from "@/components/FormDrawer"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -76,7 +77,13 @@ export function ProfileSection() {
               size="sm"
               className="h-7 max-w-[140px] gap-1.5 rounded-xl px-2.5 text-xs font-medium"
             >
-              <span>{savedAvatar}</span>
+              <AnimatedEmoji
+                emoji={savedAvatar}
+                size={16}
+                replayOnTap={false}
+                className="shrink-0"
+                fallbackClassName="text-xs"
+              />
               <span className="truncate">{savedName || "Set profile"}</span>
             </Button>
           }
@@ -96,7 +103,12 @@ export function ProfileSection() {
                       : "border-border hover:bg-muted/40"
                   )}
                 >
-                  {opt}
+                  <AnimatedEmoji
+                    emoji={opt}
+                    size={28}
+                    replayOnTap={false}
+                    fallbackClassName="text-2xl"
+                  />
                 </button>
               )
             })}

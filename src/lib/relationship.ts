@@ -114,6 +114,10 @@ export function normalizeMoodOptions(
   return distributeMoodScores(normalized)
 }
 
+export const MIN_NUDGES = 3
+export const MAX_NUDGES = 11
+export const MAX_PINNED_NUDGES = 3
+
 export const DEFAULT_NUDGE_OPTIONS: NudgeOption[] = [
   { emoji: "💌", label: "Thinking of you" },
   { emoji: "🤗", label: "Need a hug" },

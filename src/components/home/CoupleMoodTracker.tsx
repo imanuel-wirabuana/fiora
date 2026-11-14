@@ -81,7 +81,14 @@ function MoodCard({
         "h-full flex-nowrap items-center justify-between gap-3 text-center",
         styles.card
       )}
-      icon={<span className="text-xs leading-none">{avatar}</span>}
+      icon={
+        <AnimatedEmoji
+          emoji={avatar}
+          size={16}
+          replayOnTap={false}
+          fallbackClassName="text-xs leading-none"
+        />
+      }
       title={title}
       contentHorizontalAlign="center"
       contentClassName="flex-none items-center justify-center gap-2 py-0.5"
