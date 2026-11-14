@@ -57,6 +57,43 @@ export const activityService = {
     return (data as Activity[]) || []
   },
 
+  async getActivitiesInRange({
+    relationshipId,
+    types,
+    startDate,
+    endDate,
+  }: {
+    relationshipId: number
+    types?: ActivityType[]
+    startDate?: string
+    endDate?: string
+  }): Promise<Activity[]> {
+    let query = supabase
+      .from("activities")
+      .select("*")
+      .eq("relationship_id", relationshipId)
+
+    if (types && types.length > 0) {
+      query = query.in("type", types)
+    }
+
+    if (startDate) {
+      query = query.gte("created_at", startDate)
+    }
+
+    if (endDate) {
+      query = query.lte("created_at", endDate)
+    }
+
+    const { data, error } = await query.order("created_at", { ascending: true })
+
+    if (error) {
+      throw new Error(error.message)
+    }
+
+    return (data as Activity[]) || []
+  },
+
   async createActivity(input: CreateActivityInput): Promise<Activity> {
     const { data: authData, error: authError } = await supabase.auth.getUser()
     if (authError || !authData.user) {

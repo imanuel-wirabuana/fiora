@@ -14,6 +14,7 @@ interface CustomTabsProps<T extends string = string> {
   value?: T
   defaultValue?: T
   onValueChange?: (value: T) => void
+  size?: "default" | "sm"
   className?: string
 }
 
@@ -25,8 +26,10 @@ export function CustomTabs<T extends string = string>({
   value,
   defaultValue,
   onValueChange,
+  size = "default",
   className,
 }: CustomTabsProps<T>) {
+  const isCompact = size === "sm"
   const [internalValue, setInternalValue] = useState<T>(
     () => defaultValue ?? items[0]?.value
   )
@@ -65,7 +68,8 @@ export function CustomTabs<T extends string = string>({
       role="tablist"
       aria-orientation="horizontal"
       className={cn(
-        "relative grid w-full rounded-2xl border border-border/60 bg-muted/60 p-1 shadow-2xs",
+        "relative grid w-full border border-border/60 bg-muted/60 shadow-2xs",
+        isCompact ? "rounded-xl p-0.5" : "rounded-2xl p-1",
         className
       )}
       style={{
@@ -76,9 +80,14 @@ export function CustomTabs<T extends string = string>({
       {items.length > 0 && (
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute top-1 bottom-1 left-1 rounded-xl bg-primary shadow-sm transition-transform duration-200 ease-out"
+          className={cn(
+            "pointer-events-none absolute bg-primary shadow-sm transition-transform duration-200 ease-out",
+            isCompact
+              ? "top-0.5 bottom-0.5 left-0.5 rounded-lg"
+              : "top-1 bottom-1 left-1 rounded-xl"
+          )}
           style={{
-            width: `calc((100% - 0.5rem) / ${items.length})`,
+            width: `calc((100% - ${isCompact ? "0.25rem" : "0.5rem"}) / ${items.length})`,
             transform: `translateX(${activeIndex * 100}%)`,
           }}
         />
@@ -97,7 +106,10 @@ export function CustomTabs<T extends string = string>({
             onClick={() => selectTab(item.value)}
             onKeyDown={(e) => handleKeyDown(e, idx)}
             className={cn(
-              "relative z-10 inline-flex h-8 items-center justify-center gap-1.5 rounded-xl px-3 text-xs font-semibold whitespace-nowrap transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
+              "relative z-10 inline-flex items-center justify-center font-semibold whitespace-nowrap transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
+              isCompact
+                ? "h-6 gap-1 rounded-lg px-2 text-[11px]"
+                : "h-8 gap-1.5 rounded-xl px-3 text-xs",
               isActive
                 ? "text-primary-foreground"
                 : "text-muted-foreground hover:text-foreground"

@@ -53,28 +53,30 @@ export function HomeScreenSkeleton() {
   )
 }
 
-export function TimelineScreenSkeleton() {
+export function InsightScreenSkeleton() {
   return (
     <section className="flex flex-col gap-3">
-      {/* TimelineFilterSection */}
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex gap-1.5">
-          <CustomSkeleton className="h-7 w-12 rounded-full" />
-          <CustomSkeleton className="h-7 w-14 rounded-full" />
-          <CustomSkeleton className="h-7 w-14 rounded-full" />
-        </div>
-        <CustomSkeleton className="h-7 w-22 rounded-full" />
+      {/* Date Picker Button */}
+      <CustomSkeleton className="h-9 w-full rounded-2xl" />
+
+      {/* KPI Strip */}
+      <div className="grid grid-cols-3 gap-2">
+        <CustomSkeleton className="h-22 w-full" />
+        <CustomSkeleton className="h-22 w-full" />
+        <CustomSkeleton className="h-22 w-full" />
       </div>
 
-      {/* TimelineFeedSection */}
+      {/* 2-Column Inline Charts */}
+      <div className="grid grid-cols-2 gap-2.5">
+        <CustomSkeleton className="h-52 w-full" />
+        <CustomSkeleton className="h-52 w-full" />
+      </div>
+
+      {/* Timeline */}
       <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between px-1">
-          <CustomSkeleton className="h-3.5 w-14 rounded-md" />
-          <CustomSkeleton className="h-3 w-5 rounded-md" />
-        </div>
-        {Array.from({ length: 4 }).map((_, idx) => (
-          <CustomSkeleton key={idx} className="h-20 w-full" />
-        ))}
+        <CustomSkeleton className="h-6 w-full" />
+        <CustomSkeleton className="h-18 w-full" />
+        <CustomSkeleton className="h-18 w-full" />
       </div>
     </section>
   )

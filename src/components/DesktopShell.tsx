@@ -42,9 +42,9 @@ export function DesktopShell({ children }: { children: ReactNode }) {
                 <Sparkles className="size-5" />
               </div>
               <div className="space-y-0.5">
-                <h3 className="text-sm font-semibold">Couple Timeline</h3>
+                <h3 className="text-sm font-semibold">Couple Insights</h3>
                 <p className="text-xs text-muted-foreground">
-                  Relive milestones and track shared memories together.
+                  Track mood trends, nudges, and quiz compatibility together.
                 </p>
               </div>
             </div>

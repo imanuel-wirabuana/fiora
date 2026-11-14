@@ -55,13 +55,14 @@ export function WheelPicker<T extends string | number = string>({
   return (
     <div
       className={cn(
-        "relative flex-1 touch-pan-y overflow-hidden select-none",
+        "relative flex-1 touch-none overscroll-contain overflow-hidden select-none",
         className
       )}
       aria-label={ariaLabel}
-      // Prevent parent Drawer's vertical swipe-to-dismiss from hijacking wheel drags
+      // Prevent parent Drawer's vertical swipe-to-dismiss or background scroll from hijacking wheel drags
       onPointerDown={(e) => e.stopPropagation()}
       onTouchStart={(e) => e.stopPropagation()}
+      onWheel={(e) => e.stopPropagation()}
     >
       <WheelPickerWrapper className="w-full">
         <PrimitiveWheelPicker

@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { Link, useLocation } from "wouter"
 import {
-  Clock,
+  BarChart3,
   Home,
   LayoutGrid,
   Plus,
@@ -29,7 +29,7 @@ const alignClassMap: Record<NavAlign, string> = {
 
 const navItemsLeft: NavItem[] = [
   { href: "/home", label: "Home", icon: Home, align: "center" },
-  { href: "/timeline", label: "Timeline", icon: Clock, align: "right" },
+  { href: "/insight", label: "Insight", icon: BarChart3, align: "right" },
 ]
 
 const navItemsRight: NavItem[] = [

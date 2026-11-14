@@ -1,5 +1,5 @@
 export * from "./HomeScreen"
-export * from "./TimelineScreen"
+export * from "./InsightScreen"
 export { LocationSharingScreen } from "./LocationSharingScreen"
 export * from "./SpaceScreen"
 export * from "./JournalScreen"

@@ -28,6 +28,8 @@ export const activityKeys = {
     [...activityKeys.all, "relationship", relationshipId] as const,
   infinite: (relationshipId: number | undefined, scope: "journal" | "timeline") =>
     [...activityKeys.byRelationship(relationshipId), "infinite", scope] as const,
+  insights: (relationshipId: number | undefined, range: string) =>
+    [...activityKeys.byRelationship(relationshipId), "insights", range] as const,
 }
 
 const JOURNAL_PAGE_SIZE = 18

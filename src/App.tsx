@@ -5,6 +5,7 @@ import { PWAInstallPrompt } from "./components/PWAInstallPrompt"
 import {
   AuthScreenSkeleton,
   HomeScreenSkeleton,
+  InsightScreenSkeleton,
   JournalDetailScreenSkeleton,
   JournalScreenSkeleton,
   LocationSharingScreenSkeleton,
@@ -14,7 +15,6 @@ import {
   SettingSubScreenSkeleton,
   SetupScreenSkeleton,
   SpaceScreenSkeleton,
-  TimelineScreenSkeleton,
 } from "./components/ScreenSkeletons"
 import { SplashScreen } from "./components/SplashScreen"
 import { useAuth } from "./hooks/useAuth"
@@ -32,9 +32,9 @@ const DesktopShell = lazy(() =>
 const HomeScreen = lazy(() =>
   import("./screens/HomeScreen").then((m) => ({ default: m.HomeScreen }))
 )
-const TimelineScreen = lazy(() =>
-  import("./screens/TimelineScreen").then((m) => ({
-    default: m.TimelineScreen,
+const InsightScreen = lazy(() =>
+  import("./screens/InsightScreen").then((m) => ({
+    default: m.InsightScreen,
   }))
 )
 const LocationSharingScreen = lazy(() =>
@@ -174,18 +174,22 @@ function AppRoutes() {
             )}
           </Route>
 
-          <Route path="/timeline">
+          <Route path="/insight">
             {!isAuthenticated ? (
               <Redirect to="/" />
             ) : !hasRelationship ? (
               <Redirect to="/setup" />
             ) : (
               <MainLayout>
-                <Suspense fallback={<TimelineScreenSkeleton />}>
-                  <TimelineScreen />
+                <Suspense fallback={<InsightScreenSkeleton />}>
+                  <InsightScreen />
                 </Suspense>
               </MainLayout>
             )}
+          </Route>
+
+          <Route path="/timeline">
+            <Redirect to="/insight" />
           </Route>
 
           <Route path="/journal">
