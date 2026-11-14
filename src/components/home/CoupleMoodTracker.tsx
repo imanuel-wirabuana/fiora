@@ -1,6 +1,7 @@
 import type { ReactNode } from "react"
 import { formatDistanceToNow } from "date-fns"
 import { Heart, Smile, UserPlus } from "lucide-react"
+import { AnimatedEmoji } from "@/components/AnimatedEmoji"
 import { CustomItem } from "@/components/CustomItem"
 import { CustomSkeleton } from "@/components/CustomSkeleton"
 import { OdometerText } from "@/components/OdometerText"
@@ -87,18 +88,25 @@ function MoodCard({
     >
       {/* Centered Big Icon & Mood Status */}
       {isLoading ? (
-        <CustomSkeleton className="size-14 shrink-0 rounded-full" />
+        <CustomSkeleton className="size-16 shrink-0 rounded-full" />
       ) : (
         <div
           className={cn(
-            "flex size-14 shrink-0 items-center justify-center rounded-full transition-transform",
+            "flex size-16 shrink-0 items-center justify-center rounded-full transition-transform",
             styles.circle
           )}
         >
           {moodContent ? (
-            <span className="text-3xl leading-none select-none">
-              {moodContent.emoji}
-            </span>
+            <div
+              key={latestMood?.id ?? moodContent.emoji}
+              className="flex items-center justify-center animate-in zoom-in-75 duration-300"
+            >
+              <AnimatedEmoji
+                emoji={moodContent.emoji}
+                size={52}
+                fallbackClassName="text-4xl"
+              />
+            </div>
           ) : (
             fallbackIcon
           )}
@@ -157,7 +165,7 @@ function YourMood() {
       latestMood={myLatestMood}
       isLoading={isLoading}
       emptyLabel="Tap + to log mood"
-      fallbackIcon={<Smile className="size-6 opacity-75" />}
+      fallbackIcon={<Smile className="size-7 opacity-75" />}
     />
   )
 }
@@ -176,9 +184,9 @@ function PartnerMood() {
       emptyLabel={partnerMember ? "No mood logged yet" : "Waiting for partner"}
       fallbackIcon={
         partnerMember ? (
-          <Heart className="size-6 opacity-75" />
+          <Heart className="size-7 opacity-75" />
         ) : (
-          <UserPlus className="size-6 opacity-60" />
+          <UserPlus className="size-7 opacity-60" />
         )
       }
     />

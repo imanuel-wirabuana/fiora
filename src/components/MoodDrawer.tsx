@@ -6,6 +6,7 @@ import {
   type ReactNode,
 } from "react"
 import { Heart, Send } from "lucide-react"
+import { AnimatedEmoji } from "./AnimatedEmoji"
 import { fireEmojiConfetti } from "../lib/confetti"
 import { getMoodCategory } from "../lib/relationship"
 import { cn } from "../lib/utils"
@@ -210,9 +211,18 @@ export function MoodDrawer({ open, onOpenChange, children }: MoodDrawerProps) {
                             : "scale-75 opacity-40 hover:opacity-75"
                         )}
                       >
-                        <span className="text-5xl leading-none">
-                          {mood.emoji}
-                        </span>
+                        {isSelected ? (
+                          <AnimatedEmoji
+                            emoji={mood.emoji}
+                            size={48}
+                            replayOnTap={false}
+                            fallbackClassName="text-5xl"
+                          />
+                        ) : (
+                          <span className="text-5xl leading-none">
+                            {mood.emoji}
+                          </span>
+                        )}
                         <span
                           className={cn(
                             "w-full truncate text-center text-xs leading-tight",

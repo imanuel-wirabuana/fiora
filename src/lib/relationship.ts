@@ -5,10 +5,15 @@ export const MAX_MOODS = 33
 
 export const DEFAULT_MOOD_OPTIONS: MoodOption[] = [
   { emoji: "🥰", label: "Loved", score: 1.0 },
+  { emoji: "🤩", label: "Excited", score: 0.9 },
   { emoji: "😊", label: "Happy", score: 0.8 },
+  { emoji: "😌", label: "Calm", score: 0.7 },
   { emoji: "🥺", label: "Needy", score: 0.6 },
+  { emoji: "🤔", label: "Thoughtful", score: 0.5 },
   { emoji: "😴", label: "Tired", score: 0.4 },
+  { emoji: "😰", label: "Anxious", score: 0.3 },
   { emoji: "😔", label: "Down", score: 0.2 },
+  { emoji: "😭", label: "Overwhelmed", score: 0.1 },
 ]
 
 const DEFAULT_SCORE_BY_LABEL = new Map(
