@@ -20,12 +20,18 @@ export function HomeScreen() {
     <section className="flex flex-col gap-4">
       <PartnerPresenceSection />
       <MoodSection />
-      <NudgeSection />
-      {locationSharing ? (
-        <Suspense fallback={null}>
-          <LocationSharingSection />
-        </Suspense>
-      ) : null}
+      <div className="flex items-stretch gap-3">
+        {locationSharing ? (
+          <div className="flex min-w-0 flex-1">
+            <Suspense fallback={null}>
+              <LocationSharingSection />
+            </Suspense>
+          </div>
+        ) : null}
+        <div className={locationSharing ? "flex shrink-0" : "flex w-full"}>
+          <NudgeSection compact={Boolean(locationSharing)} />
+        </div>
+      </div>
       <DailyQuizSection />
     </section>
   )
