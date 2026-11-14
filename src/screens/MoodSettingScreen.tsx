@@ -4,7 +4,8 @@ import {
   DndContext,
   type DragEndEvent,
   KeyboardSensor,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   useSensor,
   useSensors,
 } from "@dnd-kit/core"
@@ -24,6 +25,7 @@ import {
   Trash2,
   Wand2,
 } from "lucide-react"
+import { AnimatedEmoji } from "@/components/AnimatedEmoji"
 import { CustomItem } from "@/components/CustomItem"
 import { FormDrawer } from "@/components/FormDrawer"
 import { Button } from "@/components/ui/button"
@@ -137,9 +139,12 @@ function SortableMoodRow({
       style={style}
       {...attributes}
       {...listeners}
+      onContextMenu={(e) => e.preventDefault()}
       className={cn(
-        "group flex touch-manipulation select-none items-center justify-between gap-3 rounded-2xl border border-border/70 bg-card px-3.5 py-2.5 transition-colors hover:border-border",
-        isDragging && "relative z-10 scale-[1.01] shadow-md ring-2 ring-primary/30"
+        "group flex select-none items-center justify-between gap-3 rounded-2xl border border-border/70 bg-card px-3.5 py-2.5 transition-colors [-webkit-touch-callout:none] hover:border-border",
+        isDragging
+          ? "relative z-10 scale-[1.01] touch-none shadow-md ring-2 ring-primary/30"
+          : "touch-manipulation"
       )}
     >
       <button
@@ -148,8 +153,13 @@ function SortableMoodRow({
         disabled={isSaving}
         className="flex min-w-0 flex-1 items-center gap-3 text-left disabled:opacity-75"
       >
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-muted/50 text-xl select-none">
-          {mood.emoji}
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-muted/50 select-none">
+          <AnimatedEmoji
+            emoji={mood.emoji}
+            size={28}
+            replayOnTap={false}
+            fallbackClassName="text-xl"
+          />
         </span>
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           <span className="truncate text-xs font-medium text-foreground">
@@ -236,7 +246,12 @@ export function MoodSettingScreen() {
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null)
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
+    useSensor(MouseSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(TouchSensor, {
       activationConstraint: {
         delay: 250,
         tolerance: 5,
@@ -543,6 +558,26 @@ export function MoodSettingScreen() {
             />
           </Field>
         </div>
+
+        {formEmoji.trim() && (
+          <div className="flex items-center gap-3 rounded-2xl border border-border/70 bg-muted/30 px-3.5 py-2.5">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-card select-none">
+              <AnimatedEmoji
+                emoji={formEmoji.trim()}
+                size={28}
+                fallbackClassName="text-xl"
+              />
+            </span>
+            <div className="flex min-w-0 flex-col">
+              <span className="text-[10px] font-medium text-muted-foreground">
+                Lottie Preview
+              </span>
+              <span className="truncate text-xs font-medium text-foreground">
+                {formLabel.trim() || "Mood label"}
+              </span>
+            </div>
+          </div>
+        )}
       </FormDrawer>
 
       {/* AI Assistant FormDrawer */}
