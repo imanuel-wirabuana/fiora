@@ -2,12 +2,19 @@ import { useEffect, useState } from "react"
 import { formatDistanceToNow } from "date-fns"
 import { UserPlus } from "lucide-react"
 import { CustomItem } from "@/components/CustomItem"
+import { OdometerText } from "@/components/OdometerText"
 import { usePartnerPresence } from "@/hooks/usePartnerPresence"
 import { cn } from "@/lib/utils"
 
 export function PartnerPresenceSection() {
-  const { isOnline, isBackground, lastSeenAt, partnerMember } =
-    usePartnerPresence()
+  const {
+    isOnline,
+    isBackground,
+    lastSeenAt,
+    partnerMember,
+    partnerName,
+    partnerAlias,
+  } = usePartnerPresence()
 
   // Refresh relative timestamps every 30s while viewing Home
   const [, setTick] = useState(0)
@@ -35,7 +42,6 @@ export function PartnerPresenceSection() {
     )
   }
 
-  const partnerName = partnerMember.content?.name || "Partner"
   const partnerAvatar = partnerMember.content?.avatar || "🤍"
   const statusLabel = isOnline ? (isBackground ? "Away" : "Online") : "Offline"
 
@@ -67,7 +73,7 @@ export function PartnerPresenceSection() {
           </span>
         </div>
       }
-      title={partnerName}
+      title={<OdometerText items={[partnerName, partnerAlias]} />}
       topRightActions={
         <span className="shrink-0 text-[11px] font-medium text-primary-foreground/80">
           {lastSeenText}

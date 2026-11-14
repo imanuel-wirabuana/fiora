@@ -234,7 +234,7 @@ export function usePresenceTracker() {
 }
 
 export function usePartnerPresence() {
-  const { partnerMember } = useRelationship()
+  const { partnerMember, partnerName, partnerAlias } = useRelationship()
   const partnerPresence = usePresenceStore((s) => s.partnerPresence)
   const lastDisconnectedAt = usePresenceStore((s) => s.lastDisconnectedAt)
 
@@ -275,5 +275,7 @@ export function usePartnerPresence() {
     currentActivity,
     lastSeenAt,
     partnerMember,
+    partnerName,
+    partnerAlias,
   }
 }

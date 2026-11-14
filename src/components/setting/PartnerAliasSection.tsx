@@ -51,7 +51,7 @@ export function PartnerAliasSection() {
     setOpen(next)
   }
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!partnerUserId || !isChanged) {
       return false
@@ -59,13 +59,22 @@ export function PartnerAliasSection() {
 
     const updatedAliases = {
       ...(relationship.content?.aliases || {}),
-      [partnerUserId]: trimmedAlias,
     }
 
-    updateRelationshipContentMutation.mutate({
-      relationshipId: relationship.id,
-      content: { aliases: updatedAliases },
-    })
+    if (trimmedAlias) {
+      updatedAliases[partnerUserId] = trimmedAlias
+    } else {
+      delete updatedAliases[partnerUserId]
+    }
+
+    try {
+      await updateRelationshipContentMutation.mutateAsync({
+        relationshipId: relationship.id,
+        content: { aliases: updatedAliases },
+      })
+    } catch {
+      return false
+    }
   }
 
   return (

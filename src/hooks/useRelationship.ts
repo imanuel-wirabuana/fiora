@@ -69,6 +69,15 @@ export function useRelationship() {
       ? relationship.content.daily_quiz_count
       : DEFAULT_DAILY_QUIZ_COUNT
   const dailyQuizState = relationship?.content?.daily_quiz ?? null
+  const partnerName = partnerMember?.content?.name?.trim() || "Partner"
+  const partnerAlias =
+    (partnerMember?.user_id &&
+      relationship?.content?.aliases?.[partnerMember.user_id]?.trim()) ||
+    ""
+  const currentAlias =
+    (currentMember?.user_id &&
+      relationship?.content?.aliases?.[currentMember.user_id]?.trim()) ||
+    ""
 
   // 2. Mutations
   const createRelationshipMutation = useMutation<
@@ -320,7 +329,10 @@ export function useRelationship() {
     relationshipData,
     relationship,
     currentMember,
+    currentAlias,
     partnerMember,
+    partnerName,
+    partnerAlias,
     members,
     hasRelationship,
     moodOptions,

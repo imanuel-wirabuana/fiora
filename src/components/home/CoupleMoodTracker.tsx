@@ -3,6 +3,7 @@ import { formatDistanceToNow } from "date-fns"
 import { Heart, Smile, UserPlus } from "lucide-react"
 import { CustomItem } from "@/components/CustomItem"
 import { CustomSkeleton } from "@/components/CustomSkeleton"
+import { OdometerText } from "@/components/OdometerText"
 import { cn } from "@/lib/utils"
 import { useActivities } from "@/hooks/useActivities"
 import { useRelationship } from "@/hooks/useRelationship"
@@ -32,7 +33,7 @@ function getGenderRingStyles(gender?: Gender | null) {
 
 interface MoodCardProps {
   avatar: string
-  title: string
+  title: ReactNode
   gender?: Gender | null
   latestMood: Activity<MoodActivityContent> | null
   isLoading: boolean
@@ -146,12 +147,12 @@ function MoodCard({
 
 function YourMood() {
   const { myLatestMood, isLoading } = useActivities()
-  const { currentMember } = useRelationship()
+  const { currentMember, currentAlias } = useRelationship()
 
   return (
     <MoodCard
       avatar={currentMember?.content?.avatar || "🙋"}
-      title="You"
+      title={<OdometerText items={["You", currentAlias]} />}
       gender={currentMember?.content?.gender}
       latestMood={myLatestMood}
       isLoading={isLoading}
@@ -163,12 +164,12 @@ function YourMood() {
 
 function PartnerMood() {
   const { partnerLatestMood, isLoading } = useActivities()
-  const { partnerMember } = useRelationship()
+  const { partnerMember, partnerName, partnerAlias } = useRelationship()
 
   return (
     <MoodCard
       avatar={partnerMember?.content?.avatar || "🤍"}
-      title={partnerMember?.content?.name || "Partner"}
+      title={<OdometerText items={[partnerName, partnerAlias]} />}
       gender={partnerMember?.content?.gender}
       latestMood={partnerMember ? partnerLatestMood : null}
       isLoading={Boolean(partnerMember && isLoading)}

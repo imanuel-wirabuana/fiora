@@ -65,8 +65,8 @@ export interface CustomItemProps extends Omit<
   React.ComponentProps<typeof Item>,
   "title" | "variant"
 > {
-  /** Standardized pure string header title */
-  title: string
+  /** Header title */
+  title: React.ReactNode
   /** Required icon or avatar rendered beside the title */
   icon: React.ReactNode
   /** Visual style variant: default, soft, solid, or outline */
@@ -129,7 +129,7 @@ export function CustomItem({
           <div className="flex shrink-0 items-center justify-center">
             {icon}
           </div>
-          <ItemTitle className="min-w-0 text-xs font-semibold">
+          <ItemTitle className="min-w-0 text-left text-xs font-semibold">
             {title}
           </ItemTitle>
         </div>
