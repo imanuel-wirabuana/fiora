@@ -9,12 +9,14 @@ import { useInfiniteTimelineActivities } from "@/hooks/useActivities"
 import { useAuth } from "@/hooks/useAuth"
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll"
 import { useRelationship } from "@/hooks/useRelationship"
+import { getGenderAvatarCircleClass } from "@/lib/relationship"
 import { cn } from "@/lib/utils"
 import type {
   Activity,
   MoodActivityContent,
   NudgeActivityContent,
 } from "@/types/activity"
+import type { Gender } from "@/types/relationship"
 
 type TimelineFilter = "all" | "mood" | "nudge"
 
@@ -33,11 +35,13 @@ function TimelineActivityRow({
   activity,
   authorName,
   authorAvatar,
+  authorGender,
   isMine,
 }: {
   activity: Activity
   authorName: string
   authorAvatar: string
+  authorGender?: Gender | null
   isMine: boolean
 }) {
   const isMood = activity.type === "mood"
@@ -63,7 +67,10 @@ function TimelineActivityRow({
         <div
           className={cn(
             "flex size-7 shrink-0 items-center justify-center rounded-full text-sm leading-none select-none",
-            isMood ? "bg-muted/60" : "bg-primary/15"
+            getGenderAvatarCircleClass(
+              authorGender,
+              isMood ? "bg-muted/60" : "bg-primary/15"
+            )
           )}
         >
           {authorAvatar}
@@ -131,8 +138,10 @@ export function InsightTimelineSection({
   })
 
   const myAvatar = currentMember?.content?.avatar || "💙"
+  const myGender = currentMember?.content?.gender
   const partnerName = partnerMember?.content?.name || "Partner"
   const partnerAvatar = partnerMember?.content?.avatar || "🤍"
+  const partnerGender = partnerMember?.content?.gender
   const currentUserId = user?.id
 
   const filteredActivities = useMemo(() => {
@@ -214,6 +223,7 @@ export function InsightTimelineSection({
                       activity={activity}
                       authorName={partnerName}
                       authorAvatar={isMine ? myAvatar : partnerAvatar}
+                      authorGender={isMine ? myGender : partnerGender}
                       isMine={isMine}
                     />
                   )

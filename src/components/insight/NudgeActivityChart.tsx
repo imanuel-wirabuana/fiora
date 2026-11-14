@@ -7,31 +7,37 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart"
+import { getGenderChartColor } from "@/lib/relationship"
 import type { NudgeActivityPoint } from "@/types/insight"
+import type { Gender } from "@/types/relationship"
 
 interface NudgeActivityChartProps {
   data: NudgeActivityPoint[]
   topEmoji: string | null
   topLabel: string | null
+  myGender?: Gender | null
+  partnerGender?: Gender | null
 }
-
-const chartConfig = {
-  sent: {
-    label: "Sent",
-    color: "var(--chart-1)",
-  },
-  received: {
-    label: "Received",
-    color: "var(--chart-2)",
-  },
-} satisfies ChartConfig
 
 export function NudgeActivityChart({
   data,
   topEmoji,
   topLabel,
+  myGender,
+  partnerGender,
 }: NudgeActivityChartProps) {
   const hasAnyNudge = data.some((d) => d.sent > 0 || d.received > 0)
+
+  const chartConfig = {
+    sent: {
+      label: "Sent",
+      color: getGenderChartColor(myGender, "var(--chart-1)"),
+    },
+    received: {
+      label: "Received",
+      color: getGenderChartColor(partnerGender, "var(--chart-2)"),
+    },
+  } satisfies ChartConfig
 
   return (
     <CustomItem

@@ -145,7 +145,7 @@ export function LocationSharingSection() {
     pointsRef.current = points
     if (points.length > 1) {
       L.polyline(points, {
-        color: "#f43f5e",
+        color: "var(--primary)",
         weight: 2,
         dashArray: "4 6",
         opacity: 0.7,

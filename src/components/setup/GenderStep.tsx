@@ -17,7 +17,7 @@ export function GenderStep({ gender, onSelectGender }: GenderStepProps) {
           className={cn(
             "flex flex-col items-center justify-center gap-2 rounded-3xl border-2 p-6 transition-all active:scale-[0.98]",
             gender === "male"
-              ? "border-primary bg-primary/10 shadow-xs"
+              ? "border-sky-500 bg-sky-500/10 shadow-xs"
               : "border-border hover:bg-muted/40"
           )}
         >
@@ -27,7 +27,9 @@ export function GenderStep({ gender, onSelectGender }: GenderStepProps) {
           <span
             className={cn(
               "text-sm font-semibold",
-              gender === "male" ? "text-primary" : "text-foreground"
+              gender === "male"
+                ? "text-sky-600 dark:text-sky-400"
+                : "text-foreground"
             )}
           >
             Male
@@ -41,7 +43,7 @@ export function GenderStep({ gender, onSelectGender }: GenderStepProps) {
           className={cn(
             "flex flex-col items-center justify-center gap-2 rounded-3xl border-2 p-6 transition-all active:scale-[0.98]",
             gender === "female"
-              ? "border-primary bg-primary/10 shadow-xs"
+              ? "border-rose-500 bg-rose-500/10 shadow-xs"
               : "border-border hover:bg-muted/40"
           )}
         >
@@ -51,7 +53,9 @@ export function GenderStep({ gender, onSelectGender }: GenderStepProps) {
           <span
             className={cn(
               "text-sm font-semibold",
-              gender === "female" ? "text-primary" : "text-foreground"
+              gender === "female"
+                ? "text-rose-600 dark:text-rose-400"
+                : "text-foreground"
             )}
           >
             Female

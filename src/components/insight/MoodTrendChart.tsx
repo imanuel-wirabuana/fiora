@@ -7,29 +7,35 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart"
+import { getGenderChartColor } from "@/lib/relationship"
 import type { MoodTrendPoint } from "@/types/insight"
+import type { Gender } from "@/types/relationship"
 
 interface MoodTrendChartProps {
   data: MoodTrendPoint[]
   myName: string
   partnerName: string
+  myGender?: Gender | null
+  partnerGender?: Gender | null
 }
 
 export function MoodTrendChart({
   data,
   myName,
   partnerName,
+  myGender,
+  partnerGender,
 }: MoodTrendChartProps) {
   const hasAnyMood = data.some((d) => d.me !== null || d.partner !== null)
 
   const chartConfig = {
     me: {
       label: myName,
-      color: "var(--chart-1)",
+      color: getGenderChartColor(myGender, "var(--chart-1)"),
     },
     partner: {
       label: partnerName,
-      color: "var(--chart-2)",
+      color: getGenderChartColor(partnerGender, "var(--chart-2)"),
     },
   } satisfies ChartConfig
 

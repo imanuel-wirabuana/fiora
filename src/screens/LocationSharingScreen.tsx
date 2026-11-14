@@ -178,7 +178,7 @@ export function LocationSharingScreen() {
 
     if (points.length > 1) {
       L.polyline(points, {
-        color: "#f43f5e",
+        color: "var(--primary)",
         weight: 2.5,
         dashArray: "5 6",
         opacity: 0.7,

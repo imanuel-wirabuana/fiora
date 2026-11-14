@@ -14,16 +14,16 @@ import type { Gender } from "@/types/relationship"
 function getGenderRingStyles(gender?: Gender | null) {
   if (gender === "male") {
     return {
-      card: "border-blue-500/30 ring-1 ring-blue-500/20",
+      card: "border-sky-500/30 ring-1 ring-sky-500/20",
       circle:
-        "bg-blue-500/10 ring-2 ring-blue-500/50 text-blue-600 dark:bg-blue-400/10 dark:ring-blue-400/50 dark:text-blue-400",
+        "bg-sky-500/10 ring-2 ring-sky-500/50 text-sky-600 dark:bg-sky-400/10 dark:ring-sky-400/50 dark:text-sky-400",
     }
   }
   if (gender === "female") {
     return {
-      card: "border-primary/30 ring-1 ring-primary/20",
+      card: "border-rose-500/30 ring-1 ring-rose-500/20",
       circle:
-        "bg-primary/10 ring-2 ring-primary/50 text-primary",
+        "bg-rose-500/10 ring-2 ring-rose-500/50 text-rose-600 dark:bg-rose-400/10 dark:ring-rose-400/50 dark:text-rose-400",
     }
   }
   return {

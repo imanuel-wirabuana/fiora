@@ -28,7 +28,9 @@ export function InsightScreen() {
     useInsights(dateFilter)
 
   const myName = currentMember?.content?.name || "You"
+  const myGender = currentMember?.content?.gender
   const partnerName = partnerMember?.content?.name || "Partner"
+  const partnerGender = partnerMember?.content?.gender
 
   if (isLoading) {
     return <InsightScreenSkeleton />
@@ -45,12 +47,16 @@ export function InsightScreen() {
           data={moodTrend}
           myName={myName}
           partnerName={partnerName}
+          myGender={myGender}
+          partnerGender={partnerGender}
         />
 
         <NudgeActivityChart
           data={nudgeActivity}
           topEmoji={summary.topNudgeEmoji}
           topLabel={summary.topNudgeLabel}
+          myGender={myGender}
+          partnerGender={partnerGender}
         />
       </div>
 

@@ -16,10 +16,10 @@ export function createMapTileLayer(): L.TileLayer {
 
 /**
  * Returns Tailwind classes for map marker pinpoints based on member gender,
- * matching CoupleMoodTracker's blue (male) and pink/primary (female) palette.
+ * matching CoupleMoodTracker's sky (male) and rose (female) palette.
  */
 export function getGenderMarkerBg(gender?: Gender | null): string {
-  if (gender === "male") return "bg-blue-500 text-white"
-  if (gender === "female") return "bg-primary text-primary-foreground"
+  if (gender === "male") return "bg-sky-500 text-white"
+  if (gender === "female") return "bg-rose-500 text-white"
   return "bg-muted text-foreground"
 }

@@ -192,6 +192,28 @@ export function getDefaultAvatar(gender: Gender | null): string {
   return "💙"
 }
 
+export function getGenderChartColor(
+  gender: Gender | null | undefined,
+  fallback: string
+): string {
+  if (gender === "male") return "var(--color-sky-500)"
+  if (gender === "female") return "var(--color-rose-500)"
+  return fallback
+}
+
+export function getGenderAvatarCircleClass(
+  gender: Gender | null | undefined,
+  fallback = "bg-muted/60"
+): string {
+  if (gender === "male") {
+    return "bg-sky-500/15 ring-1 ring-sky-500/40 dark:bg-sky-400/15 dark:ring-sky-400/40"
+  }
+  if (gender === "female") {
+    return "bg-rose-500/15 ring-1 ring-rose-500/40 dark:bg-rose-400/15 dark:ring-rose-400/40"
+  }
+  return fallback
+}
+
 export function generateInviteCode(): string {
   // Generate a random 5-digit string (e.g. 10000 - 99999)
   const code = Math.floor(10000 + Math.random() * 90000)
