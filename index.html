@@ -18,6 +18,37 @@
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="icon" href="/favicon.ico" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <!-- Apply saved theme before first paint to prevent splashscreen flash -->
+    <script>
+      ;(function () {
+        try {
+          var root = document.documentElement
+          var storedTheme = localStorage.getItem("theme")
+          var resolvedTheme =
+            storedTheme === "dark" || storedTheme === "light"
+              ? storedTheme
+              : storedTheme === "system" &&
+                  window.matchMedia("(prefers-color-scheme: dark)").matches
+                ? "dark"
+                : "light"
+          root.classList.remove("light", "dark")
+          root.classList.add(resolvedTheme)
+          root.style.colorScheme = resolvedTheme
+
+          var storedAppTheme = localStorage.getItem("app-theme")
+          if (
+            storedAppTheme === "nyoklat" ||
+            storedAppTheme === "burgundy" ||
+            storedAppTheme === "jandes"
+          ) {
+            root.setAttribute("data-theme", storedAppTheme)
+          } else {
+            root.removeAttribute("data-theme")
+          }
+        } catch (e) {}
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

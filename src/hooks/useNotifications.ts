@@ -1,6 +1,14 @@
-import { useCallback, useEffect, useMemo } from "react"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { notificationService } from "../services/notificationService"
+import { useCallback, useMemo } from "react"
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+  type InfiniteData,
+} from "@tanstack/react-query"
+import {
+  NOTIFICATION_PAGE_SIZE,
+  notificationService,
+} from "../services/notificationService"
 import { useAuth } from "./useAuth"
 import { useRelationship } from "./useRelationship"
 import type {
@@ -33,34 +41,32 @@ export function useNotifications() {
   const partnerUserId = partnerMember?.user_id
   const senderName = currentMember?.content?.name || "Your partner"
 
-  const query = useQuery<NotificationRecord[]>({
+  const query = useInfiniteQuery<
+    NotificationRecord[],
+    Error,
+    InfiniteData<NotificationRecord[], number>,
+    ReturnType<typeof notificationKeys.byUser>,
+    number
+  >({
     queryKey: notificationKeys.byUser(userId),
-    queryFn: () => {
+    initialPageParam: 0,
+    queryFn: ({ pageParam }) => {
       if (!userId) return Promise.resolve([])
-      return notificationService.getNotifications(userId)
+      return notificationService.getNotificationsPage(
+        userId,
+        pageParam,
+        NOTIFICATION_PAGE_SIZE
+      )
     },
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.length < NOTIFICATION_PAGE_SIZE ? undefined : allPages.length,
     enabled: !!userId,
   })
 
-  // Realtime listener for incoming notifications
-  useEffect(() => {
-    if (!userId) return
-
-    const unsubscribe = notificationService.subscribeToNotifications(
-      userId,
-      () => {
-        queryClient.invalidateQueries({
-          queryKey: notificationKeys.byUser(userId),
-        })
-      }
-    )
-
-    return () => {
-      unsubscribe()
-    }
-  }, [userId, queryClient])
-
-  const notifications = useMemo(() => query.data ?? [], [query.data])
+  const notifications = useMemo(
+    () => query.data?.pages.flat() ?? [],
+    [query.data]
+  )
 
   const unreadCount = useMemo(
     () => notifications.filter((n) => !n.content?.isRead).length,
@@ -85,7 +91,7 @@ export function useNotifications() {
     void,
     Error,
     NotificationRecord[],
-    { previous?: NotificationRecord[] }
+    { previous?: InfiniteData<NotificationRecord[], number> }
   >({
     mutationFn: (items) => notificationService.markAllAsRead(items),
     onMutate: async () => {
@@ -93,17 +99,22 @@ export function useNotifications() {
       await queryClient.cancelQueries({
         queryKey: notificationKeys.byUser(userId),
       })
-      const previous = queryClient.getQueryData<NotificationRecord[]>(
-        notificationKeys.byUser(userId)
-      )
+      const previous = queryClient.getQueryData<
+        InfiniteData<NotificationRecord[], number>
+      >(notificationKeys.byUser(userId))
       if (previous) {
-        queryClient.setQueryData<NotificationRecord[]>(
+        queryClient.setQueryData<InfiniteData<NotificationRecord[], number>>(
           notificationKeys.byUser(userId),
-          previous.map((item) =>
-            item.content
-              ? { ...item, content: { ...item.content, isRead: true } }
-              : item
-          )
+          {
+            ...previous,
+            pages: previous.pages.map((page) =>
+              page.map((item) =>
+                item.content
+                  ? { ...item, content: { ...item.content, isRead: true } }
+                  : item
+              )
+            ),
+          }
         )
       }
       return { previous }
@@ -129,7 +140,7 @@ export function useNotifications() {
     void,
     Error,
     number,
-    { previous?: NotificationRecord[] }
+    { previous?: InfiniteData<NotificationRecord[], number> }
   >({
     mutationFn: (id) => notificationService.deleteNotification(id),
     onMutate: async (id) => {
@@ -137,13 +148,18 @@ export function useNotifications() {
       await queryClient.cancelQueries({
         queryKey: notificationKeys.byUser(userId),
       })
-      const previous = queryClient.getQueryData<NotificationRecord[]>(
-        notificationKeys.byUser(userId)
-      )
+      const previous = queryClient.getQueryData<
+        InfiniteData<NotificationRecord[], number>
+      >(notificationKeys.byUser(userId))
       if (previous) {
-        queryClient.setQueryData<NotificationRecord[]>(
+        queryClient.setQueryData<InfiniteData<NotificationRecord[], number>>(
           notificationKeys.byUser(userId),
-          previous.filter((item) => item.id !== id)
+          {
+            ...previous,
+            pages: previous.pages.map((page) =>
+              page.filter((item) => item.id !== id)
+            ),
+          }
         )
       }
       return { previous }
@@ -169,7 +185,7 @@ export function useNotifications() {
     void,
     Error,
     void,
-    { previous?: NotificationRecord[] }
+    { previous?: InfiniteData<NotificationRecord[], number> }
   >({
     mutationFn: () => {
       if (!userId) return Promise.resolve()
@@ -180,12 +196,12 @@ export function useNotifications() {
       await queryClient.cancelQueries({
         queryKey: notificationKeys.byUser(userId),
       })
-      const previous = queryClient.getQueryData<NotificationRecord[]>(
-        notificationKeys.byUser(userId)
-      )
-      queryClient.setQueryData<NotificationRecord[]>(
+      const previous = queryClient.getQueryData<
+        InfiniteData<NotificationRecord[], number>
+      >(notificationKeys.byUser(userId))
+      queryClient.setQueryData<InfiniteData<NotificationRecord[], number>>(
         notificationKeys.byUser(userId),
-        []
+        { pages: [[]], pageParams: [0] }
       )
       return { previous }
     },
@@ -246,6 +262,9 @@ export function useNotifications() {
     notifications,
     unreadCount,
     isLoading: query.isLoading,
+    hasNextPage: query.hasNextPage,
+    isFetchingNextPage: query.isFetchingNextPage,
+    fetchNextPage: query.fetchNextPage,
     isClearing: clearAllMutation.isPending,
     refetch: query.refetch,
     notifyPartner,

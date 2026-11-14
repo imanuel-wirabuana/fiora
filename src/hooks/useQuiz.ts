@@ -79,24 +79,6 @@ export function useQuiz() {
     enabled: !!relationshipId,
   })
 
-  // 3. Realtime subscription to answers
-  useEffect(() => {
-    if (!relationshipId) return
-
-    const unsubscribe = quizService.subscribeToQuizAnswers(
-      relationshipId,
-      () => {
-        queryClient.invalidateQueries({
-          queryKey: quizKeys.answers(relationshipId),
-        })
-      }
-    )
-
-    return () => {
-      unsubscribe()
-    }
-  }, [relationshipId, queryClient])
-
   const quizzes = useMemo(() => quizzesQuery.data ?? [], [quizzesQuery.data])
   const answers = useMemo(() => answersQuery.data ?? [], [answersQuery.data])
 

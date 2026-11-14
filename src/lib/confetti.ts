@@ -1,13 +1,12 @@
-import confetti from "canvas-confetti"
-
 /**
  * Fire a burst of confetti using the given emoji as the particle shape,
  * with particle count scaled by the mood's score (100 * score).
  */
-export function fireEmojiConfetti(emoji: string, score = 0.5) {
+export async function fireEmojiConfetti(emoji: string, score = 0.5) {
   if (typeof window === "undefined" || !emoji.trim()) return
 
   try {
+    const { default: confetti } = await import("canvas-confetti")
     const scalar = 5
     const particleCount = Math.max(1, Math.round(100 * score))
     const emojiShape = confetti.shapeFromText({

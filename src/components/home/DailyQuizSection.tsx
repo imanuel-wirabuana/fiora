@@ -12,7 +12,7 @@ import {
 import { CustomItem } from "@/components/CustomItem"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Spinner } from "@/components/ui/spinner"
+import { Skeleton } from "@/components/ui/skeleton"
 import { useQuiz } from "@/hooks/useQuiz"
 import { useRelationship } from "@/hooks/useRelationship"
 import { cn } from "@/lib/utils"
@@ -53,10 +53,13 @@ export function DailyQuizSection() {
         icon={<Sparkles className="size-3.5" />}
         title="Daily Quiz"
         className="p-3"
-        contentClassName="items-center justify-center gap-1.5 py-2"
+        contentClassName="gap-2.5 py-1"
       >
-        <Spinner className="size-4 text-primary" />
-        <span className="text-[11px] text-primary/80">Loading quiz...</span>
+        <Skeleton className="h-4 w-3/4 rounded-md" />
+        <div className="grid grid-cols-2 gap-2">
+          <Skeleton className="h-8 w-full rounded-xl" />
+          <Skeleton className="h-8 w-full rounded-xl" />
+        </div>
       </CustomItem>
     )
   }

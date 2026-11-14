@@ -19,7 +19,9 @@ import { useLocation } from "wouter"
 import { CustomItem } from "@/components/CustomItem"
 import { FormDrawer } from "@/components/FormDrawer"
 import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Spinner } from "@/components/ui/spinner"
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll"
 import { useNotifications } from "@/hooks/useNotifications"
 import { usePushNotifications } from "@/hooks/usePushNotifications"
 import { useRelationship } from "@/hooks/useRelationship"
@@ -41,7 +43,7 @@ const FILTER_OPTIONS: { value: NotificationFilter; label: string }[] = [
 function getTypeIcon(type?: string | null) {
   switch (type) {
     case "mood":
-      return <Heart className="size-4 fill-rose-500 text-rose-500" />
+      return <Heart className="size-4 fill-primary text-primary" />
     case "nudge":
       return <Send className="size-4 text-amber-500" />
     case "journal":
@@ -72,11 +74,21 @@ export function NotificationListSection() {
     notifications,
     unreadCount,
     isLoading,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
     isClearing,
     markAllAsRead,
     deleteNotification,
     clearAllNotifications,
   } = useNotifications()
+  const sentinelRef = useInfiniteScroll({
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage: () => {
+      void fetchNextPage()
+    },
+  })
   const {
     isSupported,
     isIOS,
@@ -133,8 +145,16 @@ export function NotificationListSection() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center py-12">
-        <Spinner className="size-6 text-primary" />
+      <div className="flex flex-col gap-3">
+        <div className="flex gap-1.5">
+          <Skeleton className="h-7 w-12 rounded-full" />
+          <Skeleton className="h-7 w-16 rounded-full" />
+          <Skeleton className="h-7 w-16 rounded-full" />
+          <Skeleton className="h-7 w-16 rounded-full" />
+        </div>
+        {Array.from({ length: 5 }).map((_, idx) => (
+          <Skeleton key={idx} className="h-18 w-full" />
+        ))}
       </div>
     )
   }
@@ -290,6 +310,14 @@ export function NotificationListSection() {
               </div>
             </div>
           ))}
+
+          <div ref={sentinelRef} className="h-1" />
+          {isFetchingNextPage && (
+            <div className="flex flex-col gap-2">
+              <Skeleton className="h-18 w-full" />
+              <Skeleton className="h-18 w-full" />
+            </div>
+          )}
         </div>
       )}
 

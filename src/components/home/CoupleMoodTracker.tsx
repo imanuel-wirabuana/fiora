@@ -2,6 +2,7 @@ import type { ReactNode } from "react"
 import { formatDistanceToNow } from "date-fns"
 import { Heart, Smile, UserPlus } from "lucide-react"
 import { CustomItem } from "@/components/CustomItem"
+import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 import { useActivities } from "@/hooks/useActivities"
 import { useRelationship } from "@/hooks/useRelationship"
@@ -18,9 +19,9 @@ function getGenderRingStyles(gender?: Gender | null) {
   }
   if (gender === "female") {
     return {
-      card: "border-rose-500/30 ring-1 ring-rose-500/20",
+      card: "border-primary/30 ring-1 ring-primary/20",
       circle:
-        "bg-rose-500/10 ring-2 ring-rose-500/50 text-rose-600 dark:bg-rose-400/10 dark:ring-rose-400/50 dark:text-rose-400",
+        "bg-primary/10 ring-2 ring-primary/50 text-primary",
     }
   }
   return {
@@ -84,46 +85,60 @@ function MoodCard({
       contentClassName="flex-none items-center justify-center gap-2 py-0.5"
     >
       {/* Centered Big Icon & Mood Status */}
-      <div
-        className={cn(
-          "flex size-14 shrink-0 items-center justify-center rounded-full transition-transform",
-          styles.circle
-        )}
-      >
-        {moodContent ? (
-          <span className="text-3xl leading-none select-none">
-            {moodContent.emoji}
-          </span>
-        ) : (
-          fallbackIcon
-        )}
-      </div>
+      {isLoading ? (
+        <Skeleton className="size-14 shrink-0 rounded-full" />
+      ) : (
+        <div
+          className={cn(
+            "flex size-14 shrink-0 items-center justify-center rounded-full transition-transform",
+            styles.circle
+          )}
+        >
+          {moodContent ? (
+            <span className="text-3xl leading-none select-none">
+              {moodContent.emoji}
+            </span>
+          ) : (
+            fallbackIcon
+          )}
+        </div>
+      )}
 
       {/* Consistent 3-line text stack to preserve identical card height */}
       <div className="flex w-full min-w-0 flex-col items-center justify-center text-center gap-0.5">
-        <span
-          className={cn(
-            "w-full truncate text-center text-xs font-semibold",
-            moodContent ? "text-foreground" : "text-[11px] font-medium text-muted-foreground"
-          )}
-        >
-          {primaryLabel}
-        </span>
+        {isLoading ? (
+          <>
+            <Skeleton className="my-0.5 h-3.5 w-16 rounded-md" />
+            <Skeleton className="my-0.5 h-3 w-20 rounded-md" />
+            <Skeleton className="my-0.5 h-2.5 w-14 rounded-md" />
+          </>
+        ) : (
+          <>
+            <span
+              className={cn(
+                "w-full truncate text-center text-xs font-semibold",
+                moodContent ? "text-foreground" : "text-[11px] font-medium text-muted-foreground"
+              )}
+            >
+              {primaryLabel}
+            </span>
 
-        <p
-          className={cn(
-            "line-clamp-1 min-h-4 w-full text-center text-[11px]",
-            moodContent?.note
-              ? "text-muted-foreground italic"
-              : "text-muted-foreground/70"
-          )}
-        >
-          {secondaryNote}
-        </p>
+            <p
+              className={cn(
+                "line-clamp-1 min-h-4 w-full text-center text-[11px]",
+                moodContent?.note
+                  ? "text-muted-foreground italic"
+                  : "text-muted-foreground/70"
+              )}
+            >
+              {secondaryNote}
+            </p>
 
-        <span className="min-h-3.5 text-[10px] text-muted-foreground">
-          {timestampText}
-        </span>
+            <span className="min-h-3.5 text-[10px] text-muted-foreground">
+              {timestampText}
+            </span>
+          </>
+        )}
       </div>
     </CustomItem>
   )

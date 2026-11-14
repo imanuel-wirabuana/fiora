@@ -1,4 +1,5 @@
-import type { ReactNode } from "react"
+import { useRef, type ReactNode } from "react"
+import { useScrollToTop } from "@/hooks/useScrollToTop"
 import { BottomNav } from "../BottomNav"
 import { Header } from "../Header"
 
@@ -15,8 +16,14 @@ export function DetailLayout({
   backHref,
   rightAction,
 }: DetailLayoutProps) {
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+  useScrollToTop(scrollContainerRef)
+
   return (
-    <div className="flex min-h-svh flex-col bg-background text-foreground md:h-full md:min-h-0 md:overflow-y-auto">
+    <div
+      ref={scrollContainerRef}
+      className="flex min-h-svh flex-col bg-background text-foreground md:h-full md:min-h-0 md:overflow-y-auto"
+    >
       {/* Unified Detail Header */}
       <Header
         variant="detail"

@@ -1,4 +1,4 @@
-import { useMemo } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { format, formatDistanceToNow, isToday, isYesterday } from "date-fns"
 import {
   Heart,
@@ -8,8 +8,9 @@ import {
 } from "lucide-react"
 import { CustomItem } from "@/components/CustomItem"
 import { Badge } from "@/components/ui/badge"
-import { Spinner } from "@/components/ui/spinner"
+import { Skeleton } from "@/components/ui/skeleton"
 import { useAuth } from "@/hooks/useAuth"
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll"
 import { useRelationship } from "@/hooks/useRelationship"
 import { cn } from "@/lib/utils"
 import type {
@@ -20,19 +21,50 @@ import type {
 import type { QuizTimelineEntry } from "@/types/quiz"
 import type { TimelineItem } from "@/types/timeline"
 
+const TIMELINE_WINDOW_SIZE = 20
+
 interface TimelineFeedSectionProps {
   items: TimelineItem[]
   isLoading: boolean
+  hasNextPage?: boolean
+  isFetchingNextPage?: boolean
+  fetchNextPage?: () => void
   selectedDate: Date | undefined
 }
 
 export function TimelineFeedSection({
   items,
   isLoading,
+  hasNextPage = false,
+  isFetchingNextPage = false,
+  fetchNextPage,
   selectedDate,
 }: TimelineFeedSectionProps) {
   const { currentMember, partnerMember } = useRelationship()
   const { user } = useAuth()
+  const [visibleCount, setVisibleCount] = useState(TIMELINE_WINDOW_SIZE)
+
+  const visibleItems = useMemo(
+    () => items.slice(0, visibleCount),
+    [items, visibleCount]
+  )
+  const hasMoreVisible = visibleCount < items.length
+  const canLoadMore = hasMoreVisible || hasNextPage
+
+  const handleLoadMore = useCallback(() => {
+    if (visibleCount < items.length) {
+      setVisibleCount((prev) => prev + TIMELINE_WINDOW_SIZE)
+    }
+    if (hasNextPage && !isFetchingNextPage && visibleCount + TIMELINE_WINDOW_SIZE >= items.length) {
+      fetchNextPage?.()
+    }
+  }, [visibleCount, items.length, hasNextPage, isFetchingNextPage, fetchNextPage])
+
+  const sentinelRef = useInfiniteScroll({
+    hasNextPage: canLoadMore,
+    isFetchingNextPage,
+    fetchNextPage: handleLoadMore,
+  })
 
   const partnerName = partnerMember?.content?.name || "Partner"
   const partnerAvatar = partnerMember?.content?.avatar || "🤍"
@@ -74,7 +106,7 @@ export function TimelineFeedSection({
           key={key}
           variant="default"
           className="gap-1.5 rounded-2xl p-3 transition-colors"
-          icon={<Heart className="size-4 fill-rose-500 text-rose-500" />}
+          icon={<Heart className="size-4 fill-primary text-primary" />}
           title={`${member.avatar} ${member.name} · Mood`}
           topRightActions={
             <span className="text-[10px] whitespace-nowrap text-muted-foreground">
@@ -196,7 +228,7 @@ export function TimelineFeedSection({
           </div>
 
           <div className="flex min-w-0 items-start gap-1.5">
-            <span className="flex shrink-0 items-center gap-1 font-medium text-rose-500">
+            <span className="flex shrink-0 items-center gap-1 font-medium text-primary">
               <span>{partnerAvatar}</span> {partnerName}:
             </span>
             {entry.isBothAnswered ? (
@@ -219,7 +251,7 @@ export function TimelineFeedSection({
     const yesterdayItems: TimelineItem[] = []
     const earlierItems: TimelineItem[] = []
 
-    for (const item of items) {
+    for (const item of visibleItems) {
       const date = new Date(item.created_at)
       if (isToday(date)) {
         todayItems.push(item)
@@ -235,12 +267,20 @@ export function TimelineFeedSection({
       { label: "Yesterday", items: yesterdayItems },
       { label: "Earlier", items: earlierItems },
     ].filter((group) => group.items.length > 0)
-  }, [items])
+  }, [visibleItems])
 
   if (isLoading) {
     return (
-      <div className="flex justify-center py-12">
-        <Spinner className="size-6 text-primary" />
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between px-1">
+            <Skeleton className="h-3.5 w-14 rounded-md" />
+            <Skeleton className="h-3 w-5 rounded-md" />
+          </div>
+          {Array.from({ length: 4 }).map((_, idx) => (
+            <Skeleton key={idx} className="h-20 w-full" />
+          ))}
+        </div>
       </div>
     )
   }
@@ -274,16 +314,27 @@ export function TimelineFeedSection({
           </div>
 
           <div className="flex flex-col gap-2">
-            {group.items.map((item) => {
-              if (item.type === "quiz") {
-                return renderQuizItem(item.quizEntry, item.created_at, item.id)
-              }
-
-              return renderActivityItem(item.activity, item.id)
-            })}
+            {group.items.map((item) => (
+              <div
+                key={item.id}
+                className="[content-visibility:auto] [contain-intrinsic-size:auto_96px]"
+              >
+                {item.type === "quiz"
+                  ? renderQuizItem(item.quizEntry, item.created_at, item.id)
+                  : renderActivityItem(item.activity, item.id)}
+              </div>
+            ))}
           </div>
         </div>
       ))}
+
+      <div ref={sentinelRef} className="h-1" />
+      {isFetchingNextPage && (
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-20 w-full" />
+          <Skeleton className="h-20 w-full" />
+        </div>
+      )}
     </div>
   )
 }

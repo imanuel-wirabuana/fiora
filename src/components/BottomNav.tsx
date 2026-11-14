@@ -92,11 +92,31 @@ export function BottomNav({ className }: BottomNavProps) {
     <nav
       aria-label="Bottom Navigation"
       className={cn(
-        "fixed inset-x-0 bottom-0 z-40 bg-background pb-[env(safe-area-inset-bottom)]",
+        "fixed inset-x-0 bottom-0 z-40 pb-[env(safe-area-inset-bottom)]",
         className
       )}
     >
-      <div className="mx-auto grid h-13 max-w-md grid-cols-6 items-center px-2 sm:max-w-2xl">
+      {/* Background wings + left/right SVG inset cradle around the center button */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 flex flex-col"
+      >
+        <div className="flex h-13 w-full">
+          <div className="flex-1 bg-background" />
+          <svg
+            viewBox="0 0 112 52"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="-mx-px h-13 w-[112px] shrink-0 fill-background"
+          >
+            <path d="M0 0H12C20 0 22 6 24 14A33 33 0 0 0 88 14C90 6 92 0 100 0H112V52H0V0Z" />
+          </svg>
+          <div className="flex-1 bg-background" />
+        </div>
+        <div className="flex-1 bg-background" />
+      </div>
+
+      <div className="relative z-10 mx-auto grid h-13 max-w-md grid-cols-6 items-center px-2 sm:max-w-2xl">
         {/* Left Navigation Items */}
         {navItemsLeft.map((item) => (
           <BottomNavItem
@@ -107,17 +127,17 @@ export function BottomNav({ className }: BottomNavProps) {
         ))}
 
         {/* Standout Center Action with Dedicated MoodDrawer */}
-        <div className="relative -top-3.5 col-span-2 flex flex-col items-center justify-center">
+        <div className="relative -top-5 col-span-2 flex flex-col items-center justify-center">
           <button
             type="button"
             onClick={() => handleMoodDrawerOpenChange(true)}
             className={cn(
-              "group relative flex size-11 items-center justify-center rounded-full bg-primary text-primary-foreground transition-all hover:bg-primary/90 active:scale-95",
+              "group relative flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-95",
               isMoodDrawerOpen ? "rotate-45" : ""
             )}
             aria-label="Track Mood"
           >
-            <Plus className="size-5 stroke-[2.5] transition-transform duration-200" />
+            <Plus className="size-6 stroke-[2.5] transition-transform duration-200" />
             <span className="sr-only">Open mood tracker</span>
           </button>
         </div>

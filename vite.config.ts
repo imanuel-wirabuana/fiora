@@ -52,9 +52,46 @@ export default defineConfig({
       },
       injectManifest: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        globIgnores: [
+          "**/*-cyrillic*.woff2",
+          "**/*-greek*.woff2",
+          "**/*-vietnamese*.woff2",
+        ],
       },
     }),
   ],
+  build: {
+    rolldownOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            if (
+              id.includes("node_modules/react/") ||
+              id.includes("node_modules/react-dom/") ||
+              id.includes("node_modules/wouter/")
+            ) {
+              return "vendor-react"
+            }
+            if (id.includes("node_modules/@supabase/")) {
+              return "vendor-supabase"
+            }
+            if (id.includes("node_modules/@tanstack/")) {
+              return "vendor-query"
+            }
+            if (id.includes("node_modules/lucide-react/")) {
+              return "vendor-icons"
+            }
+            if (id.includes("node_modules/date-fns/")) {
+              return "vendor-date"
+            }
+            if (id.includes("node_modules/leaflet/")) {
+              return "vendor-leaflet"
+            }
+          }
+        },
+      },
+    },
+  },
   resolve: {
     alias: {
       "@": resolve(import.meta.dirname, "./src"),

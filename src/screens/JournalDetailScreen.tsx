@@ -5,10 +5,12 @@ import { useLocation, useRoute } from "wouter"
 import { FormDrawer } from "@/components/FormDrawer"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Spinner } from "@/components/ui/spinner"
 import { useActivities } from "@/hooks/useActivities"
 import { useAuth } from "@/hooks/useAuth"
 import { useRelationship } from "@/hooks/useRelationship"
+import { useScrollToTop } from "@/hooks/useScrollToTop"
 import type { JournalActivityContent } from "@/types/activity"
 
 export function JournalDetailScreen() {
@@ -26,6 +28,8 @@ export function JournalDetailScreen() {
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const mainRef = useRef<HTMLElement>(null)
+  useScrollToTop(mainRef)
 
   const {
     visibleJournals,
@@ -201,10 +205,27 @@ export function JournalDetailScreen() {
       </header>
 
       {/* Scrollable Full-Page Content */}
-      <main className="flex-1 overflow-y-auto px-5 py-6">
+      <main ref={mainRef} className="flex-1 overflow-y-auto px-5 py-6">
         {isLoading ? (
-          <div className="flex justify-center py-16">
-            <Spinner className="size-6 text-primary" />
+          <div className="mx-auto flex max-w-md flex-col gap-4">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Skeleton className="size-8 rounded-full" />
+                <div className="flex flex-col gap-1.5">
+                  <Skeleton className="h-3.5 w-20 rounded-md" />
+                  <Skeleton className="h-3 w-32 rounded-md" />
+                </div>
+              </div>
+              <Skeleton className="h-5 w-16 rounded-full" />
+            </div>
+            <Skeleton className="h-7 w-3/4 rounded-lg" />
+            <div className="space-y-2.5 pt-2">
+              <Skeleton className="h-4 w-full rounded-md" />
+              <Skeleton className="h-4 w-11/12 rounded-md" />
+              <Skeleton className="h-4 w-4/5 rounded-md" />
+              <Skeleton className="h-4 w-full rounded-md" />
+              <Skeleton className="h-4 w-2/3 rounded-md" />
+            </div>
           </div>
         ) : !journal || !content ? (
           <div className="mx-auto flex max-w-md flex-col items-center justify-center gap-3 py-16 text-center text-muted-foreground">

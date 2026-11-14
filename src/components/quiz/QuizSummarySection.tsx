@@ -1,3 +1,4 @@
+import { useCallback, useMemo, useState } from "react"
 import {
   HelpCircle,
   Lock,
@@ -5,10 +6,13 @@ import {
 } from "lucide-react"
 import { CustomItem } from "@/components/CustomItem"
 import { Badge } from "@/components/ui/badge"
-import { Spinner } from "@/components/ui/spinner"
+import { Skeleton } from "@/components/ui/skeleton"
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll"
 import { useQuiz } from "@/hooks/useQuiz"
 import { useRelationship } from "@/hooks/useRelationship"
 import { cn } from "@/lib/utils"
+
+const QUIZ_SUMMARY_PAGE_SIZE = 15
 
 export function QuizSummarySection() {
   const {
@@ -22,6 +26,23 @@ export function QuizSummarySection() {
   } = useQuiz()
 
   const { partnerMember, currentMember } = useRelationship()
+  const [visibleCount, setVisibleCount] = useState(QUIZ_SUMMARY_PAGE_SIZE)
+
+  const visibleQuizzes = useMemo(
+    () => todayQuizzes.slice(0, visibleCount),
+    [todayQuizzes, visibleCount]
+  )
+  const hasMore = visibleCount < todayQuizzes.length
+
+  const loadMore = useCallback(() => {
+    setVisibleCount((prev) => prev + QUIZ_SUMMARY_PAGE_SIZE)
+  }, [])
+
+  const sentinelRef = useInfiniteScroll({
+    hasNextPage: hasMore,
+    isFetchingNextPage: false,
+    fetchNextPage: loadMore,
+  })
 
   const partnerName = partnerMember?.content?.name || "Partner"
   const partnerAvatar = partnerMember?.content?.avatar || "🤍"
@@ -29,9 +50,12 @@ export function QuizSummarySection() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center py-12">
-        <Spinner className="size-6 text-primary" />
-      </div>
+      <section className="flex flex-col gap-3">
+        <Skeleton className="h-24 w-full" />
+        {Array.from({ length: 3 }).map((_, idx) => (
+          <Skeleton key={idx} className="h-32 w-full" />
+        ))}
+      </section>
     )
   }
 
@@ -106,7 +130,7 @@ export function QuizSummarySection() {
 
       {/* Per-Quiz Breakdown Cards */}
       <div className="flex flex-col gap-2.5">
-        {todayQuizzes.map((item, idx) => {
+        {visibleQuizzes.map((item, idx) => {
           const qContent = item.quiz.content
           if (!qContent) return null
           const myChoice = item.myAnswer?.content?.selectedOption
@@ -177,7 +201,7 @@ export function QuizSummarySection() {
                 </div>
 
                 <div className="flex min-w-0 items-start gap-1.5">
-                  <span className="shrink-0 font-medium text-rose-500">
+                  <span className="shrink-0 font-medium text-primary">
                     {partnerAvatar} {partnerName}:
                   </span>
                   {isAllBothAnswered ? (
@@ -194,6 +218,7 @@ export function QuizSummarySection() {
             </CustomItem>
           )
         })}
+        <div ref={sentinelRef} className="h-1" />
       </div>
     </section>
   )

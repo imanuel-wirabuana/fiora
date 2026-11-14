@@ -5,20 +5,32 @@ import type {
   NotificationRecord,
 } from "../types/notification"
 
+export const NOTIFICATION_PAGE_SIZE = 20
+
 export const notificationService = {
-  async getNotifications(userId: string): Promise<NotificationRecord[]> {
+  async getNotificationsPage(
+    userId: string,
+    page = 0,
+    pageSize = NOTIFICATION_PAGE_SIZE
+  ): Promise<NotificationRecord[]> {
+    const from = page * pageSize
+    const to = from + pageSize - 1
     const { data, error } = await supabase
       .from("notifications")
       .select("*")
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
-      .limit(50)
+      .range(from, to)
 
     if (error) {
       throw new Error(error.message)
     }
 
     return (data as NotificationRecord[]) || []
+  },
+
+  async getNotifications(userId: string): Promise<NotificationRecord[]> {
+    return this.getNotificationsPage(userId, 0, 50)
   },
 
   async createNotification(

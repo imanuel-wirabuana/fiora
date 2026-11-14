@@ -91,7 +91,7 @@ function getScoreBadgeStyles(score: number, index: number, total: number) {
         text,
         label: "Very Bad",
         className:
-          "border-rose-500/30 bg-rose-500/15 text-rose-600 dark:text-rose-400",
+          "border-destructive/30 bg-destructive/15 text-destructive",
       }
   }
 }

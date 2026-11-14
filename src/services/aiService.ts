@@ -1,5 +1,3 @@
-import { createOpenAICompatible } from "@ai-sdk/openai-compatible"
-import { streamText } from "ai"
 import { z } from "zod"
 import { clampMoodScore, MAX_MOODS, MIN_MOODS } from "@/lib/relationship"
 import type { MoodOption } from "@/types/relationship"
@@ -25,7 +23,7 @@ const aiManagedMoodArraySchema = z.array(
   })
 )
 
-function getAIClient() {
+async function getAIClient() {
   const baseURL = import.meta.env.VITE_AI_BASE_URL
   const apiKey = import.meta.env.VITE_AI_API_KEY
   const model = import.meta.env.VITE_AI_MODEL || "fiora-ai"
@@ -36,6 +34,7 @@ function getAIClient() {
     )
   }
 
+  const { createOpenAICompatible } = await import("@ai-sdk/openai-compatible")
   const provider = createOpenAICompatible({
     name: "fiora-ai",
     baseURL,
@@ -87,7 +86,10 @@ async function streamCompletion({
   prompt: string
   temperature: number
 }): Promise<string> {
-  const model = getAIClient()
+  const [{ streamText }, model] = await Promise.all([
+    import("ai"),
+    getAIClient(),
+  ])
   const result = streamText({
     model,
     temperature,

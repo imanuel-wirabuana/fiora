@@ -122,7 +122,7 @@ export function LocationSharingScreen() {
         className: "custom-leaflet-marker",
         html: `
           <div class="flex flex-col items-center">
-            <div class="flex size-8 items-center justify-center rounded-full bg-rose-500 text-white shadow-lg ring-2 ring-background text-base">
+            <div class="flex size-8 items-center justify-center rounded-full bg-secondary text-secondary-foreground shadow-lg ring-2 ring-background text-base">
               ${partnerAvatar}
             </div>
             <div class="mt-0.5 rounded-md bg-background/95 px-1.5 py-0.5 text-[10px] font-semibold text-foreground shadow-xs border border-border/80">
@@ -216,42 +216,45 @@ export function LocationSharingScreen() {
   return (
     <div className="relative h-dvh w-full overflow-hidden bg-background lg:h-full">
       {/* 1. Full interactive map container */}
-      <div ref={mapContainerRef} className="absolute inset-0 z-0 h-full w-full" />
+      <div
+        ref={mapContainerRef}
+        className="absolute inset-0 z-0 h-full w-full"
+      />
 
       {/* 2. Top floating header bar */}
-      <div className="absolute top-0 inset-x-0 z-20 flex items-center justify-between p-4 pointer-events-none">
-        <div className="flex items-center gap-2 pointer-events-auto">
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-center justify-between p-4">
+        <div className="pointer-events-auto flex items-center gap-2">
           <Button
             type="button"
             variant="secondary"
             size="icon"
             onClick={() => setLocation("/home")}
-            className="size-9 rounded-full bg-background/90 backdrop-blur-md shadow-md border border-border/60 hover:bg-background"
+            className="size-9 rounded-full border border-border/60 bg-background/90 shadow-md backdrop-blur-md hover:bg-background"
             title="Back to home"
           >
             <ArrowLeft className="size-4" />
           </Button>
-          <div className="rounded-full bg-background/90 px-3 py-1.5 backdrop-blur-md shadow-md border border-border/60 flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 rounded-full border border-border/60 bg-background/90 px-3 py-1.5 shadow-md backdrop-blur-md">
             <MapPin className="size-3.5 text-primary" />
             <span className="text-xs font-semibold text-foreground">
               Couple Map
             </span>
             {formattedDistance && (
-              <span className="ml-1 text-[11px] font-medium text-rose-500">
+              <span className="ml-1 text-[11px] font-medium text-primary">
                 · {formattedDistance}
               </span>
             )}
           </div>
         </div>
 
-        <div className="flex items-center gap-2 pointer-events-auto">
+        <div className="pointer-events-auto flex items-center gap-2">
           <Button
             type="button"
             variant="secondary"
             size="icon"
             onClick={refreshLocation}
             disabled={isLocating}
-            className="size-9 rounded-full bg-background/90 backdrop-blur-md shadow-md border border-border/60 hover:bg-background"
+            className="size-9 rounded-full border border-border/60 bg-background/90 shadow-md backdrop-blur-md hover:bg-background"
             title="Refresh location"
           >
             {isLocating ? (
@@ -264,14 +267,14 @@ export function LocationSharingScreen() {
       </div>
 
       {/* 3. Persisted Interactive Drawer */}
-      <div className="absolute bottom-4 inset-x-4 z-20 mx-auto max-w-md pointer-events-auto transition-all duration-300">
+      <div className="pointer-events-auto absolute inset-x-4 bottom-4 z-20 mx-auto max-w-md transition-all duration-300">
         <div className="rounded-3xl border border-border/80 bg-background/95 p-3.5 shadow-2xl backdrop-blur-md">
           {/* Drawer Handle & Header */}
-          <div className="flex items-center justify-between pb-2 border-b border-border/40">
+          <div className="flex items-center justify-between border-b border-border/40 pb-2">
             <button
               type="button"
               onClick={() => setIsDrawerExpanded((prev) => !prev)}
-              className="flex items-center gap-1.5 text-xs font-semibold text-foreground hover:text-primary transition-colors"
+              className="flex items-center gap-1.5 text-xs font-semibold text-foreground transition-colors hover:text-primary"
             >
               <span>Locations</span>
               {isDrawerExpanded ? (
@@ -287,10 +290,10 @@ export function LocationSharingScreen() {
                 variant="ghost"
                 size="xs"
                 onClick={fitBoth}
-                className="h-6 text-[11px] gap-1 px-2 rounded-full text-muted-foreground hover:text-foreground"
+                className="h-6 gap-1 rounded-full px-2 text-[11px] text-muted-foreground hover:text-foreground"
                 title="Fit both markers"
               >
-                <Users className="size-3 text-rose-500" />
+                <Users className="size-3 text-primary" />
                 <span>Fit both</span>
               </Button>
             </div>
@@ -308,21 +311,25 @@ export function LocationSharingScreen() {
                   "flex flex-col items-start gap-1 rounded-2xl border p-2.5 text-left transition-all",
                   myLocation
                     ? "border-primary/30 bg-primary/5 hover:border-primary/60 hover:bg-primary/10 active:scale-[0.98]"
-                    : "border-border/50 bg-muted/20 opacity-60 cursor-not-allowed"
+                    : "cursor-not-allowed border-border/50 bg-muted/20 opacity-60"
                 )}
               >
-                <div className="flex items-center justify-between w-full">
-                  <div className="flex items-center gap-1.5 font-semibold text-xs text-foreground">
+                <div className="flex w-full items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
                     <span className="text-sm">{myAvatar}</span>
                     <span>You</span>
                   </div>
-                  <Crosshair className="size-3.5 text-primary shrink-0" />
+                  <Crosshair className="size-3.5 shrink-0 text-primary" />
                 </div>
 
                 {myLocation ? (
-                  <div className="space-y-0.5 w-full">
-                    <p className="text-[11px] font-medium text-foreground truncate" title={myLocation.placeName || ""}>
-                      {myLocation.placeName || `${myLocation.lat.toFixed(3)}, ${myLocation.lng.toFixed(3)}`}
+                  <div className="w-full space-y-0.5">
+                    <p
+                      className="truncate text-[11px] font-medium text-foreground"
+                      title={myLocation.placeName || ""}
+                    >
+                      {myLocation.placeName ||
+                        `${myLocation.lat.toFixed(3)}, ${myLocation.lng.toFixed(3)}`}
                     </p>
                     <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
                       <Clock className="size-2.5 shrink-0 opacity-70" />
@@ -346,22 +353,26 @@ export function LocationSharingScreen() {
                 className={cn(
                   "flex flex-col items-start gap-1 rounded-2xl border p-2.5 text-left transition-all",
                   partnerLocation
-                    ? "border-rose-500/30 bg-rose-500/5 hover:border-rose-500/60 hover:bg-rose-500/10 active:scale-[0.98]"
-                    : "border-border/50 bg-muted/20 opacity-60 cursor-not-allowed"
+                    ? "border-secondary/60 bg-secondary/20 hover:border-secondary hover:bg-secondary/30 active:scale-[0.98]"
+                    : "cursor-not-allowed border-border/50 bg-muted/20 opacity-60"
                 )}
               >
-                <div className="flex items-center justify-between w-full">
-                  <div className="flex items-center gap-1.5 font-semibold text-xs text-foreground">
+                <div className="flex w-full items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
                     <span className="text-sm">{partnerAvatar}</span>
                     <span className="truncate">{partnerName}</span>
                   </div>
-                  <Crosshair className="size-3.5 text-rose-500 shrink-0" />
+                  <Crosshair className="size-3.5 shrink-0 text-secondary-foreground" />
                 </div>
 
                 {partnerLocation ? (
-                  <div className="space-y-0.5 w-full">
-                    <p className="text-[11px] font-medium text-foreground truncate" title={partnerLocation.placeName || ""}>
-                      {partnerLocation.placeName || `${partnerLocation.lat.toFixed(3)}, ${partnerLocation.lng.toFixed(3)}`}
+                  <div className="w-full space-y-0.5">
+                    <p
+                      className="truncate text-[11px] font-medium text-foreground"
+                      title={partnerLocation.placeName || ""}
+                    >
+                      {partnerLocation.placeName ||
+                        `${partnerLocation.lat.toFixed(3)}, ${partnerLocation.lng.toFixed(3)}`}
                     </p>
                     <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
                       <Clock className="size-2.5 shrink-0 opacity-70" />
@@ -383,4 +394,3 @@ export function LocationSharingScreen() {
     </div>
   )
 }
-

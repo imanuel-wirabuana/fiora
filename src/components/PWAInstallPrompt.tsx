@@ -76,7 +76,7 @@ export function PWAInstallPrompt() {
         </div>
 
         {showIOSInstructions ? (
-          <div className="rounded-xl bg-white/70 p-3 text-xs text-foreground/90 space-y-2 border border-rose-100">
+          <div className="rounded-xl bg-card/70 p-3 text-xs text-foreground/90 space-y-2 border border-border">
             <p className="font-medium text-primary">To install on iOS Safari:</p>
             <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
               <li className="flex items-center gap-1.5">
@@ -101,7 +101,7 @@ export function PWAInstallPrompt() {
               variant="outline"
               size="sm"
               onClick={handleDismiss}
-              className="flex-1 text-xs h-8 border-rose-200 hover:bg-rose-50/50"
+              className="flex-1 text-xs h-8 border-border hover:bg-accent"
             >
               Maybe Later
             </Button>

@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react"
+import { useCallback, useMemo } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { relationshipService } from "../services/relationshipService"
 import { useAuth } from "./useAuth"
@@ -46,14 +46,20 @@ export function useRelationship() {
   const members = relationshipData?.members ?? []
   const hasRelationship = !!relationship
 
-  const moodOptions = sortMoodsByScore(
-    normalizeMoodOptions(relationship?.content?.moods)
+  const rawMoods = relationship?.content?.moods
+  const moodOptions = useMemo(
+    () => sortMoodsByScore(normalizeMoodOptions(rawMoods)),
+    [rawMoods]
   )
 
-  const nudgeOptions =
-    relationship?.content?.nudges && relationship.content.nudges.length > 0
-      ? relationship.content.nudges
-      : DEFAULT_NUDGE_OPTIONS
+  const rawNudges = relationship?.content?.nudges
+  const nudgeOptions = useMemo(
+    () =>
+      rawNudges && rawNudges.length > 0
+        ? rawNudges
+        : DEFAULT_NUDGE_OPTIONS,
+    [rawNudges]
+  )
 
   const anniversary = relationship?.content?.anniversary ?? null
   const locationSharing = Boolean(relationship?.content?.location_sharing)
@@ -64,25 +70,7 @@ export function useRelationship() {
       : DEFAULT_DAILY_QUIZ_COUNT
   const dailyQuizState = relationship?.content?.daily_quiz ?? null
 
-  // 2. Realtime listener: invalidate query whenever changes occur on relationships or relationship_members
-  useEffect(() => {
-    if (!userId) return
-
-    const unsubscribe = relationshipService.subscribeToRelationshipChanges(
-      { userId, relationshipId: relationship?.id },
-      () => {
-        queryClient.invalidateQueries({
-          queryKey: relationshipKeys.byUser(userId),
-        })
-      }
-    )
-
-    return () => {
-      unsubscribe()
-    }
-  }, [userId, relationship?.id, queryClient])
-
-  // 3. Mutations
+  // 2. Mutations
   const createRelationshipMutation = useMutation<
     UserRelationshipData,
     Error,
@@ -319,12 +307,13 @@ export function useRelationship() {
     },
   })
 
+  const relationshipId = relationship?.id
   const updateMemberLocation = useCallback(
     (loc: MemberLocation) => {
-      if (!relationship?.id) return Promise.resolve(null)
-      return relationshipService.updateMemberLocation(relationship.id, loc)
+      if (!relationshipId) return Promise.resolve(null)
+      return relationshipService.updateMemberLocation(relationshipId, loc)
     },
-    [relationship?.id]
+    [relationshipId]
   )
 
   return {

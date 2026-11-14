@@ -6,19 +6,27 @@ import {
   JournalListSection,
   type PrivacyFilter,
 } from "@/components/journal"
-import { useActivities } from "@/hooks/useActivities"
+import {
+  useActivities,
+  useInfiniteJournals,
+} from "@/hooks/useActivities"
 import type { JournalActivityContent } from "@/types/activity"
 
 export function JournalScreen() {
   const [, setLocation] = useLocation()
   const {
-    visibleJournals,
     createJournal,
     toggleJournalPrivacy,
     deleteActivity,
-    isLoading,
     createActivityMutation,
   } = useActivities()
+  const {
+    visibleJournals,
+    isLoading,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  } = useInfiniteJournals()
 
   const [privacyFilter, setPrivacyFilter] = useState<PrivacyFilter>("all")
   const [search, setSearch] = useState("")
@@ -99,6 +107,9 @@ export function JournalScreen() {
       <JournalListSection
         journals={filteredJournals}
         isLoading={isLoading}
+        hasNextPage={hasNextPage}
+        isFetchingNextPage={isFetchingNextPage}
+        fetchNextPage={fetchNextPage}
         search={search}
         privacyFilter={privacyFilter}
         onTogglePrivacy={handleTogglePrivacy}

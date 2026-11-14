@@ -1,6 +1,15 @@
-import { useEffect, useMemo } from "react"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { activityService } from "../services/activityService"
+import { useMemo } from "react"
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type InfiniteData,
+} from "@tanstack/react-query"
+import {
+  ACTIVITY_PAGE_SIZE,
+  activityService,
+} from "../services/activityService"
 import { useAuth } from "./useAuth"
 import { useNotifications } from "./useNotifications"
 import { useRelationship } from "./useRelationship"
@@ -17,6 +26,100 @@ export const activityKeys = {
   all: ["activities"] as const,
   byRelationship: (relationshipId?: number) =>
     [...activityKeys.all, "relationship", relationshipId] as const,
+  infinite: (relationshipId: number | undefined, scope: "journal" | "timeline") =>
+    [...activityKeys.byRelationship(relationshipId), "infinite", scope] as const,
+}
+
+const JOURNAL_PAGE_SIZE = 18
+
+export function useInfiniteJournals() {
+  const { user } = useAuth()
+  const { relationship } = useRelationship()
+  const relationshipId = relationship?.id
+  const currentUserId = user?.id
+
+  const query = useInfiniteQuery<
+    Activity[],
+    Error,
+    InfiniteData<Activity[], number>,
+    ReturnType<typeof activityKeys.infinite>,
+    number
+  >({
+    queryKey: activityKeys.infinite(relationshipId, "journal"),
+    initialPageParam: 0,
+    queryFn: ({ pageParam }) => {
+      if (!relationshipId) return Promise.resolve([])
+      return activityService.getActivitiesPage({
+        relationshipId,
+        types: ["journal"],
+        page: pageParam,
+        pageSize: JOURNAL_PAGE_SIZE,
+      })
+    },
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.length < JOURNAL_PAGE_SIZE ? undefined : allPages.length,
+    enabled: !!relationshipId,
+  })
+
+  const visibleJournals = useMemo(() => {
+    const pages = query.data?.pages ?? []
+    return pages.flat().filter((a): a is Activity<JournalActivityContent> => {
+      if (a.type !== "journal") return false
+      const content = a.content as JournalActivityContent | null
+      if (!content) return false
+      if (a.user_id === currentUserId) return true
+      return !!content.isShared
+    })
+  }, [query.data, currentUserId])
+
+  return {
+    visibleJournals,
+    isLoading: query.isLoading,
+    hasNextPage: query.hasNextPage,
+    isFetchingNextPage: query.isFetchingNextPage,
+    fetchNextPage: query.fetchNextPage,
+  }
+}
+
+export function useInfiniteTimelineActivities() {
+  const { relationship } = useRelationship()
+  const relationshipId = relationship?.id
+
+  const query = useInfiniteQuery<
+    Activity[],
+    Error,
+    InfiniteData<Activity[], number>,
+    ReturnType<typeof activityKeys.infinite>,
+    number
+  >({
+    queryKey: activityKeys.infinite(relationshipId, "timeline"),
+    initialPageParam: 0,
+    queryFn: ({ pageParam }) => {
+      if (!relationshipId) return Promise.resolve([])
+      return activityService.getActivitiesPage({
+        relationshipId,
+        types: ["mood", "nudge"],
+        page: pageParam,
+        pageSize: ACTIVITY_PAGE_SIZE,
+      })
+    },
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.length < ACTIVITY_PAGE_SIZE ? undefined : allPages.length,
+    enabled: !!relationshipId,
+  })
+
+  const timelineActivities = useMemo(
+    () => query.data?.pages.flat() ?? [],
+    [query.data]
+  )
+
+  return {
+    timelineActivities,
+    isLoading: query.isLoading,
+    hasNextPage: query.hasNextPage,
+    isFetchingNextPage: query.isFetchingNextPage,
+    fetchNextPage: query.fetchNextPage,
+  }
 }
 
 export function useActivities() {
@@ -37,24 +140,6 @@ export function useActivities() {
     },
     enabled: !!relationshipId,
   })
-
-  // 2. Realtime listener
-  useEffect(() => {
-    if (!relationshipId) return
-
-    const unsubscribe = activityService.subscribeToActivities(
-      relationshipId,
-      () => {
-        queryClient.invalidateQueries({
-          queryKey: activityKeys.byRelationship(relationshipId),
-        })
-      }
-    )
-
-    return () => {
-      unsubscribe()
-    }
-  }, [relationshipId, queryClient])
 
   const activities = useMemo(() => query.data ?? [], [query.data])
 

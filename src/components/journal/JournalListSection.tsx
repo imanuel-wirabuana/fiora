@@ -4,8 +4,9 @@ import { BookOpen, Globe, Lock, Trash2 } from "lucide-react"
 import { useLocation } from "wouter"
 import { CustomItem } from "@/components/CustomItem"
 import { FormDrawer } from "@/components/FormDrawer"
-import { Spinner } from "@/components/ui/spinner"
+import { Skeleton } from "@/components/ui/skeleton"
 import { useAuth } from "@/hooks/useAuth"
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll"
 import { useRelationship } from "@/hooks/useRelationship"
 import type { Activity, JournalActivityContent } from "@/types/activity"
 import type { PrivacyFilter } from "./JournalFilterSection"
@@ -13,6 +14,9 @@ import type { PrivacyFilter } from "./JournalFilterSection"
 interface JournalListSectionProps {
   journals: Activity[]
   isLoading: boolean
+  hasNextPage?: boolean
+  isFetchingNextPage?: boolean
+  fetchNextPage?: () => void
   search: string
   privacyFilter: PrivacyFilter
   onTogglePrivacy: (id: number, content: JournalActivityContent) => void
@@ -22,6 +26,9 @@ interface JournalListSectionProps {
 export function JournalListSection({
   journals,
   isLoading,
+  hasNextPage = false,
+  isFetchingNextPage = false,
+  fetchNextPage,
   search,
   privacyFilter,
   onTogglePrivacy,
@@ -30,6 +37,13 @@ export function JournalListSection({
   const [, navigate] = useLocation()
   const { currentMember, partnerMember } = useRelationship()
   const { user } = useAuth()
+  const sentinelRef = useInfiniteScroll({
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage: () => {
+      fetchNextPage?.()
+    },
+  })
   const [deleteTarget, setDeleteTarget] = useState<{
     id: number
     title: string
@@ -52,8 +66,14 @@ export function JournalListSection({
 
   if (isLoading) {
     return (
-      <div className="flex justify-center py-12">
-        <Spinner className="size-6 text-primary" />
+      <div className="columns-3 gap-2 space-y-2">
+        {Array.from({ length: 6 }).map((_, idx) => (
+          <Skeleton
+            key={idx}
+            className="w-full break-inside-avoid"
+            style={{ height: idx % 2 === 0 ? 112 : 144 }}
+          />
+        ))}
       </div>
     )
   }
@@ -92,7 +112,7 @@ export function JournalListSection({
             key={journal.id}
             variant={itemVariant}
             onClick={() => navigate(`/journal/${journal.id}`)}
-            className="max-h-64 cursor-pointer break-inside-avoid gap-1.5 overflow-hidden p-2.5 transition-colors hover:bg-muted/30"
+            className="max-h-64 cursor-pointer break-inside-avoid gap-1.5 overflow-hidden p-2.5 transition-colors hover:bg-muted/30 [content-visibility:auto] [contain-intrinsic-size:auto_140px]"
             icon={<span className="text-xs leading-none">{author.avatar}</span>}
             title={content.title}
             topRightActions={
@@ -145,6 +165,15 @@ export function JournalListSection({
           />
         )
       })}
+
+      <div ref={sentinelRef} className="h-1 w-full" />
+      {isFetchingNextPage && (
+        <div className="mt-2 columns-3 gap-2 space-y-2">
+          <Skeleton className="h-28 w-full break-inside-avoid" />
+          <Skeleton className="h-32 w-full break-inside-avoid" />
+          <Skeleton className="h-24 w-full break-inside-avoid" />
+        </div>
+      )}
 
       <FormDrawer
         open={deleteTarget !== null}

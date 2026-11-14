@@ -5,12 +5,18 @@ import {
   TimelineFeedSection,
   TimelineFilterSection,
 } from "@/components/timeline"
-import { useActivities } from "@/hooks/useActivities"
+import { useInfiniteTimelineActivities } from "@/hooks/useActivities"
 import { useQuiz } from "@/hooks/useQuiz"
 import type { TimelineItem } from "@/types/timeline"
 
 export function TimelineScreen() {
-  const { timelineActivities, isLoading: isActivitiesLoading } = useActivities()
+  const {
+    timelineActivities,
+    isLoading: isActivitiesLoading,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  } = useInfiniteTimelineActivities()
   const { answeredQuizzes, isLoading: isQuizLoading } = useQuiz()
 
   const [typeFilter, setTypeFilter] = useState<FilterType>("all")
@@ -68,6 +74,9 @@ export function TimelineScreen() {
       <TimelineFeedSection
         items={filteredItems}
         isLoading={isActivitiesLoading || isQuizLoading}
+        hasNextPage={hasNextPage}
+        isFetchingNextPage={isFetchingNextPage}
+        fetchNextPage={fetchNextPage}
         selectedDate={selectedDate}
       />
     </section>

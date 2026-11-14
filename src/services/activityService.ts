@@ -2,8 +2,11 @@ import { supabase } from "./supabase"
 import type {
   Activity,
   ActivityContent,
+  ActivityType,
   CreateActivityInput,
 } from "../types/activity"
+
+export const ACTIVITY_PAGE_SIZE = 20
 
 export const activityService = {
   async getActivities(relationshipId: number): Promise<Activity[]> {
@@ -12,6 +15,40 @@ export const activityService = {
       .select("*")
       .eq("relationship_id", relationshipId)
       .order("created_at", { ascending: false })
+
+    if (error) {
+      throw new Error(error.message)
+    }
+
+    return (data as Activity[]) || []
+  },
+
+  async getActivitiesPage({
+    relationshipId,
+    types,
+    page = 0,
+    pageSize = ACTIVITY_PAGE_SIZE,
+  }: {
+    relationshipId: number
+    types?: ActivityType[]
+    page?: number
+    pageSize?: number
+  }): Promise<Activity[]> {
+    const from = page * pageSize
+    const to = from + pageSize - 1
+
+    let query = supabase
+      .from("activities")
+      .select("*")
+      .eq("relationship_id", relationshipId)
+
+    if (types && types.length > 0) {
+      query = query.in("type", types)
+    }
+
+    const { data, error } = await query
+      .order("created_at", { ascending: false })
+      .range(from, to)
 
     if (error) {
       throw new Error(error.message)
@@ -91,6 +128,7 @@ export const activityService = {
           event: "*",
           schema: "public",
           table: "activities",
+          filter: `relationship_id=eq.${relationshipId}`,
         },
         () => {
           onChange()

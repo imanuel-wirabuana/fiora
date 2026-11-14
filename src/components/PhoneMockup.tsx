@@ -18,24 +18,30 @@ interface PhoneMockupProps {
   className?: string
 }
 
-export function PhoneMockup({ children, className }: PhoneMockupProps) {
-  const displayRef = useRef<HTMLDivElement>(null)
-  const [time, setTime] = useState(() => {
-    const now = new Date()
-    return now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+function formatPhoneTime() {
+  return new Date().toLocaleTimeString([], {
+    hour: "numeric",
+    minute: "2-digit",
   })
+}
+
+function PhoneClock() {
+  const [time, setTime] = useState(formatPhoneTime)
 
   useEffect(() => {
-    const update = () => {
-      const now = new Date()
-      setTime(
-        now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
-      )
-    }
-    const interval = setInterval(update, 1000)
+    const interval = setInterval(() => {
+      setTime((prev) => {
+        const next = formatPhoneTime()
+        return prev === next ? prev : next
+      })
+    }, 15_000)
     return () => clearInterval(interval)
   }, [])
 
+  return <span>{time}</span>
+}
+
+function PhoneStatusIndicators() {
   const battery = useBattery()
   const { online } = useNetworkState()
   const { loading, level, charging } = battery ?? {}
@@ -68,6 +74,29 @@ export function PhoneMockup({ children, className }: PhoneMockupProps) {
 
   const batteryPercent =
     level !== null && level !== undefined ? Math.round(level * 100) : null
+
+  return (
+    <div className="flex items-center gap-1.5">
+      <Signal className="size-3.5 stroke-[2.4]" />
+      {online ? (
+        <Wifi className="size-3.5 stroke-[2.4]" />
+      ) : (
+        <WifiOff className="size-3.5 stroke-[2.4]" />
+      )}
+      <div className="flex items-center gap-1">
+        {batteryPercent !== null ? (
+          <span className="text-[11px] leading-none font-medium">
+            {batteryPercent}%
+          </span>
+        ) : null}
+        {getBatteryIcon()}
+      </div>
+    </div>
+  )
+}
+
+export function PhoneMockup({ children, className }: PhoneMockupProps) {
+  const displayRef = useRef<HTMLDivElement>(null)
 
   return (
     <div className={cn("relative mx-auto select-none", className)}>
@@ -103,23 +132,8 @@ export function PhoneMockup({ children, className }: PhoneMockupProps) {
             <PhonePortalContext.Provider value={displayRef}>
               {/* Top Status Bar: Time & Indicators (44px standard iOS status height) */}
               <div className="pointer-events-none absolute inset-x-0 top-0 z-50 flex h-11 items-center justify-between px-8 pt-1 text-[12px] font-semibold tracking-tight text-foreground">
-                <span>{time}</span>
-                <div className="flex items-center gap-1.5">
-                  <Signal className="size-3.5 stroke-[2.4]" />
-                  {online ? (
-                    <Wifi className="size-3.5 stroke-[2.4]" />
-                  ) : (
-                    <WifiOff className="size-3.5 stroke-[2.4]" />
-                  )}
-                  <div className="flex items-center gap-1">
-                    {batteryPercent !== null ? (
-                      <span className="text-[11px] leading-none font-medium">
-                        {batteryPercent}%
-                      </span>
-                    ) : null}
-                    {getBatteryIcon()}
-                  </div>
-                </div>
+                <PhoneClock />
+                <PhoneStatusIndicators />
               </div>
 
               {/* Dynamic Island Pill */}
