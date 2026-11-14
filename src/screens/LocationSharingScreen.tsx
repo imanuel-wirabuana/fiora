@@ -40,7 +40,7 @@ export function LocationSharingScreen() {
 
   const [isDrawerExpanded, setIsDrawerExpanded] = useState(true)
 
-  const myAvatar = currentMember?.content?.avatar || "🙋"
+  const myAvatar = currentMember?.content?.avatar || "💙"
   const partnerAvatar = partnerMember?.content?.avatar || "🤍"
   const partnerName = partnerMember?.content?.name || "Partner"
 

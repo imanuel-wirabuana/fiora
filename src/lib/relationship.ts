@@ -122,20 +122,20 @@ export const DEFAULT_NUDGE_OPTIONS: NudgeOption[] = [
   { emoji: "💌", label: "Thinking of you" },
   { emoji: "🤗", label: "Need a hug" },
   { emoji: "☕", label: "Coffee break?" },
-  { emoji: "📞", label: "Call me soon" },
+  { emoji: "😘", label: "Sending a kiss" },
 ]
 
 export const DEFAULT_DAILY_QUIZ_COUNT = 3
 export const DAILY_QUIZ_COUNT_OPTIONS = [1, 2, 3, 5] as const
 
 export const DEFAULT_AVATARS_BY_GENDER: Record<Gender, string[]> = {
-  male: ["🙋‍♂️", "👦", "👨", "🧔", "🦊", "🐶"],
-  female: ["🙋‍♀️", "👧", "👩", "👩‍🦰", "🐱", "🐰"],
+  male: ["💙", "🤠", "🦊", "🐻", "🤖"],
+  female: ["🩷", "🌸", "🐱", "🦋", "🦄"],
 }
 
 export function getDefaultAvatar(gender: Gender | null): string {
-  if (gender === "female") return "🙋‍♀️"
-  return "🙋‍♂️"
+  if (gender === "female") return "🩷"
+  return "💙"
 }
 
 export function generateInviteCode(): string {

@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { User } from "lucide-react"
+import { Plus, User } from "lucide-react"
 import { AnimatedEmoji } from "@/components/AnimatedEmoji"
 import { FormDrawer } from "@/components/FormDrawer"
 import { Button } from "@/components/ui/button"
@@ -20,6 +20,7 @@ export function ProfileSection() {
   const [open, setOpen] = useState(false)
   const [draftName, setDraftName] = useState(savedName)
   const [draftAvatar, setDraftAvatar] = useState(savedAvatar)
+  const [isCustomFocused, setIsCustomFocused] = useState(false)
 
   if (!currentMember) {
     return null
@@ -27,9 +28,12 @@ export function ProfileSection() {
 
   const isPending = updateMemberContentMutation.isPending
   const trimmedName = draftName.trim()
-  const isChanged = trimmedName !== savedName || draftAvatar !== savedAvatar
+  const trimmedAvatar = draftAvatar.trim()
+  const isChanged = trimmedName !== savedName || trimmedAvatar !== savedAvatar
   const avatarOptions =
     DEFAULT_AVATARS_BY_GENDER[currentGender] || DEFAULT_AVATARS_BY_GENDER.male
+  const isCustomAvatar =
+    Boolean(trimmedAvatar) && !avatarOptions.includes(trimmedAvatar)
 
   const handleOpenChange = (next: boolean) => {
     if (next) {
@@ -41,13 +45,13 @@ export function ProfileSection() {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    if (!trimmedName || !isChanged) {
+    if (!trimmedName || !trimmedAvatar || !isChanged) {
       return false
     }
 
     updateMemberContentMutation.mutate({
       memberId: currentMember.id,
-      content: { name: trimmedName, avatar: draftAvatar },
+      content: { name: trimmedName, avatar: trimmedAvatar },
     })
   }
 
@@ -69,7 +73,7 @@ export function ProfileSection() {
           onSubmit={handleSubmit}
           submitLabel="Save"
           isPending={isPending}
-          submitDisabled={!trimmedName || !isChanged}
+          submitDisabled={!trimmedName || !trimmedAvatar || !isChanged}
           trigger={
             <Button
               type="button"
@@ -112,6 +116,51 @@ export function ProfileSection() {
                 </button>
               )
             })}
+
+            <div
+              className={cn(
+                "relative flex aspect-square items-center justify-center rounded-2xl border transition-all focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/30",
+                isCustomAvatar
+                  ? "border-primary bg-primary/10 ring-2 ring-primary/30"
+                  : "border-dashed border-border hover:bg-muted/40"
+              )}
+            >
+              {!isCustomFocused &&
+                (isCustomAvatar ? (
+                  <AnimatedEmoji
+                    emoji={trimmedAvatar}
+                    size={28}
+                    replayOnTap={false}
+                    fallbackClassName="text-2xl"
+                  />
+                ) : (
+                  <Plus className="size-4 text-muted-foreground" />
+                ))}
+              <input
+                type="text"
+                value={isCustomAvatar || isCustomFocused ? draftAvatar : ""}
+                onFocus={() => {
+                  setIsCustomFocused(true)
+                  if (!isCustomAvatar) {
+                    setDraftAvatar("")
+                  }
+                }}
+                onBlur={() => {
+                  setIsCustomFocused(false)
+                  if (!draftAvatar.trim()) {
+                    setDraftAvatar(savedAvatar)
+                  }
+                }}
+                onChange={(e) => setDraftAvatar(e.target.value)}
+                maxLength={4}
+                aria-label="Custom avatar emoji"
+                title="Custom emoji"
+                className={cn(
+                  "absolute inset-0 size-full cursor-pointer rounded-2xl bg-transparent text-center text-xl outline-none",
+                  !isCustomFocused && "text-transparent caret-transparent"
+                )}
+              />
+            </div>
           </div>
 
           <Input

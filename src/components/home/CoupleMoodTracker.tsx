@@ -166,7 +166,7 @@ function YourMood() {
 
   return (
     <MoodCard
-      avatar={currentMember?.content?.avatar || "🙋"}
+      avatar={currentMember?.content?.avatar || "💙"}
       title={<OdometerText items={["You", currentAlias]} />}
       gender={currentMember?.content?.gender}
       latestMood={myLatestMood}

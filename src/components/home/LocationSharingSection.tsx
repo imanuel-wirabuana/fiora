@@ -51,7 +51,7 @@ export function LocationSharingSection() {
     }
   }, [])
 
-  const myAvatar = currentMember?.content?.avatar || "🙋"
+  const myAvatar = currentMember?.content?.avatar || "💙"
   const myGender = currentMember?.content?.gender
   const partnerAvatar = partnerMember?.content?.avatar || "🤍"
   const partnerName = partnerMember?.content?.name || "Partner"

@@ -56,7 +56,7 @@ export interface SetupStepConfig {
 export const initialWizardState: SetupWizardState = {
   gender: null,
   name: "",
-  avatar: "🙋‍♂️",
+  avatar: "💙",
   connectionType: "join", // Default to "join"
   inviteCode: generateInviteCode(),
   partnerCode: "",

@@ -1,3 +1,5 @@
+import { useState } from "react"
+import { Plus, User } from "lucide-react"
 import { AnimatedEmoji } from "@/components/AnimatedEmoji"
 import { Field, FieldLabel } from "@/components/ui/field"
 import {
@@ -8,7 +10,6 @@ import {
 import { cn } from "@/lib/utils"
 import { DEFAULT_AVATARS_BY_GENDER } from "@/lib/relationship"
 import type { Gender } from "@/types/relationship"
-import { User } from "lucide-react"
 
 interface ProfileStepProps {
   gender: Gender | null
@@ -27,8 +28,12 @@ export function ProfileStep({
   onChangeAvatar,
   error,
 }: ProfileStepProps) {
+  const [isCustomFocused, setIsCustomFocused] = useState(false)
   const genderKey = gender || "male"
   const avatarOptions = DEFAULT_AVATARS_BY_GENDER[genderKey]
+  const trimmedAvatar = avatar.trim()
+  const isCustomAvatar =
+    Boolean(trimmedAvatar) && !avatarOptions.includes(trimmedAvatar)
 
   return (
     <div className="flex flex-col gap-5">
@@ -69,6 +74,51 @@ export function ProfileStep({
               </button>
             )
           })}
+
+          <div
+            className={cn(
+              "relative flex size-12 items-center justify-center rounded-2xl border transition-all focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/30",
+              isCustomAvatar
+                ? "border-primary bg-primary/10 shadow-xs ring-2 ring-primary/30"
+                : "border-dashed border-border hover:bg-muted/40"
+            )}
+          >
+            {!isCustomFocused &&
+              (isCustomAvatar ? (
+                <AnimatedEmoji
+                  emoji={trimmedAvatar}
+                  size={28}
+                  replayOnTap={false}
+                  fallbackClassName="text-2xl"
+                />
+              ) : (
+                <Plus className="size-4 text-muted-foreground" />
+              ))}
+            <input
+              type="text"
+              value={isCustomAvatar || isCustomFocused ? avatar : ""}
+              onFocus={() => {
+                setIsCustomFocused(true)
+                if (!isCustomAvatar) {
+                  onChangeAvatar("")
+                }
+              }}
+              onBlur={() => {
+                setIsCustomFocused(false)
+                if (!avatar.trim()) {
+                  onChangeAvatar(avatarOptions[0])
+                }
+              }}
+              onChange={(e) => onChangeAvatar(e.target.value)}
+              maxLength={4}
+              aria-label="Custom avatar emoji"
+              title="Custom emoji"
+              className={cn(
+                "absolute inset-0 size-full cursor-pointer rounded-2xl bg-transparent text-center text-xl outline-none",
+                !isCustomFocused && "text-transparent caret-transparent"
+              )}
+            />
+          </div>
         </div>
       </div>
 

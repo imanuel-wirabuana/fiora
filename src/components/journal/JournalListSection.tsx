@@ -54,7 +54,7 @@ export function JournalListSection({
     if (authorId === user?.id) {
       return {
         name: "You",
-        avatar: currentMember?.content?.avatar || "🙋",
+        avatar: currentMember?.content?.avatar || "💙",
         isMe: true,
       }
     }

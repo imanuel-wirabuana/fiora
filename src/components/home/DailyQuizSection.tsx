@@ -41,7 +41,7 @@ export function DailyQuizSection() {
   } | null>(null)
 
   const partnerName = partnerMember?.content?.name || "Partner"
-  const myAvatar = currentMember?.content?.avatar || "🙋"
+  const myAvatar = currentMember?.content?.avatar || "💙"
 
   if (!hasRelationship) {
     return null

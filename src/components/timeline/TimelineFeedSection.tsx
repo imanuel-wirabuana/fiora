@@ -61,7 +61,7 @@ export function TimelineFeedSection({
 
   const partnerName = partnerMember?.content?.name || "Partner"
   const partnerAvatar = partnerMember?.content?.avatar || "🤍"
-  const myAvatar = currentMember?.content?.avatar || "🙋"
+  const myAvatar = currentMember?.content?.avatar || "💙"
 
   const getMemberInfo = (userId: string) => {
     if (userId === user?.id) {

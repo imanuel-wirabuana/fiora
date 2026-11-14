@@ -48,7 +48,7 @@ export function JournalDetailScreen() {
 
   const isMe = journal?.user_id === user?.id
   const authorAvatar = isMe
-    ? currentMember?.content?.avatar || "🙋"
+    ? currentMember?.content?.avatar || "💙"
     : partnerMember?.content?.avatar || "🤍"
   const authorName = isMe
     ? "You"
