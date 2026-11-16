@@ -234,7 +234,14 @@ export function usePresenceTracker() {
 }
 
 export function usePartnerPresence() {
-  const { partnerMember, partnerName, partnerAlias } = useRelationship()
+  const {
+    relationship,
+    anniversary,
+    locationSharing,
+    partnerMember,
+    partnerName,
+    partnerAlias,
+  } = useRelationship()
   const partnerPresence = usePresenceStore((s) => s.partnerPresence)
   const lastDisconnectedAt = usePresenceStore((s) => s.lastDisconnectedAt)
 
@@ -246,6 +253,10 @@ export function usePartnerPresence() {
   const currentActivity = isOnline
     ? partnerPresence?.activity || "Active in Fiora"
     : partnerMember?.content?.last_activity || null
+
+  const partnerLocation = partnerMember?.user_id
+    ? (relationship?.content?.locations?.[partnerMember.user_id] ?? null)
+    : null
 
   const lastSeenAt = useMemo(() => {
     if (isOnline) {
@@ -274,6 +285,9 @@ export function usePartnerPresence() {
     isBackground,
     currentActivity,
     lastSeenAt,
+    anniversary,
+    partnerLocation,
+    locationSharing,
     partnerMember,
     partnerName,
     partnerAlias,

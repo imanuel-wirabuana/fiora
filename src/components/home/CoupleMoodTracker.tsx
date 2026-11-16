@@ -1,6 +1,21 @@
 import type { ReactNode } from "react"
 import { formatDistanceToNow } from "date-fns"
-import { Heart, Smile, UserPlus } from "lucide-react"
+import {
+  ChessKing,
+  ChessQueen,
+  Compass,
+  Flower2,
+  Gem,
+  Heart,
+  type LucideIcon,
+  Mars,
+  Shield,
+  Smile,
+  Sparkles,
+  Sword,
+  UserPlus,
+  Venus,
+} from "lucide-react"
 import { AnimatedEmoji } from "@/components/AnimatedEmoji"
 import { CustomItem } from "@/components/CustomItem"
 import { CustomSkeleton } from "@/components/CustomSkeleton"
@@ -14,22 +29,77 @@ import type { Gender } from "@/types/relationship"
 function getGenderRingStyles(gender?: Gender | null) {
   if (gender === "male") {
     return {
-      card: "border-sky-500/30 ring-1 ring-sky-500/20",
+      card: "border-sky-500/30 bg-sky-100 ring-1 ring-sky-500/20 dark:bg-sky-950",
       circle:
-        "bg-sky-500/10 ring-2 ring-sky-500/50 text-sky-600 dark:bg-sky-400/10 dark:ring-sky-400/50 dark:text-sky-400",
+        "bg-background/80 ring-2 ring-sky-500/50 text-sky-600 dark:ring-sky-400/50 dark:text-sky-400",
+      watermark: "text-background",
     }
   }
   if (gender === "female") {
     return {
-      card: "border-rose-500/30 ring-1 ring-rose-500/20",
+      card: "border-rose-500/30 bg-rose-100 ring-1 ring-rose-500/20 dark:bg-rose-950",
       circle:
-        "bg-rose-500/10 ring-2 ring-rose-500/50 text-rose-600 dark:bg-rose-400/10 dark:ring-rose-400/50 dark:text-rose-400",
+        "bg-background/80 ring-2 ring-rose-500/50 text-rose-600 dark:ring-rose-400/50 dark:text-rose-400",
+      watermark: "text-background",
     }
   }
   return {
-    card: "border-border",
+    card: "border-border bg-card",
     circle: "bg-muted/40 ring-1 ring-border text-muted-foreground",
+    watermark: null,
   }
+}
+
+interface WatermarkIconItem {
+  Icon: LucideIcon
+  className: string
+}
+
+const GENDER_WATERMARK_ICONS: Record<Gender, WatermarkIconItem[]> = {
+  male: [
+    {
+      Icon: Mars,
+      className: "-right-5 -bottom-5 size-28 -rotate-12 opacity-70",
+    },
+    {
+      Icon: ChessKing,
+      className: "-top-3 -right-2 size-16 rotate-12 opacity-60",
+    },
+    {
+      Icon: Compass,
+      className: "top-10 -left-4 size-14 -rotate-12 opacity-55",
+    },
+    {
+      Icon: Sword,
+      className: "-bottom-3 -left-3 size-16 rotate-45 opacity-60",
+    },
+    {
+      Icon: Shield,
+      className: "top-1/2 -right-5 size-14 -translate-y-1/2 -rotate-12 opacity-45",
+    },
+  ],
+  female: [
+    {
+      Icon: Venus,
+      className: "-right-5 -bottom-5 size-28 -rotate-12 opacity-70",
+    },
+    {
+      Icon: ChessQueen,
+      className: "-top-3 -right-2 size-16 rotate-12 opacity-60",
+    },
+    {
+      Icon: Sparkles,
+      className: "top-10 -left-4 size-14 rotate-12 opacity-55",
+    },
+    {
+      Icon: Gem,
+      className: "-bottom-3 -left-3 size-16 -rotate-12 opacity-60",
+    },
+    {
+      Icon: Flower2,
+      className: "top-1/2 -right-5 size-14 -translate-y-1/2 rotate-12 opacity-45",
+    },
+  ],
 }
 
 interface MoodCardProps {
@@ -74,13 +144,31 @@ function MoodCard({
         })
       : ""
 
+  const watermarkIcons = gender ? GENDER_WATERMARK_ICONS[gender] : null
+
   return (
     <CustomItem
       variant="default"
       className={cn(
-        "h-full flex-nowrap items-center justify-between gap-3 text-center",
+        "relative h-full flex-nowrap items-center justify-between gap-3 text-center shadow-sm",
         styles.card
       )}
+      background={
+        watermarkIcons && styles.watermark ? (
+          <div
+            className={cn(
+              "pointer-events-none absolute inset-0 overflow-hidden select-none",
+              styles.watermark
+            )}
+            aria-hidden="true"
+          >
+            {watermarkIcons.map(({ Icon, className }, index) => (
+              <Icon key={index} className={cn("absolute", className)} />
+            ))}
+          </div>
+        ) : null
+      }
+      headerClassName="relative z-10"
       icon={
         <AnimatedEmoji
           emoji={avatar}
@@ -91,7 +179,7 @@ function MoodCard({
       }
       title={title}
       contentHorizontalAlign="center"
-      contentClassName="flex-none items-center justify-center gap-2 py-0.5"
+      contentClassName="z-10 flex-none items-center justify-center gap-2 py-0.5"
     >
       {/* Centered Big Icon & Mood Status */}
       {isLoading ? (
@@ -106,7 +194,7 @@ function MoodCard({
           {moodContent ? (
             <div
               key={latestMood?.id ?? moodContent.emoji}
-              className="flex items-center justify-center animate-in zoom-in-75 duration-300"
+              className="flex animate-in items-center justify-center duration-300 zoom-in-75"
             >
               <AnimatedEmoji
                 emoji={moodContent.emoji}
@@ -121,7 +209,7 @@ function MoodCard({
       )}
 
       {/* Consistent 3-line text stack to preserve identical card height */}
-      <div className="flex w-full min-w-0 flex-col items-center justify-center text-center gap-0.5">
+      <div className="flex w-full min-w-0 flex-col items-center justify-center gap-0.5 text-center">
         {isLoading ? (
           <>
             <CustomSkeleton className="my-0.5 h-3.5 w-16 rounded-md" />
@@ -133,7 +221,9 @@ function MoodCard({
             <span
               className={cn(
                 "w-full truncate text-center text-xs font-semibold",
-                moodContent ? "text-foreground" : "text-[11px] font-medium text-muted-foreground"
+                moodContent
+                  ? "text-foreground"
+                  : "text-[11px] font-medium text-muted-foreground"
               )}
             >
               {primaryLabel}

@@ -8,6 +8,7 @@ import { cn } from "../lib/utils"
 
 export interface HeaderProps {
   variant?: "main" | "detail"
+  tone?: "default" | "primary-at-top"
   title?: string
   backHref?: string
   hasUnread?: boolean
@@ -17,15 +18,17 @@ export interface HeaderProps {
 
 export function Header({
   variant = "main",
+  tone = "default",
   title,
   backHref,
   hasUnread,
   rightAction,
   className,
 }: HeaderProps) {
-  const { headerRef, isHidden } = useStickyHeader()
+  const { headerRef, isHidden, isAtTop } = useStickyHeader()
   const { unreadCount } = useNotifications()
   const isDetail = variant === "detail" || !!title || !!backHref
+  const isPrimaryAtTop = tone === "primary-at-top" && isAtTop
   const showUnreadBadge = hasUnread ?? unreadCount > 0
 
   const handleBack = () => {
@@ -38,7 +41,10 @@ export function Header({
     <header
       ref={headerRef}
       className={cn(
-        "sticky top-0 z-30 shrink-0 bg-background transition-[translate,transform,box-shadow] duration-300 ease-in-out will-change-[translate,transform]",
+        "sticky top-0 z-30 shrink-0 transition-[colors,translate,transform,box-shadow] duration-300 ease-in-out will-change-[translate,transform]",
+        isPrimaryAtTop
+          ? "bg-primary/90 text-primary-foreground"
+          : "bg-background",
         isHidden
           ? "pointer-events-none -translate-y-full shadow-none"
           : "translate-y-0",
@@ -76,7 +82,14 @@ export function Header({
             href="/home"
             className="flex items-center gap-2 text-base font-bold tracking-tight"
           >
-            <span className="flex size-6 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary">
+            <span
+              className={cn(
+                "flex size-6 items-center justify-center rounded-lg border transition-colors",
+                isPrimaryAtTop
+                  ? "border-primary-foreground/25 bg-primary-foreground/15 text-primary-foreground"
+                  : "border-primary/20 bg-primary/10 text-primary"
+              )}
+            >
               <FioraLogo className="size-4" />
             </span>
             <span>Fiora</span>
@@ -90,7 +103,12 @@ export function Header({
           ) : !isDetail ? (
             <Link
               href="/notification"
-              className="relative flex size-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              className={cn(
+                "relative flex size-8 items-center justify-center rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+                isPrimaryAtTop
+                  ? "text-primary-foreground/85 hover:bg-primary-foreground/15 hover:text-primary-foreground"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              )}
               aria-label={
                 unreadCount > 0
                   ? `Notifications (${unreadCount} unread)`
@@ -99,7 +117,14 @@ export function Header({
             >
               <Bell className="size-4.5" />
               {showUnreadBadge && unreadCount > 0 ? (
-                <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] leading-none font-semibold text-primary-foreground shadow-sm ring-2 ring-background">
+                <span
+                  className={cn(
+                    "absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] leading-none font-semibold shadow-sm ring-2",
+                    isPrimaryAtTop
+                      ? "bg-primary-foreground text-primary ring-primary"
+                      : "bg-primary text-primary-foreground ring-background"
+                  )}
+                >
                   {unreadCount > 99 ? "99+" : unreadCount}
                 </span>
               ) : null}

@@ -39,9 +39,15 @@ export function useStickyHeader({
     location,
     hidden: false,
   })
+  const [atTopState, setAtTopState] = useState({
+    location,
+    atTop: true,
+  })
 
   const isHidden =
     hiddenState.location === location ? hiddenState.hidden : false
+  const isAtTop =
+    atTopState.location === location ? atTopState.atTop : true
 
   useEffect(() => {
     lastScrollYRef.current = 0
@@ -65,6 +71,12 @@ export function useStickyHeader({
       }
 
       const currentScrollY = getScrollTop(target)
+      const nextAtTop = currentScrollY <= 16
+      setAtTopState((prev) =>
+        prev.location === location && prev.atTop === nextAtTop
+          ? prev
+          : { location, atTop: nextAtTop }
+      )
 
       if (
         lastTargetRef.current !== null &&
@@ -107,5 +119,5 @@ export function useStickyHeader({
     }
   }, [threshold, hideOffset, location])
 
-  return { headerRef, isHidden }
+  return { headerRef, isHidden, isAtTop }
 }

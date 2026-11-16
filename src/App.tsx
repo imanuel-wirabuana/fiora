@@ -166,7 +166,7 @@ function AppRoutes() {
             ) : !hasRelationship ? (
               <Redirect to="/setup" />
             ) : (
-              <MainLayout>
+              <MainLayout headerTone="primary-at-top">
                 <Suspense fallback={<HomeScreenSkeleton />}>
                   <HomeScreen />
                 </Suspense>

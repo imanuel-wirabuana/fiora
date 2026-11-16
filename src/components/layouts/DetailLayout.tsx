@@ -32,8 +32,8 @@ export function DetailLayout({
         rightAction={rightAction}
       />
 
-      {/* Main content area with bottom padding for navigation bar */}
-      <main className="mx-auto w-full max-w-md flex-1 px-4 pt-3 pb-20 sm:max-w-2xl">
+      {/* Main content area */}
+      <main className="w-full flex-1">
         {children}
       </main>
 

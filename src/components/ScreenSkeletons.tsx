@@ -34,7 +34,7 @@ export function SetupScreenSkeleton() {
 
 export function HomeScreenSkeleton() {
   return (
-    <section className="flex flex-col gap-4">
+    <section className="mx-auto flex w-full max-w-md flex-col gap-4 px-4 pt-3 pb-20 sm:max-w-2xl">
       {/* PartnerPresenceSection */}
       <CustomSkeleton className="h-14 w-full" />
 
@@ -55,7 +55,7 @@ export function HomeScreenSkeleton() {
 
 export function InsightScreenSkeleton() {
   return (
-    <section className="flex flex-col gap-3">
+    <section className="mx-auto flex w-full max-w-md flex-col gap-3 px-4 pt-3 pb-20 sm:max-w-2xl">
       {/* Date Picker Button */}
       <CustomSkeleton className="h-9 w-full rounded-2xl" />
 
@@ -84,7 +84,7 @@ export function InsightScreenSkeleton() {
 
 export function SpaceScreenSkeleton() {
   return (
-    <section className="flex flex-col gap-3">
+    <section className="mx-auto flex w-full max-w-md flex-col gap-3 px-4 pt-3 pb-20 sm:max-w-2xl">
       <div className="grid grid-cols-2 gap-3">
         <CustomSkeleton className="h-28 w-full" />
         <CustomSkeleton className="h-28 w-full" />
@@ -97,7 +97,7 @@ export function SpaceScreenSkeleton() {
 
 export function JournalScreenSkeleton() {
   return (
-    <section className="flex flex-col gap-3">
+    <section className="mx-auto flex w-full max-w-md flex-col gap-3 px-4 pt-3 pb-20 sm:max-w-2xl">
       {/* Search + Filter */}
       <div className="flex items-center gap-2">
         <CustomSkeleton className="h-9 flex-1 rounded-xl" />
@@ -159,7 +159,7 @@ export function JournalDetailScreenSkeleton() {
 
 export function SettingScreenSkeleton() {
   return (
-    <div className="flex flex-col gap-4 pb-8">
+    <div className="mx-auto flex w-full max-w-md flex-col gap-4 px-4 pt-3 pb-20 sm:max-w-2xl">
       {/* Self Card */}
       <div className="flex flex-col gap-2 rounded-2xl border border-border/60 p-3.5">
         <CustomSkeleton className="h-4 w-16 rounded-md" />
@@ -183,7 +183,7 @@ export function SettingScreenSkeleton() {
 
 export function SettingSubScreenSkeleton() {
   return (
-    <div className="flex flex-col gap-3">
+    <div className="mx-auto flex w-full max-w-md flex-col gap-3 px-4 pt-3 pb-20 sm:max-w-2xl">
       <CustomSkeleton className="h-12 w-full" />
       {Array.from({ length: 4 }).map((_, idx) => (
         <CustomSkeleton key={idx} className="h-16 w-full" />
@@ -195,7 +195,7 @@ export function SettingSubScreenSkeleton() {
 
 export function NotificationScreenSkeleton() {
   return (
-    <div className="flex flex-col gap-3">
+    <div className="mx-auto flex w-full max-w-md flex-col gap-3 px-4 pt-3 pb-20 sm:max-w-2xl">
       <div className="flex gap-1.5">
         <CustomSkeleton className="h-7 w-12 rounded-full" />
         <CustomSkeleton className="h-7 w-16 rounded-full" />
@@ -230,7 +230,7 @@ export function LocationSharingScreenSkeleton() {
 
 export function QuizSummaryScreenSkeleton() {
   return (
-    <section className="flex flex-col gap-3">
+    <section className="mx-auto flex w-full max-w-md flex-col gap-3 px-4 pt-3 pb-20 sm:max-w-2xl">
       <CustomSkeleton className="h-10 w-full rounded-2xl" />
       <CustomSkeleton className="h-24 w-full" />
       {Array.from({ length: 3 }).map((_, idx) => (

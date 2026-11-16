@@ -355,7 +355,7 @@ export function NudgeSettingScreen() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="mx-auto flex w-full max-w-md flex-col gap-4 px-4 pt-3 pb-20 sm:max-w-2xl">
       {/* Top Info & Controls Card */}
       <CustomItem
         variant="solid"

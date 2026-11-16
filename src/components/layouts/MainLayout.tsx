@@ -6,9 +6,14 @@ import { Header } from "../Header"
 interface MainLayoutProps {
   children: ReactNode
   hasUnread?: boolean
+  headerTone?: "default" | "primary-at-top"
 }
 
-export function MainLayout({ children, hasUnread }: MainLayoutProps) {
+export function MainLayout({
+  children,
+  hasUnread,
+  headerTone = "default",
+}: MainLayoutProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   useScrollToTop(scrollContainerRef)
 
@@ -18,10 +23,10 @@ export function MainLayout({ children, hasUnread }: MainLayoutProps) {
       className="flex min-h-svh flex-col bg-background text-foreground md:h-full md:min-h-0 md:overflow-y-auto"
     >
       {/* Unified Mobile Top Header */}
-      <Header variant="main" hasUnread={hasUnread} />
+      <Header variant="main" tone={headerTone} hasUnread={hasUnread} />
 
       {/* Main content area */}
-      <main className="mx-auto w-full max-w-md flex-1 px-4 pt-3 pb-20 sm:max-w-2xl">
+      <main className="w-full flex-1">
         {children}
       </main>
 

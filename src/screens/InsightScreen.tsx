@@ -37,7 +37,7 @@ export function InsightScreen() {
   }
 
   return (
-    <section className="flex flex-col gap-3">
+    <section className="mx-auto flex w-full max-w-md flex-col gap-3 px-4 pt-3 pb-20 sm:max-w-2xl">
       <InsightDatePicker value={dateFilter} onChange={setDateFilter} />
 
       <InsightKpiGrid summary={summary} quizSummary={quizSummary} />

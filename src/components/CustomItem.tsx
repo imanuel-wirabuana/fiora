@@ -85,6 +85,8 @@ export interface CustomItemProps extends Omit<
   bottomRightActions?: React.ReactNode
   /** Main body content */
   children?: React.ReactNode
+  /** Optional full-bleed background layer rendered inside the card */
+  background?: React.ReactNode
   /** Optional slot className overrides */
   headerClassName?: string
   descriptionClassName?: string
@@ -103,6 +105,7 @@ export function CustomItem({
   bottomLeftInfo,
   bottomRightActions,
   children,
+  background,
   className,
   headerClassName,
   descriptionClassName,
@@ -119,6 +122,7 @@ export function CustomItem({
       className={cn(customItemVariants({ variant }), className)}
       {...props}
     >
+      {background}
       <ItemHeader
         className={cn(
           "w-full basis-auto flex-row items-center justify-between gap-2 space-y-0",
