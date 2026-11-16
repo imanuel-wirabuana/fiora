@@ -91,18 +91,46 @@ export const pushService = {
       )
     }
 
-    const registration = await navigator.serviceWorker.ready
+    let registration = await navigator.serviceWorker.ready
+    await registration.update().catch(() => {})
+    registration = await navigator.serviceWorker.ready
+
     const existing = await registration.pushManager.getSubscription()
     if (existing) {
       return serializeSubscription(existing)
     }
 
-    const subscription = await registration.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
-    })
+    const applicationServerKey = urlBase64ToUint8Array(vapidPublicKey)
 
-    return serializeSubscription(subscription)
+    try {
+      const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey,
+      })
+      return serializeSubscription(subscription)
+    } catch (err) {
+      const name = err instanceof DOMException ? err.name : ""
+      if (name === "AbortError" || name === "InvalidStateError") {
+        // Clear any stale subscription or mid-update SW state and retry once
+        const stale = await registration.pushManager.getSubscription().catch(() => null)
+        if (stale) {
+          await stale.unsubscribe().catch(() => {})
+        }
+        try {
+          const freshReg = await navigator.serviceWorker.ready
+          const retrySub = await freshReg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey,
+          })
+          return serializeSubscription(retrySub)
+        } catch {
+          throw new Error(
+            "Push registration failed on this device. Try clearing site data / reinstalling the PWA, or check that VPN/ad-blockers and browser push services aren't blocking notifications."
+          )
+        }
+      }
+      throw err
+    }
   },
 
   async unsubscribeDevice(): Promise<string | null> {
