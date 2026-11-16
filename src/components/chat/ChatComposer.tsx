@@ -65,10 +65,10 @@ export function ChatComposer({
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex shrink-0 flex-col gap-2 border-t border-border/60 bg-background px-3 py-2.5"
+      className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col gap-1.5 px-3 pb-2"
     >
       {replyingTo ? (
-        <div className="flex items-center justify-between gap-2 rounded-2xl bg-muted/60 px-3 py-1.5 text-[11px]">
+        <div className="pointer-events-auto flex items-center justify-between gap-2 rounded-2xl border border-border/60 bg-background/90 px-3 py-1.5 text-[11px] shadow-md backdrop-blur-md">
           <div className="flex min-w-0 items-center gap-2">
             <Reply className="size-3 shrink-0 text-primary" />
             <div className="flex min-w-0 flex-col">
@@ -92,7 +92,7 @@ export function ChatComposer({
         </div>
       ) : null}
 
-      <InputGroup className="items-end">
+      <InputGroup className="pointer-events-auto items-end border-border/60 bg-background/90 shadow-lg backdrop-blur-md">
         <InputGroupTextarea
           value={text}
           onChange={(e) => handleChange(e.target.value)}
@@ -102,9 +102,9 @@ export function ChatComposer({
           rows={1}
           disabled={disabled}
           aria-label={`Message ${partnerName}`}
-          className="max-h-28 min-h-8 py-1.5 text-xs"
+          className="max-h-28 min-h-9 py-2 text-xs leading-5"
         />
-        <InputGroupAddon align="inline-end" className="pb-1.5">
+        <InputGroupAddon align="inline-end" className="py-0.5 pr-1">
           <InputGroupButton
             type="submit"
             variant="default"

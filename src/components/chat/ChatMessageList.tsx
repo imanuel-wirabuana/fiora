@@ -437,7 +437,7 @@ export function ChatMessageList({
   return (
     <MessageScrollerProvider autoScroll>
       <MessageScroller className="min-h-0 flex-1">
-        <MessageScrollerViewport className="px-4 py-2.5">
+        <MessageScrollerViewport className="px-4 pt-2.5 pb-16">
           <MessageScrollerContent className="gap-3">
             {hasNextPage ? (
               <MessageScrollerItem messageId="load-more">
@@ -528,7 +528,7 @@ export function ChatMessageList({
           </MessageScrollerContent>
         </MessageScrollerViewport>
 
-        <MessageScrollerButton />
+        <MessageScrollerButton className="data-[direction=end]:bottom-16" />
       </MessageScroller>
     </MessageScrollerProvider>
   )
