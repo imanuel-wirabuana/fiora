@@ -18,8 +18,17 @@ export interface JournalActivityContent {
   isShared?: boolean
 }
 
+export interface ChatReplyRef {
+  id: number
+  userId: string
+  senderName: string
+  text: string
+}
+
 export interface ChatActivityContent {
   text: string
+  replyTo?: ChatReplyRef
+  reactions?: Record<string, string>
 }
 
 export type ActivityContent =

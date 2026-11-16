@@ -44,6 +44,7 @@ export interface RelationshipMemberContent {
   avatar?: string
   last_seen_at?: string
   last_activity?: string
+  chat_read_at?: string
   push_subscriptions?: PushSubscriptionData[]
 }
 

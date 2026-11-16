@@ -7,10 +7,15 @@ import {
 } from "@tanstack/react-query"
 import { activityService } from "../services/activityService"
 import { chatService, type TypingChannelHandle } from "../services/chatService"
-import type { Activity, ChatActivityContent } from "../types/activity"
+import { relationshipService } from "../services/relationshipService"
+import type {
+  Activity,
+  ChatActivityContent,
+  ChatReplyRef,
+} from "../types/activity"
 import { useAuth } from "./useAuth"
 import { useNotifications } from "./useNotifications"
-import { useRelationship } from "./useRelationship"
+import { relationshipKeys, useRelationship } from "./useRelationship"
 
 export const CHAT_PAGE_SIZE = 30
 const TYPING_THROTTLE_MS = 2_000
@@ -20,6 +25,17 @@ export const chatKeys = {
   all: ["activities", "chat"] as const,
   byRelationship: (relationshipId?: number) =>
     [...chatKeys.all, relationshipId] as const,
+}
+
+function truncateText(text: string, maxLength: number): string {
+  const trimmed = text.trim()
+  if (trimmed.length <= maxLength) return trimmed
+  return `${trimmed.slice(0, maxLength - 3)}...`
+}
+
+export interface SendChatMessageInput {
+  text: string
+  replyTo?: ChatReplyRef
 }
 
 export function useChatMessages() {
@@ -79,23 +95,24 @@ export function useChatMessages() {
   const sendMessageMutation = useMutation<
     Activity,
     Error,
-    string,
+    SendChatMessageInput,
     {
       previousData?: InfiniteData<Activity[], number>
       optimisticId?: number
     }
   >({
-    mutationFn: (rawText) => {
+    mutationFn: ({ text: rawText, replyTo }) => {
       if (!relationshipId) throw new Error("No active relationship found.")
       const text = rawText.trim()
       if (!text) throw new Error("Message cannot be empty.")
+      const content: ChatActivityContent = replyTo ? { text, replyTo } : { text }
       return activityService.createActivity({
         relationshipId,
         type: "chat",
-        content: { text },
+        content,
       })
     },
-    onMutate: async (rawText) => {
+    onMutate: async ({ text: rawText, replyTo }) => {
       const text = rawText.trim()
       if (!relationshipId || !currentUserId || !text) return {}
 
@@ -108,12 +125,13 @@ export function useChatMessages() {
       >(chatKeys.byRelationship(relationshipId))
 
       const optimisticId = -Date.now()
+      const content: ChatActivityContent = replyTo ? { text, replyTo } : { text }
       const optimisticActivity: Activity<ChatActivityContent> = {
         id: optimisticId,
         relationship_id: relationshipId,
         user_id: currentUserId,
         type: "chat",
-        content: { text },
+        content,
         created_at: new Date().toISOString(),
         updated_at: null,
       }
@@ -137,7 +155,7 @@ export function useChatMessages() {
 
       return { previousData, optimisticId }
     },
-    onSuccess: (savedActivity, _text, context) => {
+    onSuccess: (savedActivity, _input, context) => {
       if (!relationshipId || !context?.optimisticId) return
       queryClient.setQueryData<InfiniteData<Activity[], number>>(
         chatKeys.byRelationship(relationshipId),
@@ -154,7 +172,146 @@ export function useChatMessages() {
         }
       )
     },
-    onError: (_err, _text, context) => {
+    onError: (_err, _input, context) => {
+      if (relationshipId && context?.previousData) {
+        queryClient.setQueryData(
+          chatKeys.byRelationship(relationshipId),
+          context.previousData
+        )
+      }
+    },
+    onSettled: () => {
+      if (relationshipId) {
+        queryClient.invalidateQueries({
+          queryKey: chatKeys.byRelationship(relationshipId),
+        })
+      }
+    },
+  })
+
+  const toggleReactionMutation = useMutation<
+    Activity,
+    Error,
+    { activity: Activity<ChatActivityContent>; emoji: string },
+    { previousData?: InfiniteData<Activity[], number> }
+  >({
+    mutationFn: ({ activity, emoji }) => {
+      if (!currentUserId) throw new Error("You must be logged in to react.")
+      const existingContent = activity.content ?? { text: "" }
+      const nextReactions = { ...(existingContent.reactions ?? {}) }
+      if (nextReactions[currentUserId] === emoji) {
+        delete nextReactions[currentUserId]
+      } else {
+        nextReactions[currentUserId] = emoji
+      }
+
+      const nextContent: ChatActivityContent = {
+        ...existingContent,
+        reactions:
+          Object.keys(nextReactions).length > 0 ? nextReactions : undefined,
+      }
+
+      return activityService.updateActivity(activity.id, nextContent)
+    },
+    onMutate: async ({ activity, emoji }) => {
+      if (!relationshipId || !currentUserId) return {}
+
+      await queryClient.cancelQueries({
+        queryKey: chatKeys.byRelationship(relationshipId),
+      })
+
+      const previousData = queryClient.getQueryData<
+        InfiniteData<Activity[], number>
+      >(chatKeys.byRelationship(relationshipId))
+
+      const existingContent = activity.content ?? { text: "" }
+      const nextReactions = { ...(existingContent.reactions ?? {}) }
+      if (nextReactions[currentUserId] === emoji) {
+        delete nextReactions[currentUserId]
+      } else {
+        nextReactions[currentUserId] = emoji
+      }
+
+      const nextContent: ChatActivityContent = {
+        ...existingContent,
+        reactions:
+          Object.keys(nextReactions).length > 0 ? nextReactions : undefined,
+      }
+
+      queryClient.setQueryData<InfiniteData<Activity[], number>>(
+        chatKeys.byRelationship(relationshipId),
+        (old) => {
+          if (!old) return old
+          return {
+            ...old,
+            pages: old.pages.map((page) =>
+              page.map((item) =>
+                item.id === activity.id
+                  ? {
+                      ...item,
+                      content: nextContent,
+                      updated_at: new Date().toISOString(),
+                    }
+                  : item
+              )
+            ),
+          }
+        }
+      )
+
+      return { previousData }
+    },
+    onError: (_err, _vars, context) => {
+      if (relationshipId && context?.previousData) {
+        queryClient.setQueryData(
+          chatKeys.byRelationship(relationshipId),
+          context.previousData
+        )
+      }
+    },
+    onSettled: () => {
+      if (relationshipId) {
+        queryClient.invalidateQueries({
+          queryKey: chatKeys.byRelationship(relationshipId),
+        })
+      }
+    },
+  })
+
+  const unsendMessageMutation = useMutation<
+    void,
+    Error,
+    number,
+    { previousData?: InfiniteData<Activity[], number> }
+  >({
+    mutationFn: (activityId) => activityService.deleteActivity(activityId),
+    onMutate: async (activityId) => {
+      if (!relationshipId) return {}
+
+      await queryClient.cancelQueries({
+        queryKey: chatKeys.byRelationship(relationshipId),
+      })
+
+      const previousData = queryClient.getQueryData<
+        InfiniteData<Activity[], number>
+      >(chatKeys.byRelationship(relationshipId))
+
+      queryClient.setQueryData<InfiniteData<Activity[], number>>(
+        chatKeys.byRelationship(relationshipId),
+        (old) => {
+          if (!old) return old
+          return {
+            ...old,
+            pages: old.pages.map((page) =>
+              page.filter((item) => item.id !== activityId)
+            ),
+          }
+        }
+      )
+
+      return { previousData }
+    },
+    onError: (_err, _activityId, context) => {
       if (relationshipId && context?.previousData) {
         queryClient.setQueryData(
           chatKeys.byRelationship(relationshipId),
@@ -172,21 +329,70 @@ export function useChatMessages() {
   })
 
   const sendMessage = useCallback(
-    async (rawText: string) => {
+    async ({ text: rawText, replyTo }: SendChatMessageInput) => {
       const trimmed = rawText.trim()
-      const saved = await sendMessageMutation.mutateAsync(trimmed)
+      const saved = await sendMessageMutation.mutateAsync({
+        text: trimmed,
+        replyTo,
+      })
+
+      const title = replyTo
+        ? replyTo.userId !== currentUserId
+          ? `${senderName} replied to your message`
+          : `${senderName} replied in chat`
+        : `${senderName} sent a message`
+
+      const body = replyTo
+        ? `"${truncateText(trimmed, 60)}" · Re: "${truncateText(replyTo.text, 40)}"`
+        : truncateText(trimmed, 100)
 
       void notifyPartner({
         type: "chat",
-        title: `${senderName} sent a message`,
-        body: trimmed.length > 100 ? `${trimmed.slice(0, 97)}...` : trimmed,
+        title,
+        body,
         url: "/chat",
         emoji: "💬",
       })
 
       return saved
     },
-    [sendMessageMutation, notifyPartner, senderName]
+    [sendMessageMutation, notifyPartner, senderName, currentUserId]
+  )
+
+  const toggleReaction = useCallback(
+    async ({
+      activity,
+      emoji,
+    }: {
+      activity: Activity<ChatActivityContent>
+      emoji: string
+    }) => {
+      const isRemoving =
+        !!currentUserId && activity.content?.reactions?.[currentUserId] === emoji
+
+      const saved = await toggleReactionMutation.mutateAsync({
+        activity,
+        emoji,
+      })
+
+      if (!isRemoving) {
+        const preview = truncateText(activity.content?.text ?? "", 80)
+        const isPartnerMessage = activity.user_id !== currentUserId
+
+        void notifyPartner({
+          type: "chat",
+          title: isPartnerMessage
+            ? `${senderName} reacted ${emoji} to your message`
+            : `${senderName} reacted ${emoji} to a message`,
+          body: preview ? `"${preview}"` : "Reacted to a message",
+          url: "/chat",
+          emoji,
+        })
+      }
+
+      return saved
+    },
+    [toggleReactionMutation, notifyPartner, senderName, currentUserId]
   )
 
   return {
@@ -197,7 +403,86 @@ export function useChatMessages() {
     fetchNextPage: query.fetchNextPage,
     sendMessage,
     isSending: sendMessageMutation.isPending,
+    toggleReaction,
+    unsendMessage: unsendMessageMutation.mutate,
   }
+}
+
+export function useChatReadReceipt(messages: Activity<ChatActivityContent>[]) {
+  const queryClient = useQueryClient()
+  const { user } = useAuth()
+  const { currentMember } = useRelationship()
+
+  const currentUserId = user?.id
+  const currentMemberId = currentMember?.id
+  const currentMemberContent = currentMember?.content
+  const currentReadAt = currentMemberContent?.chat_read_at
+
+  const lastMarkedRef = useRef<string | null>(null)
+
+  const latestPartnerMessageAt = useMemo(() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const msg = messages[i]
+      if (msg.user_id !== currentUserId && msg.id > 0) {
+        return msg.created_at
+      }
+    }
+    return null
+  }, [messages, currentUserId])
+
+  const markReadIfNeeded = useCallback(() => {
+    if (!currentMemberId || !currentUserId || !latestPartnerMessageAt) return
+    if (
+      typeof document !== "undefined" &&
+      document.visibilityState !== "visible"
+    ) {
+      return
+    }
+
+    const latestMs = new Date(latestPartnerMessageAt).getTime()
+    const currentReadMs = currentReadAt ? new Date(currentReadAt).getTime() : 0
+    if (latestMs <= currentReadMs) return
+    if (lastMarkedRef.current === latestPartnerMessageAt) return
+
+    lastMarkedRef.current = latestPartnerMessageAt
+
+    void relationshipService
+      .updateMemberContent(currentMemberId, {
+        ...(currentMemberContent ?? {}),
+        chat_read_at: latestPartnerMessageAt,
+      })
+      .then(() => {
+        queryClient.invalidateQueries({
+          queryKey: relationshipKeys.byUser(currentUserId),
+        })
+      })
+      .catch(() => {
+        lastMarkedRef.current = null
+      })
+  }, [
+    currentMemberId,
+    currentUserId,
+    currentMemberContent,
+    currentReadAt,
+    latestPartnerMessageAt,
+    queryClient,
+  ])
+
+  useEffect(() => {
+    markReadIfNeeded()
+  }, [markReadIfNeeded])
+
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        markReadIfNeeded()
+      }
+    }
+    document.addEventListener("visibilitychange", handleVisibility)
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibility)
+    }
+  }, [markReadIfNeeded])
 }
 
 export function useChatTyping() {

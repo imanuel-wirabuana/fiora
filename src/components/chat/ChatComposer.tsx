@@ -1,17 +1,21 @@
 import { useState, type FormEvent, type KeyboardEvent } from "react"
-import { SendHorizontal } from "lucide-react"
+import { Reply, SendHorizontal, X } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupTextarea,
 } from "@/components/ui/input-group"
+import type { ChatReplyRef } from "@/types/activity"
 
 interface ChatComposerProps {
   disabled?: boolean
   isSending?: boolean
   partnerName: string
-  onSend: (text: string) => Promise<unknown> | void
+  replyingTo?: ChatReplyRef | null
+  onCancelReply?: () => void
+  onSend: (input: { text: string; replyTo?: ChatReplyRef }) => Promise<unknown> | void
   onTypingChange: (hasContent: boolean) => void
   onStopTyping: () => void
 }
@@ -20,6 +24,8 @@ export function ChatComposer({
   disabled = false,
   isSending = false,
   partnerName,
+  replyingTo = null,
+  onCancelReply,
   onSend,
   onTypingChange,
   onStopTyping,
@@ -32,9 +38,11 @@ export function ChatComposer({
     const trimmed = text.trim()
     if (!trimmed || disabled || isSending) return
 
+    const activeReply = replyingTo ?? undefined
     setText("")
+    onCancelReply?.()
     onStopTyping()
-    await onSend(trimmed)
+    await onSend({ text: trimmed, replyTo: activeReply })
   }
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -57,8 +65,33 @@ export function ChatComposer({
   return (
     <form
       onSubmit={handleSubmit}
-      className="shrink-0 border-t border-border/60 bg-background px-3 py-2.5"
+      className="flex shrink-0 flex-col gap-2 border-t border-border/60 bg-background px-3 py-2.5"
     >
+      {replyingTo ? (
+        <div className="flex items-center justify-between gap-2 rounded-2xl bg-muted/60 px-3 py-1.5 text-[11px]">
+          <div className="flex min-w-0 items-center gap-2">
+            <Reply className="size-3 shrink-0 text-primary" />
+            <div className="flex min-w-0 flex-col">
+              <span className="truncate font-semibold text-foreground">
+                Replying to {replyingTo.senderName}
+              </span>
+              <span className="truncate text-muted-foreground">
+                {replyingTo.text}
+              </span>
+            </div>
+          </div>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-xs"
+            onClick={onCancelReply}
+            aria-label="Cancel reply"
+          >
+            <X data-icon />
+          </Button>
+        </div>
+      ) : null}
+
       <InputGroup className="items-end">
         <InputGroupTextarea
           value={text}
@@ -69,7 +102,7 @@ export function ChatComposer({
           rows={1}
           disabled={disabled}
           aria-label={`Message ${partnerName}`}
-          className="max-h-28 min-h-9 py-2 text-sm"
+          className="max-h-28 min-h-8 py-1.5 text-xs"
         />
         <InputGroupAddon align="inline-end" className="pb-1.5">
           <InputGroupButton
