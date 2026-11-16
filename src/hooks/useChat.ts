@@ -6,7 +6,10 @@ import {
   type InfiniteData,
 } from "@tanstack/react-query"
 import { activityService } from "../services/activityService"
-import { chatService, type TypingChannelHandle } from "../services/chatService"
+import {
+  chatService,
+  type ChatRoomChannelHandle,
+} from "../services/chatService"
 import { relationshipService } from "../services/relationshipService"
 import type {
   Activity,
@@ -408,17 +411,75 @@ export function useChatMessages() {
   }
 }
 
-export function useChatReadReceipt(messages: Activity<ChatActivityContent>[]) {
+export function useChatRoom(messages: Activity<ChatActivityContent>[]) {
   const queryClient = useQueryClient()
   const { user } = useAuth()
-  const { currentMember } = useRelationship()
+  const { relationship, currentMember, partnerMember } = useRelationship()
 
+  const relationshipId = relationship?.id
   const currentUserId = user?.id
   const currentMemberId = currentMember?.id
   const currentMemberContent = currentMember?.content
   const currentReadAt = currentMemberContent?.chat_read_at
+  const persistedPartnerReadAt = partnerMember?.content?.chat_read_at ?? null
 
+  const [isPartnerTyping, setIsPartnerTyping] = useState(false)
+  const [livePartnerReadAt, setLivePartnerReadAt] = useState<string | null>(
+    null
+  )
+
+  const channelRef = useRef<ChatRoomChannelHandle | null>(null)
+  const lastSentAtRef = useRef<number>(0)
+  const isCurrentlyTypingRef = useRef<boolean>(false)
+  const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastMarkedRef = useRef<string | null>(null)
+
+  const clearIdleTimer = useCallback(() => {
+    if (idleTimerRef.current !== null) {
+      clearTimeout(idleTimerRef.current)
+      idleTimerRef.current = null
+    }
+  }, [])
+
+  // Ensure partner's persisted chat_read_at is fresh when opening ChatScreen
+  useEffect(() => {
+    if (!currentUserId) return
+    void queryClient.invalidateQueries({
+      queryKey: relationshipKeys.byUser(currentUserId),
+    })
+  }, [currentUserId, queryClient])
+
+  useEffect(() => {
+    if (!relationshipId || !currentUserId) {
+      return
+    }
+
+    const handle = chatService.createChatRoomChannel(
+      relationshipId,
+      currentUserId,
+      {
+        onPartnerTypingChange: setIsPartnerTyping,
+        onPartnerRead: (readAt) => {
+          setLivePartnerReadAt((prev) => {
+            if (!prev) return readAt
+            return new Date(readAt).getTime() > new Date(prev).getTime()
+              ? readAt
+              : prev
+          })
+        },
+      }
+    )
+    channelRef.current = handle
+
+    return () => {
+      clearIdleTimer()
+      isCurrentlyTypingRef.current = false
+      lastSentAtRef.current = 0
+      channelRef.current = null
+      setLivePartnerReadAt(null)
+      handle.unsubscribe()
+    }
+  }, [relationshipId, currentUserId, clearIdleTimer])
 
   const latestPartnerMessageAt = useMemo(() => {
     for (let i = messages.length - 1; i >= 0; i--) {
@@ -445,6 +506,7 @@ export function useChatReadReceipt(messages: Activity<ChatActivityContent>[]) {
     if (lastMarkedRef.current === latestPartnerMessageAt) return
 
     lastMarkedRef.current = latestPartnerMessageAt
+    channelRef.current?.sendReadReceipt(latestPartnerMessageAt)
 
     void relationshipService
       .updateMemberContent(currentMemberId, {
@@ -483,48 +545,16 @@ export function useChatReadReceipt(messages: Activity<ChatActivityContent>[]) {
       document.removeEventListener("visibilitychange", handleVisibility)
     }
   }, [markReadIfNeeded])
-}
 
-export function useChatTyping() {
-  const { user } = useAuth()
-  const { relationship } = useRelationship()
-
-  const relationshipId = relationship?.id
-  const currentUserId = user?.id
-
-  const [isPartnerTyping, setIsPartnerTyping] = useState(false)
-  const channelRef = useRef<TypingChannelHandle | null>(null)
-  const lastSentAtRef = useRef<number>(0)
-  const isCurrentlyTypingRef = useRef<boolean>(false)
-  const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  const clearIdleTimer = useCallback(() => {
-    if (idleTimerRef.current !== null) {
-      clearTimeout(idleTimerRef.current)
-      idleTimerRef.current = null
+  const partnerReadAt = useMemo(() => {
+    if (persistedPartnerReadAt && livePartnerReadAt) {
+      return new Date(livePartnerReadAt).getTime() >
+        new Date(persistedPartnerReadAt).getTime()
+        ? livePartnerReadAt
+        : persistedPartnerReadAt
     }
-  }, [])
-
-  useEffect(() => {
-    if (!relationshipId || !currentUserId) {
-      return
-    }
-
-    const handle = chatService.createTypingChannel(
-      relationshipId,
-      currentUserId,
-      setIsPartnerTyping
-    )
-    channelRef.current = handle
-
-    return () => {
-      clearIdleTimer()
-      isCurrentlyTypingRef.current = false
-      lastSentAtRef.current = 0
-      channelRef.current = null
-      handle.unsubscribe()
-    }
-  }, [relationshipId, currentUserId, clearIdleTimer])
+    return livePartnerReadAt ?? persistedPartnerReadAt
+  }, [persistedPartnerReadAt, livePartnerReadAt])
 
   const stopTyping = useCallback(() => {
     clearIdleTimer()
@@ -567,6 +597,7 @@ export function useChatTyping() {
 
   return {
     isPartnerTyping,
+    partnerReadAt,
     handleTypingInput,
     stopTyping,
   }

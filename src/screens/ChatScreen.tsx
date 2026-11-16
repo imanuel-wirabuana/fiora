@@ -6,11 +6,7 @@ import {
 } from "@/components/chat"
 import { ChatScreenSkeleton } from "@/components/ScreenSkeletons"
 import { useAuth } from "@/hooks/useAuth"
-import {
-  useChatMessages,
-  useChatReadReceipt,
-  useChatTyping,
-} from "@/hooks/useChat"
+import { useChatMessages, useChatRoom } from "@/hooks/useChat"
 import { usePartnerPresence } from "@/hooks/usePartnerPresence"
 import { useRelationship } from "@/hooks/useRelationship"
 import type { ChatReplyRef } from "@/types/activity"
@@ -30,10 +26,13 @@ export function ChatScreen() {
     toggleReaction,
     unsendMessage,
   } = useChatMessages()
-  const { isPartnerTyping, handleTypingInput, stopTyping } = useChatTyping()
+  const {
+    isPartnerTyping,
+    partnerReadAt,
+    handleTypingInput,
+    stopTyping,
+  } = useChatRoom(messages)
   const [replyingTo, setReplyingTo] = useState<ChatReplyRef | null>(null)
-
-  useChatReadReceipt(messages)
 
   if (isLoading) {
     return <ChatScreenSkeleton />
@@ -51,7 +50,7 @@ export function ChatScreen() {
         currentUserName={currentUserName}
         partnerName={partnerName}
         partnerAvatar={partnerMember?.content?.avatar}
-        partnerReadAt={partnerMember?.content?.chat_read_at}
+        partnerReadAt={partnerReadAt}
         isPartnerTyping={isPartnerTyping}
         hasNextPage={hasNextPage}
         isFetchingNextPage={isFetchingNextPage}
