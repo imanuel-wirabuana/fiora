@@ -41,10 +41,10 @@ export function Header({
     <header
       ref={headerRef}
       className={cn(
-        "sticky top-0 z-30 shrink-0 transition-[colors,translate,transform,box-shadow] duration-300 ease-in-out will-change-[translate,transform]",
+        "sticky top-0 z-30 shrink-0 transition-[background-color,color,translate,transform,box-shadow] duration-300 ease-in-out will-change-[translate,transform]",
         isPrimaryAtTop
           ? "bg-primary/90 text-primary-foreground"
-          : "bg-background",
+          : "bg-background text-foreground",
         isHidden
           ? "pointer-events-none -translate-y-full shadow-none"
           : "translate-y-0",
@@ -84,7 +84,7 @@ export function Header({
           >
             <span
               className={cn(
-                "flex size-6 items-center justify-center rounded-lg border transition-colors",
+                "flex size-6 items-center justify-center rounded-lg border transition-colors duration-300 ease-in-out",
                 isPrimaryAtTop
                   ? "border-primary-foreground/25 bg-primary-foreground/15 text-primary-foreground"
                   : "border-primary/20 bg-primary/10 text-primary"
@@ -104,7 +104,7 @@ export function Header({
             <Link
               href="/notification"
               className={cn(
-                "relative flex size-8 items-center justify-center rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+                "relative flex size-8 items-center justify-center rounded-full transition-colors duration-300 ease-in-out focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
                 isPrimaryAtTop
                   ? "text-primary-foreground/85 hover:bg-primary-foreground/15 hover:text-primary-foreground"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -119,7 +119,7 @@ export function Header({
               {showUnreadBadge && unreadCount > 0 ? (
                 <span
                   className={cn(
-                    "absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] leading-none font-semibold shadow-sm ring-2",
+                    "absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] leading-none font-semibold shadow-sm ring-2 transition-[background-color,color,box-shadow] duration-300 ease-in-out",
                     isPrimaryAtTop
                       ? "bg-primary-foreground text-primary ring-primary"
                       : "bg-primary text-primary-foreground ring-background"

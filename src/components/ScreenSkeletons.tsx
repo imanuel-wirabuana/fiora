@@ -95,6 +95,44 @@ export function SpaceScreenSkeleton() {
   )
 }
 
+export function ChatScreenSkeleton() {
+  return (
+    <section className="mx-auto flex h-[calc(100svh-7.75rem-env(safe-area-inset-bottom))] w-full max-w-md flex-col sm:max-w-2xl md:h-auto md:min-h-0 md:flex-1 md:pb-19">
+      {/* Chat Header */}
+      <div className="flex items-center gap-2.5 border-b border-border/60 px-4 py-2.5">
+        <CustomSkeleton className="size-9 rounded-full" />
+        <div className="flex flex-col gap-1.5">
+          <CustomSkeleton className="h-3.5 w-24" />
+          <CustomSkeleton className="h-2.5 w-16" />
+        </div>
+      </div>
+
+      {/* Messages */}
+      <div className="flex flex-1 flex-col justify-end gap-3 px-4 py-4">
+        <div className="flex items-end gap-2">
+          <CustomSkeleton className="size-6 rounded-full" />
+          <CustomSkeleton className="h-10 w-44 rounded-3xl" />
+        </div>
+        <div className="flex justify-end">
+          <CustomSkeleton className="h-10 w-52 rounded-3xl" />
+        </div>
+        <div className="flex items-end gap-2">
+          <CustomSkeleton className="size-6 rounded-full" />
+          <CustomSkeleton className="h-14 w-56 rounded-3xl" />
+        </div>
+        <div className="flex justify-end">
+          <CustomSkeleton className="h-9 w-36 rounded-3xl" />
+        </div>
+      </div>
+
+      {/* Composer */}
+      <div className="border-t border-border/60 px-3 py-2.5">
+        <CustomSkeleton className="h-9 w-full rounded-4xl" />
+      </div>
+    </section>
+  )
+}
+
 export function JournalScreenSkeleton() {
   return (
     <section className="mx-auto flex w-full max-w-md flex-col gap-3 px-4 pt-3 pb-20 sm:max-w-2xl">

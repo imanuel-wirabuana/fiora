@@ -10,6 +10,7 @@ import {
   BellRing,
   BookOpen,
   Heart,
+  MessageCircle,
   Send,
   Sparkles,
   Trash2,
@@ -34,6 +35,7 @@ type NotificationFilter = "all" | NotificationType
 
 const FILTER_OPTIONS: { value: NotificationFilter; label: string }[] = [
   { value: "all", label: "All" },
+  { value: "chat", label: "Chat" },
   { value: "mood", label: "Mood" },
   { value: "nudge", label: "Nudge" },
   { value: "journal", label: "Journal" },
@@ -42,6 +44,8 @@ const FILTER_OPTIONS: { value: NotificationFilter; label: string }[] = [
 
 function getTypeIcon(type?: string | null) {
   switch (type) {
+    case "chat":
+      return <MessageCircle className="size-4 text-primary" />
     case "mood":
       return <Heart className="size-4 fill-primary text-primary" />
     case "nudge":

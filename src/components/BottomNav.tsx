@@ -4,8 +4,8 @@ import {
   BarChart3,
   Home,
   LayoutGrid,
+  MessageCircle,
   Plus,
-  Settings,
   type LucideIcon,
 } from "lucide-react"
 import { MoodDrawer } from "./MoodDrawer"
@@ -33,8 +33,8 @@ const navItemsLeft: NavItem[] = [
 ]
 
 const navItemsRight: NavItem[] = [
-  { href: "/space", label: "Space", icon: LayoutGrid, align: "left" },
-  { href: "/setting", label: "Setting", icon: Settings, align: "center" },
+  { href: "/chat", label: "Chat", icon: MessageCircle, align: "left" },
+  { href: "/space", label: "Space", icon: LayoutGrid, align: "center" },
 ]
 
 function BottomNavItem({

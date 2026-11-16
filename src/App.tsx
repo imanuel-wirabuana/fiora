@@ -4,6 +4,7 @@ import { DetailLayout, MainLayout } from "./components/layouts"
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt"
 import {
   AuthScreenSkeleton,
+  ChatScreenSkeleton,
   HomeScreenSkeleton,
   InsightScreenSkeleton,
   JournalDetailScreenSkeleton,
@@ -35,6 +36,11 @@ const HomeScreen = lazy(() =>
 const InsightScreen = lazy(() =>
   import("./screens/InsightScreen").then((m) => ({
     default: m.InsightScreen,
+  }))
+)
+const ChatScreen = lazy(() =>
+  import("./screens/ChatScreen").then((m) => ({
+    default: m.ChatScreen,
   }))
 )
 const LocationSharingScreen = lazy(() =>
@@ -188,6 +194,20 @@ function AppRoutes() {
             )}
           </Route>
 
+          <Route path="/chat">
+            {!isAuthenticated ? (
+              <Redirect to="/" />
+            ) : !hasRelationship ? (
+              <Redirect to="/setup" />
+            ) : (
+              <MainLayout>
+                <Suspense fallback={<ChatScreenSkeleton />}>
+                  <ChatScreen />
+                </Suspense>
+              </MainLayout>
+            )}
+          </Route>
+
           <Route path="/timeline">
             <Redirect to="/insight" />
           </Route>
@@ -230,11 +250,11 @@ function AppRoutes() {
             ) : !hasRelationship ? (
               <Redirect to="/setup" />
             ) : (
-              <MainLayout>
+              <DetailLayout title="Settings" backHref="/space">
                 <Suspense fallback={<SettingScreenSkeleton />}>
                   <SettingScreen />
                 </Suspense>
-              </MainLayout>
+              </DetailLayout>
             )}
           </Route>
 

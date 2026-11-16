@@ -7,7 +7,7 @@ import {
   Images,
   ListTodo,
   Map,
-  MessageCircle,
+  Settings,
   Wallet,
 } from "lucide-react"
 import { CustomItem } from "@/components/CustomItem"
@@ -93,11 +93,11 @@ export const SPACE_TOOLS: ToolItem[] = [
     contentHorizontalAlign: "start",
   },
   {
-    id: "chat",
-    title: "Chat",
-    description: "A private space to message each other anytime",
-    icon: MessageCircle,
-    comingSoon: true,
+    id: "setting",
+    title: "Settings",
+    description: "Manage your profile, relationship, mood, and app preferences",
+    href: "/setting",
+    icon: Settings,
     size: "2x1",
     variant: "soft",
     contentVerticalAlign: "start",

@@ -3,6 +3,7 @@ export type NotificationType =
   | "mood"
   | "journal"
   | "quiz"
+  | "chat"
   | (string & {})
 
 export interface NotificationContent {

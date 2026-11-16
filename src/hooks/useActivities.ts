@@ -203,12 +203,13 @@ export function useActivities() {
   )
 
   // Partner updates for NotificationScreen:
-  // Moods + Nudges + ONLY Shared Journals
+  // Moods + Nudges + ONLY Shared Journals (exclude chat messages)
   const partnerActivities = useMemo(
     () =>
       partnerMember
         ? activities.filter((a) => {
             if (a.user_id !== partnerMember.user_id) return false
+            if (a.type === "chat") return false
             if (a.type === "journal") {
               const content = a.content as JournalActivityContent | null
               return !!content?.isShared

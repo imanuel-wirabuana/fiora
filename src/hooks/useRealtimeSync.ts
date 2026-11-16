@@ -6,6 +6,7 @@ import { quizService } from "../services/quizService"
 import { relationshipService } from "../services/relationshipService"
 import { activityKeys } from "./useActivities"
 import { useAuth } from "./useAuth"
+import { chatKeys } from "./useChat"
 import { notificationKeys } from "./useNotifications"
 import { quizKeys } from "./useQuiz"
 import { relationshipKeys, useRelationship } from "./useRelationship"
@@ -57,6 +58,9 @@ export function useRealtimeSync() {
       () => {
         queryClient.invalidateQueries({
           queryKey: activityKeys.byRelationship(relationshipId),
+        })
+        queryClient.invalidateQueries({
+          queryKey: chatKeys.byRelationship(relationshipId),
         })
       }
     )
