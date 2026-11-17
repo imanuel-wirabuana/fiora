@@ -1,3 +1,4 @@
+import { isValid, parseISO } from "date-fns"
 import type { Gender, MoodOption, NudgeOption } from "../types/relationship"
 
 export const MIN_MOODS = 5
@@ -264,6 +265,18 @@ export function getZodiacSign(date: Date): ZodiacSign {
   if (day <= entry.day) return entry.sign
   const nextIndex = (ZODIAC_BOUNDARIES.indexOf(entry) + 1) % ZODIAC_BOUNDARIES.length
   return ZODIAC_BOUNDARIES[nextIndex].sign
+}
+
+/**
+ * Parse an ISO birth date string and return its Western zodiac sign, or null if invalid.
+ */
+export function parseZodiacFromBirthDate(
+  birthDate?: string | null
+): ZodiacSign | null {
+  if (!birthDate) return null
+  const parsed = parseISO(birthDate)
+  if (!isValid(parsed)) return null
+  return getZodiacSign(parsed)
 }
 
 /**

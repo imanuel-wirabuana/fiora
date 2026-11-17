@@ -29,6 +29,8 @@ export interface ChatActivityContent {
   text: string
   replyTo?: ChatReplyRef
   reactions?: Record<string, string>
+  editedAt?: string
+  deletedFor?: string[]
 }
 
 export type ActivityContent =

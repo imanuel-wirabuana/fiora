@@ -1,13 +1,13 @@
-import { useMemo, useState } from "react"
-import { format, isSameDay, isToday, isYesterday, parseISO } from "date-fns"
 import {
-  Check,
-  CheckCheck,
-  MessageCircle,
-  MoreHorizontal,
-  Reply,
-  Trash2,
-} from "lucide-react"
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react"
+import { format, isSameDay, isToday, isYesterday, parseISO } from "date-fns"
+import { Check, CheckCheck, MessageCircle, Reply } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Bubble, BubbleContent, BubbleReactions } from "@/components/ui/bubble"
 import { Button } from "@/components/ui/button"
@@ -35,26 +35,21 @@ import {
   MessageScrollerViewport,
   useMessageScroller,
 } from "@/components/ui/message-scroller"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
 import { Spinner } from "@/components/ui/spinner"
+import { useLongPress } from "@/hooks/useLongPress"
 import { cn } from "@/lib/utils"
-import type {
-  Activity,
-  ChatActivityContent,
-  ChatReplyRef,
-} from "@/types/activity"
+import type { Activity, ChatActivityContent } from "@/types/activity"
 
 const QUICK_REACTIONS = ["❤️", "😂", "😮", "😢", "🙏", "👍"] as const
+const HIGHLIGHT_DURATION_MS = 1_800
 
 interface ChatMessageListProps {
   messages: Activity<ChatActivityContent>[]
   searchQuery?: string
+  activeSearchMatchId?: number | null
+  isSelectionMode: boolean
+  selectedIds: Set<number>
   currentUserId?: string
-  currentUserName: string
   partnerName: string
   partnerAvatar?: string
   partnerReadAt?: string | null
@@ -62,9 +57,9 @@ interface ChatMessageListProps {
   hasNextPage?: boolean
   isFetchingNextPage: boolean
   onLoadMore: () => void
-  onReply: (reply: ChatReplyRef) => void
+  onSelectMessage: (activityId: number) => void
+  onToggleSelectMessage: (activityId: number) => void
   onReact: (activity: Activity<ChatActivityContent>, emoji: string) => void
-  onUnsend: (activityId: number) => void
 }
 
 interface DaySection {
@@ -113,35 +108,111 @@ function groupReactions(reactions?: Record<string, string>) {
   return Array.from(counts.values())
 }
 
+function renderHighlightedText(text: string, query: string): ReactNode {
+  const trimmed = query.trim()
+  if (!trimmed) return text
+
+  const lowerText = text.toLowerCase()
+  const lowerQuery = trimmed.toLowerCase()
+  const parts: ReactNode[] = []
+  let startIndex = 0
+  let matchIndex = lowerText.indexOf(lowerQuery, startIndex)
+  let keyCounter = 0
+
+  while (matchIndex !== -1) {
+    if (matchIndex > startIndex) {
+      parts.push(text.slice(startIndex, matchIndex))
+    }
+    const endIndex = matchIndex + trimmed.length
+    parts.push(
+      <mark
+        key={keyCounter++}
+        className="rounded-xs bg-amber-300/80 px-0.5 text-foreground dark:bg-amber-400/40"
+      >
+        {text.slice(matchIndex, endIndex)}
+      </mark>
+    )
+    startIndex = endIndex
+    matchIndex = lowerText.indexOf(lowerQuery, startIndex)
+  }
+
+  if (startIndex < text.length) {
+    parts.push(text.slice(startIndex))
+  }
+
+  return parts.length > 0 ? parts : text
+}
+
+function SearchScrollSync({
+  activeSearchMatchId,
+}: {
+  activeSearchMatchId?: number | null
+}) {
+  const { scrollToMessage } = useMessageScroller()
+
+  useEffect(() => {
+    if (activeSearchMatchId == null) return
+    scrollToMessage(String(activeSearchMatchId), {
+      behavior: "smooth",
+      align: "center",
+    })
+  }, [activeSearchMatchId, scrollToMessage])
+
+  return null
+}
+
 interface ChatMessageRowProps {
   item: Activity<ChatActivityContent>
   isMine: boolean
   isLastInRun: boolean
+  isSelectionMode: boolean
+  isSelected: boolean
+  showReactionBar: boolean
+  isHighlighted: boolean
+  isActiveSearchMatch: boolean
+  searchQuery: string
   currentUserId?: string
-  currentUserName: string
   partnerName: string
   partnerAvatar?: string
   partnerReadAt?: string | null
-  onReply: (reply: ChatReplyRef) => void
+  onSelect: (activityId: number) => void
+  onToggleSelect: (activityId: number) => void
   onReact: (activity: Activity<ChatActivityContent>, emoji: string) => void
-  onUnsend: (activityId: number) => void
+  onHighlightMessage: (activityId: number) => void
 }
 
 function ChatMessageRow({
   item,
   isMine,
   isLastInRun,
+  isSelectionMode,
+  isSelected,
+  showReactionBar,
+  isHighlighted,
+  isActiveSearchMatch,
+  searchQuery,
   currentUserId,
-  currentUserName,
   partnerName,
   partnerAvatar,
   partnerReadAt,
-  onReply,
+  onSelect,
+  onToggleSelect,
   onReact,
-  onUnsend,
+  onHighlightMessage,
 }: ChatMessageRowProps) {
-  const [menuOpen, setMenuOpen] = useState(false)
   const { scrollToMessage } = useMessageScroller()
+  const isPersisted = item.id > 0
+
+  const { isPressing, consumeLongPress, handlers } = useLongPress({
+    disabled: !isPersisted,
+    onLongPress: () => {
+      if (isSelectionMode) {
+        onToggleSelect(item.id)
+      } else {
+        onSelect(item.id)
+      }
+    },
+  })
 
   const hasImageAvatar = isImageUrl(partnerAvatar)
   const align = isMine ? "end" : "start"
@@ -151,226 +222,220 @@ function ChatMessageRow({
     ? item.content?.reactions?.[currentUserId]
     : undefined
   const replyTo = item.content?.replyTo
+  const isEdited = Boolean(item.content?.editedAt)
 
   const isRead =
     isMine &&
-    item.id > 0 &&
+    isPersisted &&
     !!partnerReadAt &&
     new Date(item.created_at).getTime() <= new Date(partnerReadAt).getTime()
 
-  const handleReplyClick = () => {
-    setMenuOpen(false)
-    onReply({
-      id: item.id,
-      userId: item.user_id,
-      senderName: isMine ? currentUserName : partnerName,
-      text: item.content?.text ?? "",
-    })
+  const handleRowClick = () => {
+    if (consumeLongPress()) return
+    if (isSelectionMode && isPersisted) {
+      onToggleSelect(item.id)
+    }
   }
 
   const handleReactionClick = (emoji: string) => {
-    setMenuOpen(false)
-    if (item.id <= 0) return
+    if (!isPersisted) return
     onReact(item, emoji)
   }
 
-  const handleUnsendClick = () => {
-    setMenuOpen(false)
-    if (item.id <= 0) return
-    onUnsend(item.id)
-  }
-
   return (
-    <Message align={align}>
-      {!isMine ? (
-        isLastInRun ? (
-          <MessageAvatar>
-            <Avatar className="size-7">
-              {hasImageAvatar ? (
-                <AvatarImage src={partnerAvatar} alt={partnerName} />
-              ) : null}
-              <AvatarFallback className="text-xs">
-                {partnerAvatar && !hasImageAvatar
-                  ? partnerAvatar
-                  : partnerName.slice(0, 1).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-          </MessageAvatar>
-        ) : (
-          <div className="w-7 shrink-0" aria-hidden="true" />
-        )
-      ) : null}
-
-      <MessageContent className="gap-1">
-        {replyTo ? (
-          <div
-            className={cn(
-              "flex flex-col gap-0.5",
-              isMine ? "items-end" : "items-start"
-            )}
-          >
-            <span className="inline-flex items-center gap-1 px-1 text-[10px] text-muted-foreground">
-              <Reply className="size-2.5" />
-              <span>Replied to {replyTo.senderName}</span>
-            </span>
-            <Bubble variant="outline" align={align} className="max-w-[85%]">
-              <BubbleContent
-                render={
-                  <button
-                    type="button"
-                    onClick={() => {
-                      scrollToMessage(String(replyTo.id), {
-                        behavior: "smooth",
-                        align: "center",
-                      })
-                    }}
-                  />
-                }
-                className="line-clamp-2 rounded-xl px-2.5 py-1 text-[11px] leading-snug text-muted-foreground"
-              >
-                {replyTo.text}
-              </BubbleContent>
-            </Bubble>
-          </div>
-        ) : null}
-
-        <div
+    <div
+      {...handlers}
+      onClick={handleRowClick}
+      className={cn(
+        "relative flex w-full items-center gap-2 rounded-xl px-2 py-0.5 transition-[background-color,transform] duration-200 select-none",
+        isPressing && "scale-[0.985]",
+        isSelectionMode && isPersisted && "cursor-pointer",
+        isSelected && "bg-primary/15",
+        !isSelected && isHighlighted && "bg-primary/20 ring-1 ring-primary/40",
+        !isSelected &&
+          !isHighlighted &&
+          isActiveSearchMatch &&
+          "bg-amber-500/15 ring-1 ring-amber-500/40"
+      )}
+    >
+      {isSelectionMode ? (
+        <span
+          aria-hidden="true"
           className={cn(
-            "group/row flex items-center gap-1.5",
-            isMine ? "flex-row-reverse self-end" : "flex-row self-start",
-            reactions.length > 0 && "mb-2.5"
+            "flex size-4 shrink-0 items-center justify-center rounded-full border transition-colors",
+            isSelected
+              ? "border-primary bg-primary text-primary-foreground"
+              : "border-muted-foreground/40 bg-background/70"
           )}
         >
-          <Bubble
-            variant={isMine ? "default" : "muted"}
-            align={align}
-            className="max-w-full"
-          >
-            <BubbleContent className="rounded-2xl px-3 py-1.5 text-xs leading-snug whitespace-pre-wrap">
-              {item.content?.text ?? ""}
-            </BubbleContent>
+          {isSelected ? <Check className="size-2.5 stroke-[3]" /> : null}
+        </span>
+      ) : null}
 
-            {reactions.length > 0 ? (
-              <BubbleReactions side="bottom" align={align}>
-                {reactions.map((r) => {
-                  const isMineReaction = currentUserId
-                    ? r.userIds.includes(currentUserId)
-                    : false
-                  return (
-                    <button
-                      key={r.emoji}
-                      type="button"
-                      onClick={() => handleReactionClick(r.emoji)}
-                      aria-label={`Toggle ${r.emoji} reaction`}
-                      className={cn(
-                        "inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-xs leading-none transition-colors hover:bg-muted-foreground/15",
-                        isMineReaction &&
-                          "bg-primary/15 font-medium text-primary"
-                      )}
-                    >
-                      <span>{r.emoji}</span>
-                      {r.count > 1 ? <span>{r.count}</span> : null}
-                    </button>
-                  )
-                })}
-              </BubbleReactions>
-            ) : null}
-          </Bubble>
-
-          {item.id > 0 ? (
-            <Popover open={menuOpen} onOpenChange={setMenuOpen}>
-              <PopoverTrigger
-                render={
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-xs"
-                    aria-label="Message actions"
-                    className={cn(
-                      "shrink-0 text-muted-foreground transition-opacity md:opacity-0 md:group-hover/row:opacity-100 md:focus-visible:opacity-100",
-                      menuOpen && "opacity-100 md:opacity-100"
-                    )}
-                  />
-                }
-              >
-                <MoreHorizontal data-icon />
-              </PopoverTrigger>
-              <PopoverContent
-                side="top"
-                align={isMine ? "end" : "start"}
-                className="w-auto gap-2 rounded-2xl p-2"
-              >
-                <div className="flex items-center gap-1">
-                  {QUICK_REACTIONS.map((emoji) => (
-                    <Button
-                      key={emoji}
-                      type="button"
-                      variant={myReaction === emoji ? "secondary" : "ghost"}
-                      size="icon-sm"
-                      onClick={() => handleReactionClick(emoji)}
-                      aria-label={`React with ${emoji}`}
-                      className="rounded-full text-base"
-                    >
-                      {emoji}
-                    </Button>
-                  ))}
-                </div>
-
-                <div className="flex items-center gap-1 border-t border-border/60 pt-1.5">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleReplyClick}
-                    className="h-7 flex-1 justify-start gap-1.5 px-2 text-xs"
-                  >
-                    <Reply data-icon="inline-start" />
-                    Reply
-                  </Button>
-
-                  {isMine ? (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleUnsendClick}
-                      className="h-7 flex-1 justify-start gap-1.5 px-2 text-xs text-destructive hover:text-destructive"
-                    >
-                      <Trash2 data-icon="inline-start" />
-                      Unsend
-                    </Button>
+      <div className="min-w-0 flex-1">
+        <Message align={align}>
+          {!isMine ? (
+            isLastInRun ? (
+              <MessageAvatar>
+                <Avatar className="size-7">
+                  {hasImageAvatar ? (
+                    <AvatarImage src={partnerAvatar} alt={partnerName} />
                   ) : null}
-                </div>
-              </PopoverContent>
-            </Popover>
+                  <AvatarFallback className="text-xs">
+                    {partnerAvatar && !hasImageAvatar
+                      ? partnerAvatar
+                      : partnerName.slice(0, 1).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              </MessageAvatar>
+            ) : (
+              <div className="w-7 shrink-0" aria-hidden="true" />
+            )
           ) : null}
-        </div>
 
-        {isLastInRun ? (
-          <MessageFooter className="gap-1 px-2 text-[10px]">
-            <span>{timeLabel}</span>
-            {isMine ? (
-              isRead ? (
-                <CheckCheck className="size-3 text-primary" aria-label="Read" />
-              ) : (
-                <Check
-                  className="size-3 text-muted-foreground"
-                  aria-label="Sent"
-                />
-              )
+          <MessageContent className="gap-1">
+            {showReactionBar ? (
+              <div
+                onClick={(e) => e.stopPropagation()}
+                onPointerDown={(e) => e.stopPropagation()}
+                className={cn(
+                  "mb-1 flex items-center gap-0.5 rounded-full border border-border/60 bg-background/95 px-1.5 py-1 shadow-lg backdrop-blur-md",
+                  isMine ? "self-end" : "self-start"
+                )}
+              >
+                {QUICK_REACTIONS.map((emoji) => (
+                  <Button
+                    key={emoji}
+                    type="button"
+                    variant={myReaction === emoji ? "secondary" : "ghost"}
+                    size="icon-xs"
+                    onClick={() => handleReactionClick(emoji)}
+                    aria-label={`React with ${emoji}`}
+                    className="size-7 rounded-full text-base transition-transform hover:scale-110"
+                  >
+                    {emoji}
+                  </Button>
+                ))}
+              </div>
             ) : null}
-          </MessageFooter>
-        ) : null}
-      </MessageContent>
-    </Message>
+
+            {replyTo ? (
+              <div
+                className={cn(
+                  "flex flex-col gap-0.5",
+                  isMine ? "items-end" : "items-start"
+                )}
+              >
+                <span className="inline-flex items-center gap-1 px-1 text-[10px] text-muted-foreground">
+                  <Reply className="size-2.5" />
+                  <span>Replied to {replyTo.senderName}</span>
+                </span>
+                <Bubble variant="outline" align={align} className="max-w-[85%]">
+                  <BubbleContent
+                    render={
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          if (isSelectionMode) return
+                          e.stopPropagation()
+                          scrollToMessage(String(replyTo.id), {
+                            behavior: "smooth",
+                            align: "center",
+                          })
+                          onHighlightMessage(replyTo.id)
+                        }}
+                      />
+                    }
+                    className="line-clamp-2 rounded-xl px-2.5 py-1 text-[11px] leading-snug text-muted-foreground"
+                  >
+                    {replyTo.text}
+                  </BubbleContent>
+                </Bubble>
+              </div>
+            ) : null}
+
+            <div
+              className={cn(
+                "flex items-center gap-1.5",
+                isMine ? "flex-row-reverse self-end" : "flex-row self-start",
+                reactions.length > 0 && "mb-2.5"
+              )}
+            >
+              <Bubble
+                variant={isMine ? "default" : "muted"}
+                align={align}
+                className="max-w-full"
+              >
+                <BubbleContent className="rounded-2xl px-3 py-1.5 text-xs leading-snug whitespace-pre-wrap select-text">
+                  {renderHighlightedText(item.content?.text ?? "", searchQuery)}
+                </BubbleContent>
+
+                {reactions.length > 0 ? (
+                  <BubbleReactions side="bottom" align={align}>
+                    {reactions.map((r) => {
+                      const isMineReaction = currentUserId
+                        ? r.userIds.includes(currentUserId)
+                        : false
+                      return (
+                        <button
+                          key={r.emoji}
+                          type="button"
+                          onClick={(e) => {
+                            if (isSelectionMode) return
+                            e.stopPropagation()
+                            handleReactionClick(r.emoji)
+                          }}
+                          aria-label={`Toggle ${r.emoji} reaction`}
+                          className={cn(
+                            "inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-xs leading-none transition-colors hover:bg-muted-foreground/15",
+                            isMineReaction &&
+                              "bg-primary/15 font-medium text-primary"
+                          )}
+                        >
+                          <span>{r.emoji}</span>
+                          {r.count > 1 ? <span>{r.count}</span> : null}
+                        </button>
+                      )
+                    })}
+                  </BubbleReactions>
+                ) : null}
+              </Bubble>
+            </div>
+
+            {isLastInRun || isEdited ? (
+              <MessageFooter className="gap-1 px-2 text-[10px]">
+                {isEdited ? <span>Edited</span> : null}
+                {isEdited && isLastInRun ? <span>·</span> : null}
+                {isLastInRun ? <span>{timeLabel}</span> : null}
+                {isLastInRun && isMine ? (
+                  isRead ? (
+                    <CheckCheck
+                      className="size-3 text-primary"
+                      aria-label="Read"
+                    />
+                  ) : (
+                    <Check
+                      className="size-3 text-muted-foreground"
+                      aria-label="Sent"
+                    />
+                  )
+                ) : null}
+              </MessageFooter>
+            ) : null}
+          </MessageContent>
+        </Message>
+      </div>
+    </div>
   )
 }
 
 export function ChatMessageList({
   messages,
   searchQuery = "",
+  activeSearchMatchId = null,
+  isSelectionMode,
+  selectedIds,
   currentUserId,
-  currentUserName,
   partnerName,
   partnerAvatar,
   partnerReadAt,
@@ -378,10 +443,34 @@ export function ChatMessageList({
   hasNextPage,
   isFetchingNextPage,
   onLoadMore,
-  onReply,
+  onSelectMessage,
+  onToggleSelectMessage,
   onReact,
-  onUnsend,
 }: ChatMessageListProps) {
+  const [highlightedMessageId, setHighlightedMessageId] = useState<
+    number | null
+  >(null)
+  const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const handleHighlightMessage = useCallback((activityId: number) => {
+    setHighlightedMessageId(activityId)
+    if (highlightTimerRef.current !== null) {
+      clearTimeout(highlightTimerRef.current)
+    }
+    highlightTimerRef.current = setTimeout(() => {
+      setHighlightedMessageId(null)
+      highlightTimerRef.current = null
+    }, HIGHLIGHT_DURATION_MS)
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      if (highlightTimerRef.current !== null) {
+        clearTimeout(highlightTimerRef.current)
+      }
+    }
+  }, [])
+
   const sections = useMemo<DaySection[]>(() => {
     const result: DaySection[] = []
 
@@ -417,6 +506,7 @@ export function ChatMessageList({
   }, [messages, currentUserId])
 
   const hasImageAvatar = isImageUrl(partnerAvatar)
+  const selectedCount = selectedIds.size
 
   if (messages.length === 0 && !isPartnerTyping) {
     return (
@@ -426,13 +516,10 @@ export function ChatMessageList({
             <EmptyMedia variant="icon">
               <MessageCircle />
             </EmptyMedia>
-            <EmptyTitle>
-              {searchQuery ? "No matching messages" : "No messages yet"}
-            </EmptyTitle>
+            <EmptyTitle>No messages yet</EmptyTitle>
             <EmptyDescription>
-              {searchQuery
-                ? `No loaded messages match "${searchQuery}".`
-                : `Start a private conversation with ${partnerName}. Messages sync in real time.`}
+              Start a private conversation with {partnerName}. Messages sync in
+              real time.
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
@@ -442,8 +529,9 @@ export function ChatMessageList({
 
   return (
     <MessageScrollerProvider autoScroll>
+      <SearchScrollSync activeSearchMatchId={activeSearchMatchId} />
       <MessageScroller className="min-h-0 flex-1">
-        <MessageScrollerViewport className="px-4 pt-[calc(3.5rem+env(safe-area-inset-top))] pb-[calc(8.5rem+env(safe-area-inset-bottom))]">
+        <MessageScrollerViewport className="px-2 pt-[calc(3.5rem+env(safe-area-inset-top))] pb-[calc(8.5rem+env(safe-area-inset-bottom))]">
           <MessageScrollerContent className="gap-3">
             {hasNextPage ? (
               <MessageScrollerItem messageId="load-more">
@@ -478,27 +566,38 @@ export function ChatMessageList({
 
                 {section.runs.map((run) => (
                   <MessageGroup key={run.runKey} className="gap-1">
-                    {run.items.map((item, index) => (
-                      <MessageScrollerItem
-                        key={item.id}
-                        messageId={String(item.id)}
-                        scrollAnchor={run.isMine}
-                      >
-                        <ChatMessageRow
-                          item={item}
-                          isMine={run.isMine}
-                          isLastInRun={index === run.items.length - 1}
-                          currentUserId={currentUserId}
-                          currentUserName={currentUserName}
-                          partnerName={partnerName}
-                          partnerAvatar={partnerAvatar}
-                          partnerReadAt={partnerReadAt}
-                          onReply={onReply}
-                          onReact={onReact}
-                          onUnsend={onUnsend}
-                        />
-                      </MessageScrollerItem>
-                    ))}
+                    {run.items.map((item, index) => {
+                      const isSelected = selectedIds.has(item.id)
+                      return (
+                        <MessageScrollerItem
+                          key={item.id}
+                          messageId={String(item.id)}
+                          scrollAnchor={run.isMine}
+                        >
+                          <ChatMessageRow
+                            item={item}
+                            isMine={run.isMine}
+                            isLastInRun={index === run.items.length - 1}
+                            isSelectionMode={isSelectionMode}
+                            isSelected={isSelected}
+                            showReactionBar={selectedCount === 1 && isSelected}
+                            isHighlighted={highlightedMessageId === item.id}
+                            isActiveSearchMatch={
+                              activeSearchMatchId === item.id
+                            }
+                            searchQuery={searchQuery}
+                            currentUserId={currentUserId}
+                            partnerName={partnerName}
+                            partnerAvatar={partnerAvatar}
+                            partnerReadAt={partnerReadAt}
+                            onSelect={onSelectMessage}
+                            onToggleSelect={onToggleSelectMessage}
+                            onReact={onReact}
+                            onHighlightMessage={handleHighlightMessage}
+                          />
+                        </MessageScrollerItem>
+                      )
+                    })}
                   </MessageGroup>
                 ))}
               </div>
@@ -506,29 +605,31 @@ export function ChatMessageList({
 
             {isPartnerTyping ? (
               <MessageScrollerItem messageId="partner-typing">
-                <Message align="start">
-                  <MessageAvatar>
-                    <Avatar className="size-7">
-                      {hasImageAvatar ? (
-                        <AvatarImage src={partnerAvatar} alt={partnerName} />
-                      ) : null}
-                      <AvatarFallback className="text-xs">
-                        {partnerAvatar && !hasImageAvatar
-                          ? partnerAvatar
-                          : partnerName.slice(0, 1).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                  </MessageAvatar>
-                  <MessageContent>
-                    <Bubble variant="muted" align="start">
-                      <BubbleContent className="flex items-center gap-1 rounded-2xl px-3 py-2">
-                        <span className="size-1 animate-bounce rounded-full bg-muted-foreground/60 [animation-delay:-0.3s]" />
-                        <span className="size-1 animate-bounce rounded-full bg-muted-foreground/60 [animation-delay:-0.15s]" />
-                        <span className="size-1 animate-bounce rounded-full bg-muted-foreground/60" />
-                      </BubbleContent>
-                    </Bubble>
-                  </MessageContent>
-                </Message>
+                <div className="px-2">
+                  <Message align="start">
+                    <MessageAvatar>
+                      <Avatar className="size-7">
+                        {hasImageAvatar ? (
+                          <AvatarImage src={partnerAvatar} alt={partnerName} />
+                        ) : null}
+                        <AvatarFallback className="text-xs">
+                          {partnerAvatar && !hasImageAvatar
+                            ? partnerAvatar
+                            : partnerName.slice(0, 1).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                    </MessageAvatar>
+                    <MessageContent>
+                      <Bubble variant="muted" align="start">
+                        <BubbleContent className="flex items-center gap-1 rounded-2xl px-3 py-2">
+                          <span className="size-1 animate-bounce rounded-full bg-muted-foreground/60 [animation-delay:-0.3s]" />
+                          <span className="size-1 animate-bounce rounded-full bg-muted-foreground/60 [animation-delay:-0.15s]" />
+                          <span className="size-1 animate-bounce rounded-full bg-muted-foreground/60" />
+                        </BubbleContent>
+                      </Bubble>
+                    </MessageContent>
+                  </Message>
+                </div>
               </MessageScrollerItem>
             ) : null}
           </MessageScrollerContent>

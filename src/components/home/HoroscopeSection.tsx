@@ -11,18 +11,6 @@ import {
   Sparkles,
   Sun,
   UserPlus,
-  ZodiacAquarius,
-  ZodiacAries,
-  ZodiacCancer,
-  ZodiacCapricorn,
-  ZodiacGemini,
-  ZodiacLeo,
-  ZodiacLibra,
-  ZodiacPisces,
-  ZodiacSagittarius,
-  ZodiacScorpio,
-  ZodiacTaurus,
-  ZodiacVirgo,
 } from "lucide-react"
 import { CustomSkeleton } from "@/components/CustomSkeleton"
 import { Button } from "@/components/ui/button"
@@ -30,6 +18,7 @@ import { useHoroscopes } from "@/hooks/useHoroscopes"
 import { useRelationship } from "@/hooks/useRelationship"
 import type { ZodiacSign } from "@/lib/relationship"
 import { cn } from "@/lib/utils"
+import { ZODIAC_ICON_MAP } from "@/lib/zodiac"
 import type { HoroscopeCategoryKey, HoroscopeRow } from "@/types/horoscope"
 import type { Gender } from "@/types/relationship"
 
@@ -89,21 +78,6 @@ const CATEGORY_META: Record<HoroscopeCategoryKey, CategoryMeta> = {
     cardClass: "border-violet-600/30 bg-violet-500 text-white",
     pillClass: "bg-white/20 text-white",
   },
-}
-
-const ZODIAC_ICON_MAP: Record<ZodiacSign, LucideIcon> = {
-  Aries: ZodiacAries,
-  Taurus: ZodiacTaurus,
-  Gemini: ZodiacGemini,
-  Cancer: ZodiacCancer,
-  Leo: ZodiacLeo,
-  Virgo: ZodiacVirgo,
-  Libra: ZodiacLibra,
-  Scorpio: ZodiacScorpio,
-  Sagittarius: ZodiacSagittarius,
-  Capricorn: ZodiacCapricorn,
-  Aquarius: ZodiacAquarius,
-  Pisces: ZodiacPisces,
 }
 
 interface HoroscopeCardItem {

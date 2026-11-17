@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from "react"
 import { useQuery } from "@tanstack/react-query"
-import { format, isValid, parseISO } from "date-fns"
-import { getZodiacSign, type ZodiacSign } from "@/lib/relationship"
+import { format } from "date-fns"
+import { parseZodiacFromBirthDate, type ZodiacSign } from "@/lib/relationship"
 import { getTodayHoroscopes } from "@/services/horoscopeService"
 import type { HoroscopeRow } from "@/types/horoscope"
 import { useRelationship } from "./useRelationship"
@@ -10,15 +10,6 @@ export const horoscopeKeys = {
   all: ["horoscopes"] as const,
   byDateAndZodiacs: (date: string, zodiacs: string[]) =>
     [...horoscopeKeys.all, date, ...zodiacs] as const,
-}
-
-function parseZodiacFromBirthDate(
-  birthDate?: string | null
-): ZodiacSign | null {
-  if (!birthDate) return null
-  const parsed = parseISO(birthDate)
-  if (!isValid(parsed)) return null
-  return getZodiacSign(parsed)
 }
 
 function findHoroscopeByZodiac(

@@ -87,13 +87,16 @@ export function useChatMessages() {
         if (item.type !== "chat" || seen.has(item.id)) continue
         const content = item.content as ChatActivityContent | null
         if (!content || typeof content.text !== "string") continue
+        if (currentUserId && content.deletedFor?.includes(currentUserId)) {
+          continue
+        }
         seen.add(item.id)
         ordered.push(item as Activity<ChatActivityContent>)
       }
     }
 
     return ordered
-  }, [query.data])
+  }, [query.data, currentUserId])
 
   const sendMessageMutation = useMutation<
     Activity,
@@ -281,14 +284,161 @@ export function useChatMessages() {
     },
   })
 
-  const unsendMessageMutation = useMutation<
-    void,
+  const editMessageMutation = useMutation<
+    Activity,
     Error,
-    number,
+    { activity: Activity<ChatActivityContent>; text: string },
     { previousData?: InfiniteData<Activity[], number> }
   >({
-    mutationFn: (activityId) => activityService.deleteActivity(activityId),
-    onMutate: async (activityId) => {
+    mutationFn: ({ activity, text: rawText }) => {
+      const text = rawText.trim()
+      if (!text) throw new Error("Message cannot be empty.")
+      const existingContent = activity.content ?? { text: "" }
+      const nextContent: ChatActivityContent = {
+        ...existingContent,
+        text,
+        editedAt: new Date().toISOString(),
+      }
+      return activityService.updateActivity(activity.id, nextContent)
+    },
+    onMutate: async ({ activity, text: rawText }) => {
+      const text = rawText.trim()
+      if (!relationshipId || !text) return {}
+
+      await queryClient.cancelQueries({
+        queryKey: chatKeys.byRelationship(relationshipId),
+      })
+
+      const previousData = queryClient.getQueryData<
+        InfiniteData<Activity[], number>
+      >(chatKeys.byRelationship(relationshipId))
+
+      const existingContent = activity.content ?? { text: "" }
+      const editedAt = new Date().toISOString()
+      const nextContent: ChatActivityContent = {
+        ...existingContent,
+        text,
+        editedAt,
+      }
+
+      queryClient.setQueryData<InfiniteData<Activity[], number>>(
+        chatKeys.byRelationship(relationshipId),
+        (old) => {
+          if (!old) return old
+          return {
+            ...old,
+            pages: old.pages.map((page) =>
+              page.map((item) =>
+                item.id === activity.id
+                  ? { ...item, content: nextContent, updated_at: editedAt }
+                  : item
+              )
+            ),
+          }
+        }
+      )
+
+      return { previousData }
+    },
+    onError: (_err, _vars, context) => {
+      if (relationshipId && context?.previousData) {
+        queryClient.setQueryData(
+          chatKeys.byRelationship(relationshipId),
+          context.previousData
+        )
+      }
+    },
+    onSettled: () => {
+      if (relationshipId) {
+        queryClient.invalidateQueries({
+          queryKey: chatKeys.byRelationship(relationshipId),
+        })
+      }
+    },
+  })
+
+  const deleteMessagesMutation = useMutation<
+    void,
+    Error,
+    Activity<ChatActivityContent>[],
+    { previousData?: InfiniteData<Activity[], number> }
+  >({
+    mutationFn: async (activities) => {
+      if (!currentUserId) throw new Error("You must be logged in to delete.")
+      await Promise.all(
+        activities.map((activity) => {
+          const existingContent = activity.content ?? { text: "" }
+          const existingDeletedFor = existingContent.deletedFor ?? []
+          const nextDeletedFor = existingDeletedFor.includes(currentUserId)
+            ? existingDeletedFor
+            : [...existingDeletedFor, currentUserId]
+          const nextContent: ChatActivityContent = {
+            ...existingContent,
+            deletedFor: nextDeletedFor,
+          }
+          return activityService.updateActivity(activity.id, nextContent)
+        })
+      )
+    },
+    onMutate: async (activities) => {
+      if (!relationshipId || !currentUserId) return {}
+
+      await queryClient.cancelQueries({
+        queryKey: chatKeys.byRelationship(relationshipId),
+      })
+
+      const previousData = queryClient.getQueryData<
+        InfiniteData<Activity[], number>
+      >(chatKeys.byRelationship(relationshipId))
+
+      const targetIds = new Set(activities.map((a) => a.id))
+
+      queryClient.setQueryData<InfiniteData<Activity[], number>>(
+        chatKeys.byRelationship(relationshipId),
+        (old) => {
+          if (!old) return old
+          return {
+            ...old,
+            pages: old.pages.map((page) =>
+              page.filter((item) => !targetIds.has(item.id))
+            ),
+          }
+        }
+      )
+
+      return { previousData }
+    },
+    onError: (_err, _vars, context) => {
+      if (relationshipId && context?.previousData) {
+        queryClient.setQueryData(
+          chatKeys.byRelationship(relationshipId),
+          context.previousData
+        )
+      }
+    },
+    onSettled: () => {
+      if (relationshipId) {
+        queryClient.invalidateQueries({
+          queryKey: chatKeys.byRelationship(relationshipId),
+        })
+      }
+    },
+  })
+
+  const unsendMessagesMutation = useMutation<
+    void,
+    Error,
+    number[],
+    { previousData?: InfiniteData<Activity[], number> }
+  >({
+    mutationFn: async (activityIds) => {
+      await Promise.all(
+        activityIds.map((activityId) =>
+          activityService.deleteActivity(activityId)
+        )
+      )
+    },
+    onMutate: async (activityIds) => {
       if (!relationshipId) return {}
 
       await queryClient.cancelQueries({
@@ -299,6 +449,8 @@ export function useChatMessages() {
         InfiniteData<Activity[], number>
       >(chatKeys.byRelationship(relationshipId))
 
+      const targetIds = new Set(activityIds)
+
       queryClient.setQueryData<InfiniteData<Activity[], number>>(
         chatKeys.byRelationship(relationshipId),
         (old) => {
@@ -306,7 +458,7 @@ export function useChatMessages() {
           return {
             ...old,
             pages: old.pages.map((page) =>
-              page.filter((item) => item.id !== activityId)
+              page.filter((item) => !targetIds.has(item.id))
             ),
           }
         }
@@ -314,7 +466,7 @@ export function useChatMessages() {
 
       return { previousData }
     },
-    onError: (_err, _activityId, context) => {
+    onError: (_err, _activityIds, context) => {
       if (relationshipId && context?.previousData) {
         queryClient.setQueryData(
           chatKeys.byRelationship(relationshipId),
@@ -406,8 +558,11 @@ export function useChatMessages() {
     fetchNextPage: query.fetchNextPage,
     sendMessage,
     isSending: sendMessageMutation.isPending,
+    editMessage: editMessageMutation.mutateAsync,
+    isEditing: editMessageMutation.isPending,
     toggleReaction,
-    unsendMessage: unsendMessageMutation.mutate,
+    deleteMessages: deleteMessagesMutation.mutate,
+    unsendMessages: unsendMessagesMutation.mutate,
   }
 }
 
