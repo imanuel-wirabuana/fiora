@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
+import { useTabPaneActive } from "@/components/AnimationScopeContext"
 import { cn } from "@/lib/utils"
+import { useIsAnimationsPaused } from "@/stores/animationStore"
 
 interface OdometerTextProps {
   items: string[]
@@ -18,15 +20,20 @@ const ROW_HEIGHT_EM = 1.35
 function OdometerReel({ items, intervalMs, className }: OdometerReelProps) {
   const [index, setIndex] = useState(0)
   const [instant, setInstant] = useState(false)
+  const isPaneActive = useTabPaneActive()
+  const isAnimationsPaused = useIsAnimationsPaused()
+  const isPaused = !isPaneActive || isAnimationsPaused
 
   useEffect(() => {
+    if (isPaused) return
+
     const timer = window.setInterval(() => {
       setInstant(false)
       setIndex((prev) => (prev >= items.length ? items.length : prev + 1))
     }, intervalMs)
 
     return () => window.clearInterval(timer)
-  }, [items.length, intervalMs])
+  }, [items.length, intervalMs, isPaused])
 
   const handleTransitionEnd = () => {
     if (index === items.length) {

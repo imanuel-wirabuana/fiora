@@ -118,6 +118,7 @@ export function JournalListSection({
               <AnimatedEmoji
                 emoji={author.avatar}
                 size={16}
+                loop={false}
                 replayOnTap={false}
                 fallbackClassName="text-xs leading-none"
               />

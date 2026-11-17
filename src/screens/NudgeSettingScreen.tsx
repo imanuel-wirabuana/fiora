@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { memo, useCallback, useEffect, useMemo, useState } from "react"
 import {
   closestCenter,
   DndContext,
@@ -33,6 +33,7 @@ import {
 } from "@/lib/relationship"
 import { restrictToVerticalAxis } from "@/lib/dnd"
 import { cn } from "@/lib/utils"
+import { useAnimationStore } from "@/stores/animationStore"
 import type { NudgeOption } from "@/types/relationship"
 
 interface NudgeItem {
@@ -42,18 +43,28 @@ interface NudgeItem {
   pinned: boolean
 }
 
+function serializeNudges(items: NudgeItem[]): NudgeOption[] {
+  return items.map((item) => ({
+    emoji: item.emoji,
+    label: item.label,
+    ...(item.pinned ? { pinned: true } : {}),
+  }))
+}
+
 interface SortableNudgeRowProps {
   nudge: NudgeItem
+  index: number
   isSaving: boolean
   canRemove: boolean
   canPinMore: boolean
-  onTogglePin: () => void
-  onEdit: () => void
-  onDelete: () => void
+  onTogglePin: (index: number) => void
+  onEdit: (index: number) => void
+  onDelete: (index: number) => void
 }
 
-function SortableNudgeRow({
+const SortableNudgeRow = memo(function SortableNudgeRow({
   nudge,
+  index,
   isSaving,
   canRemove,
   canPinMore,
@@ -77,6 +88,18 @@ function SortableNudgeRow({
 
   const pinDisabled = isSaving || (!nudge.pinned && !canPinMore)
 
+  const handleTogglePin = useCallback(() => {
+    onTogglePin(index)
+  }, [onTogglePin, index])
+
+  const handleEdit = useCallback(() => {
+    onEdit(index)
+  }, [onEdit, index])
+
+  const handleDelete = useCallback(() => {
+    onDelete(index)
+  }, [onDelete, index])
+
   return (
     <div
       ref={setNodeRef}
@@ -85,16 +108,16 @@ function SortableNudgeRow({
       {...listeners}
       onContextMenu={(e) => e.preventDefault()}
       className={cn(
-        "group flex select-none items-center justify-between gap-3 rounded-2xl border border-border/70 bg-card px-3.5 py-2.5 transition-colors [-webkit-touch-callout:none] hover:border-border",
+        "group flex select-none items-center justify-between gap-3 rounded-2xl border border-border/70 bg-card px-3.5 py-2.5 [-webkit-touch-callout:none] hover:border-border",
         nudge.pinned && "border-primary/30 bg-primary/[0.03]",
         isDragging
-          ? "relative z-10 scale-[1.01] touch-none shadow-md ring-2 ring-primary/30"
+          ? "relative z-10 touch-none ring-2 ring-primary/30 will-change-transform"
           : "touch-manipulation"
       )}
     >
       <button
         type="button"
-        onClick={onEdit}
+        onClick={handleEdit}
         disabled={isSaving}
         className="flex min-w-0 flex-1 items-center gap-3 text-left disabled:opacity-75"
       >
@@ -129,7 +152,7 @@ function SortableNudgeRow({
           type="button"
           variant="ghost"
           size="icon-sm"
-          onClick={onTogglePin}
+          onClick={handleTogglePin}
           disabled={pinDisabled}
           title={
             nudge.pinned
@@ -151,7 +174,7 @@ function SortableNudgeRow({
           type="button"
           variant="ghost"
           size="icon-sm"
-          onClick={onEdit}
+          onClick={handleEdit}
           disabled={isSaving}
           title="Edit nudge"
           className="size-8 text-muted-foreground hover:text-foreground"
@@ -162,7 +185,7 @@ function SortableNudgeRow({
           type="button"
           variant="ghost"
           size="icon-sm"
-          onClick={onDelete}
+          onClick={handleDelete}
           disabled={!canRemove || isSaving}
           title={
             canRemove
@@ -176,7 +199,7 @@ function SortableNudgeRow({
       </div>
     </div>
   )
-}
+})
 
 /**
  * Standalone screen for managing relationship nudges (3-11 items),
@@ -217,15 +240,24 @@ export function NudgeSettingScreen() {
     })
   )
 
-  const nudgesList = useMemo<NudgeItem[]>(
-    () =>
-      nudgeOptions.map((n, idx) => ({
-        key: `${n.label}-${idx}`,
+  const nudgesList = useMemo<NudgeItem[]>(() => {
+    const counts = new Map<string, number>()
+    return nudgeOptions.map((n) => {
+      const base = `${n.emoji}::${n.label}`
+      const occ = counts.get(base) ?? 0
+      counts.set(base, occ + 1)
+      return {
+        key: `${base}::${occ}`,
         emoji: n.emoji,
         label: n.label,
         pinned: Boolean(n.pinned),
-      })),
-    [nudgeOptions]
+      }
+    })
+  }, [nudgeOptions])
+
+  const sortableKeys = useMemo(
+    () => nudgesList.map((n) => n.key),
+    [nudgesList]
   )
 
   const pinnedCount = useMemo(
@@ -243,16 +275,99 @@ export function NudgeSettingScreen() {
     [formEmoji, formLabel]
   )
 
+  const {
+    mutate: updateRelationshipContent,
+    reset: resetUpdateRelationshipContent,
+  } = updateRelationshipContentMutation
+  const relationshipId = relationship?.id
+
+  useEffect(() => {
+    return () => {
+      useAnimationStore.getState().setDragging(false)
+    }
+  }, [])
+
+  const openEditDrawer = useCallback(
+    (index: number) => {
+      if (isSaving) return
+      const target = nudgesList[index]
+      if (!target) return
+      resetUpdateRelationshipContent()
+      setEditingIndex(index)
+      setFormEmoji(target.emoji)
+      setFormLabel(target.label)
+      setDrawerOpen(true)
+    },
+    [isSaving, nudgesList, resetUpdateRelationshipContent]
+  )
+
+  const handleRequestDelete = useCallback(
+    (index: number) => {
+      resetUpdateRelationshipContent()
+      setDeleteIndex(index)
+    },
+    [resetUpdateRelationshipContent]
+  )
+
+  const handleTogglePin = useCallback(
+    (index: number) => {
+      if (isSaving || !relationshipId) return
+      const target = nudgesList[index]
+      if (!target) return
+      if (!target.pinned && !canPinMore) return
+
+      const nextNudges = serializeNudges(
+        nudgesList.map((item, idx) =>
+          idx === index ? { ...item, pinned: !item.pinned } : item
+        )
+      )
+      updateRelationshipContent({
+        relationshipId,
+        content: { nudges: nextNudges },
+      })
+    },
+    [
+      isSaving,
+      relationshipId,
+      nudgesList,
+      canPinMore,
+      updateRelationshipContent,
+    ]
+  )
+
+  const handleDragStart = useCallback(() => {
+    useAnimationStore.getState().setDragging(true)
+  }, [])
+
+  const handleDragCancel = useCallback(() => {
+    useAnimationStore.getState().setDragging(false)
+  }, [])
+
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      useAnimationStore.getState().setDragging(false)
+
+      const { active, over } = event
+      if (!over || active.id === over.id || isSaving || !relationshipId) return
+
+      const oldIndex = nudgesList.findIndex((n) => n.key === active.id)
+      const newIndex = nudgesList.findIndex((n) => n.key === over.id)
+      if (oldIndex === -1 || newIndex === -1) return
+
+      const reordered = serializeNudges(
+        arrayMove(nudgesList, oldIndex, newIndex)
+      )
+      updateRelationshipContent({
+        relationshipId,
+        content: { nudges: reordered },
+      })
+    },
+    [isSaving, relationshipId, nudgesList, updateRelationshipContent]
+  )
+
   if (!hasRelationship || !relationship) {
     return null
   }
-
-  const serializeNudges = (items: NudgeItem[]): NudgeOption[] =>
-    items.map((item) => ({
-      emoji: item.emoji,
-      label: item.label,
-      ...(item.pinned ? { pinned: true } : {}),
-    }))
 
   const saveNudgesFromDrawer = async (nextNudges: NudgeOption[]) => {
     setIsDrawerSaving(true)
@@ -275,17 +390,6 @@ export function NudgeSettingScreen() {
     setEditingIndex(null)
     setFormEmoji("")
     setFormLabel("")
-    setDrawerOpen(true)
-  }
-
-  const openEditDrawer = (index: number) => {
-    if (isSaving) return
-    const target = nudgesList[index]
-    if (!target) return
-    updateRelationshipContentMutation.reset()
-    setEditingIndex(index)
-    setFormEmoji(target.emoji)
-    setFormLabel(target.label)
     setDrawerOpen(true)
   }
 
@@ -320,38 +424,6 @@ export function NudgeSettingScreen() {
       nudgesList.filter((_, idx) => idx !== deleteIndex)
     )
     return saveNudgesFromDrawer(nextNudges)
-  }
-
-  const handleTogglePin = (index: number) => {
-    if (isSaving) return
-    const target = nudgesList[index]
-    if (!target) return
-    if (!target.pinned && !canPinMore) return
-
-    const nextNudges = serializeNudges(
-      nudgesList.map((item, idx) =>
-        idx === index ? { ...item, pinned: !item.pinned } : item
-      )
-    )
-    updateRelationshipContentMutation.mutate({
-      relationshipId: relationship.id,
-      content: { nudges: nextNudges },
-    })
-  }
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event
-    if (!over || active.id === over.id || isSaving) return
-
-    const oldIndex = nudgesList.findIndex((n) => n.key === active.id)
-    const newIndex = nudgesList.findIndex((n) => n.key === over.id)
-    if (oldIndex === -1 || newIndex === -1) return
-
-    const reordered = serializeNudges(arrayMove(nudgesList, oldIndex, newIndex))
-    updateRelationshipContentMutation.mutate({
-      relationshipId: relationship.id,
-      content: { nudges: reordered },
-    })
   }
 
   return (
@@ -404,10 +476,12 @@ export function NudgeSettingScreen() {
         sensors={sensors}
         collisionDetection={closestCenter}
         modifiers={[restrictToVerticalAxis]}
+        onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
+        onDragCancel={handleDragCancel}
       >
         <SortableContext
-          items={nudgesList.map((n) => n.key)}
+          items={sortableKeys}
           strategy={verticalListSortingStrategy}
         >
           <div className="flex flex-col gap-2">
@@ -415,15 +489,13 @@ export function NudgeSettingScreen() {
               <SortableNudgeRow
                 key={nudge.key}
                 nudge={nudge}
+                index={idx}
                 isSaving={isSaving}
                 canRemove={canRemove}
                 canPinMore={canPinMore}
-                onTogglePin={() => handleTogglePin(idx)}
-                onEdit={() => openEditDrawer(idx)}
-                onDelete={() => {
-                  updateRelationshipContentMutation.reset()
-                  setDeleteIndex(idx)
-                }}
+                onTogglePin={handleTogglePin}
+                onEdit={openEditDrawer}
+                onDelete={handleRequestDelete}
               />
             ))}
           </div>

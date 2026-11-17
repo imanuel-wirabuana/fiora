@@ -6,10 +6,12 @@ import {
 } from "date-fns"
 import { MapPin, UserPlus } from "lucide-react"
 import { useLocation } from "wouter"
+import { useTabPaneActive } from "@/components/AnimationScopeContext"
 import { CustomItem } from "@/components/CustomItem"
 import { OdometerText } from "@/components/OdometerText"
 import { usePartnerPresence } from "@/hooks/usePartnerPresence"
 import { cn } from "@/lib/utils"
+import { useIsAnimationsPaused } from "@/stores/animationStore"
 
 export function PartnerPresenceSection() {
   const [, setLocation] = useLocation()
@@ -25,14 +27,19 @@ export function PartnerPresenceSection() {
     partnerAlias,
   } = usePartnerPresence()
 
+  const isPaneActive = useTabPaneActive()
+  const isAnimationsPaused = useIsAnimationsPaused()
+  const isPaused = !isPaneActive || isAnimationsPaused
+
   // Refresh relative timestamps every 30s while viewing Home
   const [, setTick] = useState(0)
   useEffect(() => {
+    if (!isPaneActive) return
     const id = window.setInterval(() => {
       setTick((t) => t + 1)
     }, 30_000)
     return () => window.clearInterval(id)
-  }, [])
+  }, [isPaneActive])
 
   if (!partnerMember) {
     return (
@@ -109,7 +116,12 @@ export function PartnerPresenceSection() {
             aria-label={statusLabel}
           >
             {isOnline ? (
-              <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-300 opacity-75" />
+              <span
+                className={cn(
+                  "absolute inline-flex size-full rounded-full bg-emerald-300 opacity-75",
+                  !isPaused && "animate-ping"
+                )}
+              />
             ) : null}
           </span>
         </div>

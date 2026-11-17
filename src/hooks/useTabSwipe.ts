@@ -1,4 +1,5 @@
-import { useEffect, useRef, type TouchEvent } from "react"
+import { useCallback, useEffect, useRef, useState, type TouchEvent } from "react"
+import { useAnimationStore } from "@/stores/animationStore"
 
 interface UseTabSwipeOptions {
   activeIndex: number
@@ -68,6 +69,10 @@ export function useTabSwipe({
   const trackRef = useRef<HTMLDivElement>(null)
   const rafRef = useRef<number | null>(null)
   const pendingOffsetRef = useRef(0)
+  const snapBackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const snapBackCleanupRef = useRef<(() => void) | null>(null)
+  const [swipeActiveAtIndex, setSwipeActiveAtIndex] = useState<number | null>(null)
+  const isSwipeActive = swipeActiveAtIndex === activeIndex
 
   const gestureRef = useRef<GestureState>({
     active: false,
@@ -78,13 +83,30 @@ export function useTabSwipe({
     lastX: 0,
   })
 
+  const clearSnapBackWatch = useCallback(() => {
+    if (snapBackTimerRef.current !== null) {
+      clearTimeout(snapBackTimerRef.current)
+      snapBackTimerRef.current = null
+    }
+    if (snapBackCleanupRef.current !== null) {
+      snapBackCleanupRef.current()
+      snapBackCleanupRef.current = null
+    }
+  }, [])
+
+  useEffect(() => {
+    clearSnapBackWatch()
+  }, [activeIndex, clearSnapBackWatch])
+
   useEffect(() => {
     return () => {
       if (rafRef.current !== null) {
         cancelAnimationFrame(rafRef.current)
       }
+      clearSnapBackWatch()
+      useAnimationStore.getState().setTabSliding(false)
     }
-  }, [])
+  }, [clearSnapBackWatch])
 
   const cancelScheduledFrame = () => {
     if (rafRef.current !== null) {
@@ -102,11 +124,15 @@ export function useTabSwipe({
         : `translate3d(calc(-${targetIndex * 100}% + ${offsetPx}px), 0, 0)`
   }
 
-  const resetGesture = (targetIndex = activeIndex) => {
+  const clearPendingGesture = () => {
     cancelScheduledFrame()
     gestureRef.current.active = false
     gestureRef.current.lock = "none"
     pendingOffsetRef.current = 0
+  }
+
+  const resetGesture = (targetIndex = activeIndex) => {
+    clearPendingGesture()
 
     const track = trackRef.current
     if (track) {
@@ -115,9 +141,41 @@ export function useTabSwipe({
     }
   }
 
+  const watchSnapBackEnd = () => {
+    clearSnapBackWatch()
+
+    const finishSnapBack = () => {
+      clearSnapBackWatch()
+      setSwipeActiveAtIndex(null)
+      useAnimationStore.getState().setTabSliding(false)
+    }
+
+    const track = trackRef.current
+    if (track) {
+      const onTransitionEnd = (event: TransitionEvent) => {
+        if (event.target !== track || event.propertyName !== "transform") {
+          return
+        }
+        finishSnapBack()
+      }
+      track.addEventListener("transitionend", onTransitionEnd)
+      snapBackCleanupRef.current = () => {
+        track.removeEventListener("transitionend", onTransitionEnd)
+      }
+    }
+
+    snapBackTimerRef.current = setTimeout(finishSnapBack, 350)
+  }
+
   const onTouchStart = (event: TouchEvent<HTMLDivElement>) => {
     if (event.touches.length !== 1) {
-      resetGesture()
+      if (gestureRef.current.lock === "horizontal") {
+        resetGesture(activeIndex)
+        watchSnapBackEnd()
+      } else {
+        clearPendingGesture()
+        setSwipeActiveAtIndex(null)
+      }
       return
     }
 
@@ -139,6 +197,7 @@ export function useTabSwipe({
       startTime: now,
       lastX: touch.clientX,
     }
+    setSwipeActiveAtIndex(activeIndex)
   }
 
   const onTouchMove = (event: TouchEvent<HTMLDivElement>) => {
@@ -157,9 +216,12 @@ export function useTabSwipe({
       }
       if (Math.abs(dy) > Math.abs(dx)) {
         gesture.lock = "vertical"
+        setSwipeActiveAtIndex(null)
         return
       }
+      clearSnapBackWatch()
       gesture.lock = "horizontal"
+      useAnimationStore.getState().setTabSliding(true)
       if (trackRef.current) {
         trackRef.current.style.transition = "none"
       }
@@ -192,42 +254,65 @@ export function useTabSwipe({
       return
     }
 
+    if (gesture.lock !== "horizontal") {
+      clearPendingGesture()
+      setSwipeActiveAtIndex(null)
+      return
+    }
+
     let nextIndex = activeIndex
 
-    if (gesture.lock === "horizontal") {
-      const dx = gesture.lastX - gesture.startX
-      const dt = Math.max(1, performance.now() - gesture.startTime)
-      const velocity = Math.abs(dx) / dt
-      const width = containerRef.current?.clientWidth || window.innerWidth
+    const dx = gesture.lastX - gesture.startX
+    const dt = Math.max(1, performance.now() - gesture.startTime)
+    const velocity = Math.abs(dx) / dt
+    const width = containerRef.current?.clientWidth || window.innerWidth
 
-      const passedDistance = Math.abs(dx) > width * SWIPE_DISTANCE_RATIO
-      const passedVelocity =
-        velocity > SWIPE_VELOCITY_THRESHOLD &&
-        Math.abs(dx) > MIN_FLICK_DISTANCE_PX
+    const passedDistance = Math.abs(dx) > width * SWIPE_DISTANCE_RATIO
+    const passedVelocity =
+      velocity > SWIPE_VELOCITY_THRESHOLD &&
+      Math.abs(dx) > MIN_FLICK_DISTANCE_PX
 
-      if (passedDistance || passedVelocity) {
-        nextIndex =
-          dx < 0
-            ? Math.min(tabCount - 1, activeIndex + 1)
-            : Math.max(0, activeIndex - 1)
-      }
+    if (passedDistance || passedVelocity) {
+      nextIndex =
+        dx < 0
+          ? Math.min(tabCount - 1, activeIndex + 1)
+          : Math.max(0, activeIndex - 1)
     }
 
     resetGesture(nextIndex)
 
     if (nextIndex !== activeIndex) {
+      setSwipeActiveAtIndex(null)
       onChangeIndex(nextIndex)
+    } else {
+      watchSnapBackEnd()
+    }
+  }
+
+  const onTouchCancel = () => {
+    const gesture = gestureRef.current
+    if (!gesture.active && gesture.lock !== "horizontal") {
+      return
+    }
+
+    if (gesture.lock === "horizontal") {
+      resetGesture(activeIndex)
+      watchSnapBackEnd()
+    } else {
+      clearPendingGesture()
+      setSwipeActiveAtIndex(null)
     }
   }
 
   return {
     containerRef,
     trackRef,
+    isSwipeActive,
     touchHandlers: {
       onTouchStart,
       onTouchMove,
       onTouchEnd,
-      onTouchCancel: () => resetGesture(activeIndex),
+      onTouchCancel,
     },
   }
 }

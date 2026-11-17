@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { memo, useCallback, useEffect, useMemo, useState } from "react"
 import {
   closestCenter,
   DndContext,
@@ -36,6 +36,7 @@ import {
 } from "@/lib/relationship"
 import { restrictToVerticalAxis } from "@/lib/dnd"
 import { cn } from "@/lib/utils"
+import { useAnimationStore } from "@/stores/animationStore"
 import type { MoodOption } from "@/types/relationship"
 
 interface MoodItem {
@@ -64,11 +65,11 @@ interface SortableMoodRowProps {
   total: number
   isSaving: boolean
   canRemove: boolean
-  onEdit: () => void
-  onDelete: () => void
+  onEdit: (index: number) => void
+  onDelete: (index: number) => void
 }
 
-function SortableMoodRow({
+const SortableMoodRow = memo(function SortableMoodRow({
   mood,
   index,
   total,
@@ -93,6 +94,14 @@ function SortableMoodRow({
 
   const badge = getScoreBadgeStyles(mood.score, index, total)
 
+  const handleEdit = useCallback(() => {
+    onEdit(index)
+  }, [onEdit, index])
+
+  const handleDelete = useCallback(() => {
+    onDelete(index)
+  }, [onDelete, index])
+
   return (
     <div
       ref={setNodeRef}
@@ -101,15 +110,15 @@ function SortableMoodRow({
       {...listeners}
       onContextMenu={(e) => e.preventDefault()}
       className={cn(
-        "group flex items-center justify-between gap-3 rounded-2xl border border-border/70 bg-card px-3.5 py-2.5 transition-colors select-none [-webkit-touch-callout:none] hover:border-border",
+        "group flex items-center justify-between gap-3 rounded-2xl border border-border/70 bg-card px-3.5 py-2.5 select-none [-webkit-touch-callout:none] hover:border-border",
         isDragging
-          ? "relative z-10 scale-[1.01] touch-none shadow-md ring-2 ring-primary/30"
+          ? "relative z-10 touch-none ring-2 ring-primary/30 will-change-transform"
           : "touch-manipulation"
       )}
     >
       <button
         type="button"
-        onClick={onEdit}
+        onClick={handleEdit}
         disabled={isSaving}
         className="flex min-w-0 flex-1 items-center gap-3 text-left disabled:opacity-75"
       >
@@ -148,7 +157,7 @@ function SortableMoodRow({
           type="button"
           variant="ghost"
           size="icon-sm"
-          onClick={onEdit}
+          onClick={handleEdit}
           disabled={isSaving}
           title="Edit mood"
           className="size-8 text-muted-foreground hover:text-foreground"
@@ -159,7 +168,7 @@ function SortableMoodRow({
           type="button"
           variant="ghost"
           size="icon-sm"
-          onClick={onDelete}
+          onClick={handleDelete}
           disabled={!canRemove || isSaving}
           title={
             canRemove ? "Remove mood" : `At least ${MIN_MOODS} mood is required`
@@ -171,7 +180,7 @@ function SortableMoodRow({
       </div>
     </div>
   )
-}
+})
 
 /**
  * Standalone screen for managing relationship moods (1-10 items),
@@ -224,15 +233,24 @@ export function MoodSettingScreen() {
 
   const activeMoodOptions = pendingReorderedMoods ?? moodOptions
 
-  const moodsList = useMemo<MoodItem[]>(
-    () =>
-      activeMoodOptions.map((m, idx) => ({
-        key: `${m.label}-${idx}`,
+  const moodsList = useMemo<MoodItem[]>(() => {
+    const counts = new Map<string, number>()
+    return activeMoodOptions.map((m) => {
+      const base = `${m.emoji}::${m.label}`
+      const occ = counts.get(base) ?? 0
+      counts.set(base, occ + 1)
+      return {
+        key: `${base}::${occ}`,
         emoji: m.emoji,
         label: m.label,
         score: m.score,
-      })),
-    [activeMoodOptions]
+      }
+    })
+  }, [activeMoodOptions])
+
+  const sortableKeys = useMemo(
+    () => moodsList.map((m) => m.key),
+    [moodsList]
   )
 
   const isSaving =
@@ -245,6 +263,79 @@ export function MoodSettingScreen() {
     [formEmoji, formLabel]
   )
 
+  const { reset: resetSaveMoods } = saveMoodsMutation
+  const { mutate: updateRelationshipContent } =
+    updateRelationshipContentMutation
+  const relationshipId = relationship?.id
+
+  useEffect(() => {
+    return () => {
+      useAnimationStore.getState().setDragging(false)
+    }
+  }, [])
+
+  const openEditDrawer = useCallback(
+    (index: number) => {
+      if (isSaving) return
+      const target = moodsList[index]
+      if (!target) return
+      setEditingIndex(index)
+      setFormEmoji(target.emoji)
+      setFormLabel(target.label)
+      setDrawerOpen(true)
+    },
+    [isSaving, moodsList]
+  )
+
+  const handleRequestDelete = useCallback(
+    (index: number) => {
+      resetSaveMoods()
+      setDeleteIndex(index)
+    },
+    [resetSaveMoods]
+  )
+
+  const handleDragStart = useCallback(() => {
+    useAnimationStore.getState().setDragging(true)
+  }, [])
+
+  const handleDragCancel = useCallback(() => {
+    useAnimationStore.getState().setDragging(false)
+  }, [])
+
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      useAnimationStore.getState().setDragging(false)
+
+      const { active, over } = event
+      if (!over || active.id === over.id || isSaving || !relationshipId) return
+
+      const oldIndex = moodsList.findIndex((m) => m.key === active.id)
+      const newIndex = moodsList.findIndex((m) => m.key === over.id)
+      if (oldIndex === -1 || newIndex === -1) return
+
+      const reordered = arrayMove(moodsList, oldIndex, newIndex).map((item) => ({
+        emoji: item.emoji,
+        label: item.label,
+      }))
+      const reorderedWithScores = assignMoodScoresByOrder(reordered)
+
+      setPendingReorderedMoods(reorderedWithScores)
+      updateRelationshipContent(
+        {
+          relationshipId,
+          content: { moods: reorderedWithScores },
+        },
+        {
+          onSettled: () => {
+            setPendingReorderedMoods(null)
+          },
+        }
+      )
+    },
+    [isSaving, relationshipId, moodsList, updateRelationshipContent]
+  )
+
   if (!hasRelationship || !relationship) {
     return null
   }
@@ -254,16 +345,6 @@ export function MoodSettingScreen() {
     setEditingIndex(null)
     setFormEmoji("")
     setFormLabel("")
-    setDrawerOpen(true)
-  }
-
-  const openEditDrawer = (index: number) => {
-    if (isSaving) return
-    const target = moodsList[index]
-    if (!target) return
-    setEditingIndex(index)
-    setFormEmoji(target.emoji)
-    setFormLabel(target.label)
     setDrawerOpen(true)
   }
 
@@ -354,34 +435,6 @@ export function MoodSettingScreen() {
     }
   }
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event
-    if (!over || active.id === over.id || isSaving) return
-
-    const oldIndex = moodsList.findIndex((m) => m.key === active.id)
-    const newIndex = moodsList.findIndex((m) => m.key === over.id)
-    if (oldIndex === -1 || newIndex === -1) return
-
-    const reordered = arrayMove(moodsList, oldIndex, newIndex).map((item) => ({
-      emoji: item.emoji,
-      label: item.label,
-    }))
-    const reorderedWithScores = assignMoodScoresByOrder(reordered)
-
-    setPendingReorderedMoods(reorderedWithScores)
-    updateRelationshipContentMutation.mutate(
-      {
-        relationshipId: relationship.id,
-        content: { moods: reorderedWithScores },
-      },
-      {
-        onSettled: () => {
-          setPendingReorderedMoods(null)
-        },
-      }
-    )
-  }
-
   return (
     <div className="mx-auto flex w-full max-w-md flex-col gap-4 px-4 pt-3 pb-20 sm:max-w-2xl">
       {/* Top Info & Controls Card */}
@@ -444,10 +497,12 @@ export function MoodSettingScreen() {
         sensors={sensors}
         collisionDetection={closestCenter}
         modifiers={[restrictToVerticalAxis]}
+        onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
+        onDragCancel={handleDragCancel}
       >
         <SortableContext
-          items={moodsList.map((m) => m.key)}
+          items={sortableKeys}
           strategy={verticalListSortingStrategy}
         >
           <div className="flex flex-col gap-2">
@@ -459,11 +514,8 @@ export function MoodSettingScreen() {
                 total={moodsList.length}
                 isSaving={isSaving}
                 canRemove={canRemove}
-                onEdit={() => openEditDrawer(idx)}
-                onDelete={() => {
-                  saveMoodsMutation.reset()
-                  setDeleteIndex(idx)
-                }}
+                onEdit={openEditDrawer}
+                onDelete={handleRequestDelete}
               />
             ))}
           </div>

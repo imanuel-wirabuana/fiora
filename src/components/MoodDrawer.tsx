@@ -9,9 +9,11 @@ import {
 } from "react"
 import { Heart, Send } from "lucide-react"
 import { AnimatedEmoji } from "./AnimatedEmoji"
+import { DrawerScopeContext } from "./AnimationScopeContext"
 import { fireEmojiConfetti } from "../lib/confetti"
 import { getMoodCategory, getMoodCategoryBadge } from "../lib/relationship"
 import { cn } from "../lib/utils"
+import { useDrawerAnimationPause } from "../hooks/useDrawerAnimationPause"
 import { useRelationship } from "../hooks/useRelationship"
 import { useActivities } from "../hooks/useActivities"
 import { WheelPicker, type WheelOption } from "./pickers"
@@ -25,26 +27,55 @@ import {
 } from "./ui/drawer"
 import { Spinner } from "./ui/spinner"
 
-const SelectedMoodContext = createContext<string>("")
+interface SelectedMoodContextValue {
+  selectedMood: string
+  open: boolean
+}
+
+const SelectedMoodContext = createContext<SelectedMoodContextValue>({
+  selectedMood: "",
+  open: false,
+})
 
 function MoodWheelEmoji({ emoji, label }: { emoji: string; label: string }) {
-  const selectedMood = useContext(SelectedMoodContext)
+  const { selectedMood, open } = useContext(SelectedMoodContext)
   const isSelected = selectedMood === label
   const spanRef = useRef<HTMLSpanElement>(null)
+  const openAtRef = useRef<number | null>(null)
   const [settledLabel, setSettledLabel] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!isSelected) return
+    if (!open) {
+      openAtRef.current = null
+      const resetTimer = setTimeout(() => {
+        setSettledLabel((prev) => (prev === null ? prev : null))
+      }, 0)
+      return () => clearTimeout(resetTimer)
+    }
+
+    if (openAtRef.current === null) {
+      openAtRef.current = Date.now()
+    }
+
+    if (!isSelected) {
+      const resetTimer = setTimeout(() => {
+        setSettledLabel((prev) => (prev === null ? prev : null))
+      }, 0)
+      return () => clearTimeout(resetTimer)
+    }
+
     if (!spanRef.current?.closest("[data-rwp-highlight-item]")) return
 
+    const elapsed = Date.now() - openAtRef.current
+    const delay = Math.max(150, 450 - elapsed)
     const timer = setTimeout(() => {
       setSettledLabel(label)
-    }, 150)
+    }, delay)
 
     return () => clearTimeout(timer)
-  }, [isSelected, label])
+  }, [open, isSelected, label])
 
-  const showLottie = isSelected && settledLabel === label
+  const showLottie = open && isSelected && settledLabel === label
 
   return (
     <span
@@ -55,6 +86,7 @@ function MoodWheelEmoji({ emoji, label }: { emoji: string; label: string }) {
         <AnimatedEmoji
           emoji={emoji}
           size={48}
+          paused={!open}
           replayOnTap={false}
           fallbackClassName="text-5xl leading-none"
         />
@@ -72,6 +104,7 @@ interface MoodDrawerProps {
 }
 
 export function MoodDrawer({ open, onOpenChange, children }: MoodDrawerProps) {
+  useDrawerAnimationPause(open)
   const { moodOptions } = useRelationship()
   const { myLatestMood, logMood, createActivityMutation } = useActivities()
   const [manualSelection, setManualSelection] = useState<string | null>(null)
@@ -97,6 +130,11 @@ export function MoodDrawer({ open, onOpenChange, children }: MoodDrawerProps) {
   }, [moodOptions, myLatestMood])
 
   const selectedMood = manualSelection ?? defaultMoodLabel
+
+  const selectedMoodContextValue = useMemo(
+    () => ({ selectedMood, open }),
+    [selectedMood, open]
+  )
 
   const wheelOptions = useMemo<WheelOption<string>[]>(
     () =>
@@ -169,78 +207,80 @@ export function MoodDrawer({ open, onOpenChange, children }: MoodDrawerProps) {
 
       {/* Tightly padded Drawer Content docked flush to bottom with safe area */}
       <DrawerContent className="mx-auto flex flex-col inset-x-0 bottom-0 m-0 rounded-b-none rounded-t-4xl border-b-0 p-4 pt-2 pb-[max(1rem,env(safe-area-inset-bottom))] sm:max-w-md [--drawer-inset:0px]">
-        {/* Top Header */}
-        <div>
-          <DrawerHeader className="items-center pb-1 text-center md:text-center">
-            <DrawerTitle className="text-base font-semibold">
-              Quick Mood Check-in
-            </DrawerTitle>
-            <DrawerDescription className="text-xs">
-              Let your partner know how you feel right now
-            </DrawerDescription>
-          </DrawerHeader>
+        <DrawerScopeContext.Provider value={true}>
+          {/* Top Header */}
+          <div>
+            <DrawerHeader className="items-center pb-1 text-center md:text-center">
+              <DrawerTitle className="text-base font-semibold">
+                Quick Mood Check-in
+              </DrawerTitle>
+              <DrawerDescription className="text-xs">
+                Let your partner know how you feel right now
+              </DrawerDescription>
+            </DrawerHeader>
 
-          {/* Vertical Wheel Mood Picker */}
-          <div className="my-2">
-            {wheelOptions.length > 0 && (
-              <SelectedMoodContext.Provider value={selectedMood}>
-                <WheelPicker
-                  options={wheelOptions}
-                  value={selectedMood}
-                  onChange={setManualSelection}
-                  optionItemHeight={84}
-                  visibleCount={8}
-                  itemClassName="scale-100"
-                  highlightClassName="inset-x-0 rounded-none border-0 bg-popover before:pointer-events-none before:absolute before:inset-x-0 before:inset-y-3 before:z-0 before:rounded-2xl before:border before:border-primary/35 before:bg-primary/10 *:data-rwp-highlight-list:z-10"
-                  ariaLabel="Mood picker"
-                />
-              </SelectedMoodContext.Provider>
-            )}
+            {/* Vertical Wheel Mood Picker */}
+            <div className="my-2">
+              {wheelOptions.length > 0 && (
+                <SelectedMoodContext.Provider value={selectedMoodContextValue}>
+                  <WheelPicker
+                    options={wheelOptions}
+                    value={selectedMood}
+                    onChange={setManualSelection}
+                    optionItemHeight={84}
+                    visibleCount={8}
+                    itemClassName="scale-100"
+                    highlightClassName="inset-x-0 rounded-none border-0 bg-popover before:pointer-events-none before:absolute before:inset-x-0 before:inset-y-3 before:z-0 before:rounded-2xl before:border before:border-primary/35 before:bg-primary/10 *:data-rwp-highlight-list:z-10"
+                    ariaLabel="Mood picker"
+                  />
+                </SelectedMoodContext.Provider>
+              )}
+            </div>
+
+            {/* Optional Short Note */}
+            <div className="px-1 pt-2 pb-3">
+              <input
+                type="text"
+                placeholder="Add a sweet note or what's on your mind... (optional)"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                className="h-10 w-full rounded-2xl border border-input bg-muted/20 px-3.5 text-xs outline-none transition placeholder:text-muted-foreground/60 focus:border-primary focus:bg-background focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
           </div>
 
-          {/* Optional Short Note */}
-          <div className="px-1 pt-2 pb-3">
-            <input
-              type="text"
-              placeholder="Add a sweet note or what's on your mind... (optional)"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              className="h-10 w-full rounded-2xl border border-input bg-muted/20 px-3.5 text-xs outline-none transition placeholder:text-muted-foreground/60 focus:border-primary focus:bg-background focus:ring-2 focus:ring-primary/20"
-            />
+          {/* Bottom Share Action */}
+          <div className="p-1 pt-1 pb-0.5">
+            <button
+              type="button"
+              onClick={handleSendMood}
+              disabled={isSent || isPending}
+              className={cn(
+                "flex h-11 w-full items-center justify-center gap-2 rounded-2xl font-medium text-primary-foreground shadow-xs transition active:scale-[0.99]",
+                isSent
+                  ? "bg-emerald-500"
+                  : "bg-primary hover:bg-primary/90"
+              )}
+            >
+              {isSent ? (
+                <>
+                  <Heart className="size-4 fill-current" />
+                  <span>Shared with Partner!</span>
+                </>
+              ) : isPending ? (
+                <>
+                  <Spinner className="size-4" />
+                  <span>Sharing...</span>
+                </>
+              ) : (
+                <>
+                  <Send className="size-4" />
+                  <span>Send to Partner</span>
+                </>
+              )}
+            </button>
           </div>
-        </div>
-
-        {/* Bottom Share Action */}
-        <div className="p-1 pt-1 pb-0.5">
-          <button
-            type="button"
-            onClick={handleSendMood}
-            disabled={isSent || isPending}
-            className={cn(
-              "flex h-11 w-full items-center justify-center gap-2 rounded-2xl font-medium text-primary-foreground shadow-xs transition active:scale-[0.99]",
-              isSent
-                ? "bg-emerald-500"
-                : "bg-primary hover:bg-primary/90"
-            )}
-          >
-            {isSent ? (
-              <>
-                <Heart className="size-4 fill-current" />
-                <span>Shared with Partner!</span>
-              </>
-            ) : isPending ? (
-              <>
-                <Spinner className="size-4" />
-                <span>Sharing...</span>
-              </>
-            ) : (
-              <>
-                <Send className="size-4" />
-                <span>Send to Partner</span>
-              </>
-            )}
-          </button>
-        </div>
+        </DrawerScopeContext.Provider>
       </DrawerContent>
     </Drawer>
   )

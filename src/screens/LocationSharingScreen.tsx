@@ -396,6 +396,7 @@ export function LocationSharingScreen() {
                     <AnimatedEmoji
                       emoji={myAvatar}
                       size={18}
+                      paused={!isDrawerExpanded}
                       replayOnTap={false}
                       className="shrink-0"
                       fallbackClassName="text-sm"
@@ -450,6 +451,7 @@ export function LocationSharingScreen() {
                     <AnimatedEmoji
                       emoji={partnerAvatar}
                       size={18}
+                      paused={!isDrawerExpanded}
                       replayOnTap={false}
                       className="shrink-0"
                       fallbackClassName="text-sm"

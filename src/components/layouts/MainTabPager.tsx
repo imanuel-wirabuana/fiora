@@ -1,7 +1,16 @@
-import { memo, useEffect, useState, type ReactNode } from "react"
+import {
+  memo,
+  useEffect,
+  useLayoutEffect,
+  useState,
+  type ReactNode,
+  type TransitionEvent,
+} from "react"
 import { useLocation } from "wouter"
 import { useTabSwipe } from "@/hooks/useTabSwipe"
+import { TabPaneContext } from "@/components/AnimationScopeContext"
 import { cn } from "@/lib/utils"
+import { useAnimationStore } from "@/stores/animationStore"
 import { MainLayout } from "./MainLayout"
 
 export type MainTabPath = "/home" | "/insight" | "/chat" | "/space"
@@ -39,7 +48,7 @@ const TabPaneItem = memo(function TabPaneItem({
       inert={!isActive && !deferInert ? true : undefined}
       data-sticky-scroll={isActive && isScrollable ? "true" : undefined}
       className={cn(
-        "h-full w-full shrink-0 transform-gpu pt-12 backface-hidden [contain:layout_paint]",
+        "h-full w-full shrink-0 pt-12 [contain:layout_paint]",
         !isActive && "pointer-events-none",
         !isNearViewport && "invisible",
         isScrollable
@@ -47,7 +56,9 @@ const TabPaneItem = memo(function TabPaneItem({
           : "flex flex-col overflow-hidden"
       )}
     >
-      {pane.element}
+      <TabPaneContext.Provider value={isActive}>
+        {pane.element}
+      </TabPaneContext.Provider>
     </div>
   )
 })
@@ -60,20 +71,42 @@ export function MainTabPager({ panes }: MainTabPagerProps) {
     panes.findIndex((pane) => location.startsWith(pane.path))
   )
   const [settledIndex, setSettledIndex] = useState(activeIndex)
+  const [prevActiveIndex, setPrevActiveIndex] = useState(activeIndex)
+
+  if (prevActiveIndex !== activeIndex) {
+    setPrevActiveIndex(activeIndex)
+    if (settledIndex === activeIndex) {
+      setSettledIndex(prevActiveIndex)
+    }
+  }
+
   const isTransitioning = settledIndex !== activeIndex
+
+  useLayoutEffect(() => {
+    if (isTransitioning) {
+      useAnimationStore.getState().setTabSliding(true)
+    }
+  }, [isTransitioning])
 
   useEffect(() => {
     if (settledIndex === activeIndex) return
     const timer = setTimeout(() => {
       setSettledIndex(activeIndex)
-    }, 320)
+      useAnimationStore.getState().setTabSliding(false)
+    }, 350)
     return () => clearTimeout(timer)
   }, [activeIndex, settledIndex])
+
+  useEffect(() => {
+    return () => {
+      useAnimationStore.getState().setTabSliding(false)
+    }
+  }, [])
 
   const activePane = panes[activeIndex]
   const activePath = activePane?.path ?? "/home"
 
-  const { containerRef, trackRef, touchHandlers } = useTabSwipe({
+  const { containerRef, trackRef, isSwipeActive, touchHandlers } = useTabSwipe({
     activeIndex,
     tabCount: panes.length,
     onChangeIndex: (nextIndex) => {
@@ -83,6 +116,19 @@ export function MainTabPager({ panes }: MainTabPagerProps) {
       }
     },
   })
+
+  const handleTrackTransitionEnd = (e: TransitionEvent<HTMLDivElement>) => {
+    if (e.target !== trackRef.current || e.propertyName !== "transform") {
+      return
+    }
+    if (settledIndex !== activeIndex) {
+      setSettledIndex(activeIndex)
+      useAnimationStore.getState().setTabSliding(false)
+    }
+  }
+
+  const minTransitionIndex = Math.min(settledIndex, activeIndex)
+  const maxTransitionIndex = Math.max(settledIndex, activeIndex)
 
   return (
     <MainLayout
@@ -96,6 +142,7 @@ export function MainTabPager({ panes }: MainTabPagerProps) {
       >
         <div
           ref={trackRef}
+          onTransitionEnd={handleTrackTransitionEnd}
           className="flex h-full w-full transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform motion-reduce:transition-none"
           style={{
             transform: `translate3d(-${activeIndex * 100}%, 0, 0)`,
@@ -103,7 +150,11 @@ export function MainTabPager({ panes }: MainTabPagerProps) {
         >
           {panes.map((pane, index) => {
             const isNearViewport =
-              isTransitioning || Math.abs(index - activeIndex) <= 1
+              index === activeIndex ||
+              (isSwipeActive && Math.abs(index - activeIndex) <= 1) ||
+              (isTransitioning &&
+                index >= minTransitionIndex &&
+                index <= maxTransitionIndex)
 
             return (
               <TabPaneItem

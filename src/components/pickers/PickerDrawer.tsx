@@ -1,5 +1,6 @@
 import * as React from "react"
 import { Check } from "lucide-react"
+import { DrawerScopeContext } from "@/components/AnimationScopeContext"
 import {
   Drawer,
   DrawerContent,
@@ -8,6 +9,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer"
+import { useDrawerAnimationPause } from "@/hooks/useDrawerAnimationPause"
 import { cn } from "@/lib/utils"
 
 interface PickerDrawerProps {
@@ -38,6 +40,7 @@ export function PickerDrawer({
   secondaryAction,
   children,
 }: PickerDrawerProps) {
+  useDrawerAnimationPause(open)
   const [isSuccess, setIsSuccess] = React.useState(false)
   const timerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -73,55 +76,57 @@ export function PickerDrawer({
 
       {/* Tightly padded Drawer Content docked flush to bottom with safe area */}
       <DrawerContent className="mx-auto flex flex-col inset-x-0 bottom-0 m-0 rounded-b-none rounded-t-4xl border-b-0 p-4 pt-2 pb-[max(1rem,env(safe-area-inset-bottom))] sm:max-w-md [--drawer-inset:0px]">
-        {(title || description) && (
-          <DrawerHeader className="items-center pb-1 text-center md:text-center">
-            {title && (
-              <DrawerTitle className="text-base font-semibold">
-                {title}
-              </DrawerTitle>
-            )}
-            {description && (
-              <DrawerDescription className="text-xs">
-                {description}
-              </DrawerDescription>
-            )}
-          </DrawerHeader>
-        )}
+        <DrawerScopeContext.Provider value={true}>
+          {(title || description) && (
+            <DrawerHeader className="items-center pb-1 text-center md:text-center">
+              {title && (
+                <DrawerTitle className="text-base font-semibold">
+                  {title}
+                </DrawerTitle>
+              )}
+              {description && (
+                <DrawerDescription className="text-xs">
+                  {description}
+                </DrawerDescription>
+              )}
+            </DrawerHeader>
+          )}
 
-        <div className="px-1 py-2">{children}</div>
+          <div className="px-1 py-2">{children}</div>
 
-        <div className="flex items-center gap-2 p-1 pt-1 pb-0.5">
-          {secondaryAction && (
+          <div className="flex items-center gap-2 p-1 pt-1 pb-0.5">
+            {secondaryAction && (
+              <button
+                type="button"
+                disabled={isSuccess}
+                onClick={secondaryAction.onClick}
+                className="flex h-11 shrink-0 items-center justify-center rounded-2xl border border-border bg-background px-4 text-sm font-medium text-foreground shadow-xs transition hover:bg-muted/50 active:scale-[0.99] disabled:opacity-50"
+              >
+                {secondaryAction.label}
+              </button>
+            )}
             <button
               type="button"
               disabled={isSuccess}
-              onClick={secondaryAction.onClick}
-              className="flex h-11 shrink-0 items-center justify-center rounded-2xl border border-border bg-background px-4 text-sm font-medium text-foreground shadow-xs transition hover:bg-muted/50 active:scale-[0.99] disabled:opacity-50"
+              onClick={handleConfirmClick}
+              className={cn(
+                "flex h-11 flex-1 items-center justify-center gap-2 rounded-2xl font-medium text-primary-foreground shadow-xs transition active:scale-[0.99]",
+                isSuccess
+                  ? "bg-emerald-500"
+                  : "bg-primary hover:bg-primary/90"
+              )}
             >
-              {secondaryAction.label}
+              {isSuccess ? (
+                <>
+                  <Check className="size-4" />
+                  <span>{successLabel}</span>
+                </>
+              ) : (
+                confirmLabel
+              )}
             </button>
-          )}
-          <button
-            type="button"
-            disabled={isSuccess}
-            onClick={handleConfirmClick}
-            className={cn(
-              "flex h-11 flex-1 items-center justify-center gap-2 rounded-2xl font-medium text-primary-foreground shadow-xs transition active:scale-[0.99]",
-              isSuccess
-                ? "bg-emerald-500"
-                : "bg-primary hover:bg-primary/90"
-            )}
-          >
-            {isSuccess ? (
-              <>
-                <Check className="size-4" />
-                <span>{successLabel}</span>
-              </>
-            ) : (
-              confirmLabel
-            )}
-          </button>
-        </div>
+          </div>
+        </DrawerScopeContext.Provider>
       </DrawerContent>
     </Drawer>
   )

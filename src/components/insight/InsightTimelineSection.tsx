@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { memo, useMemo, useState } from "react"
 import { format, isToday, isYesterday } from "date-fns"
 import { AnimatedEmoji } from "@/components/AnimatedEmoji"
 import { CustomItem } from "@/components/CustomItem"
@@ -31,7 +31,7 @@ interface InsightTimelineSectionProps {
   endDate?: Date
 }
 
-function TimelineActivityRow({
+const TimelineActivityRow = memo(function TimelineActivityRow({
   activity,
   authorName,
   authorAvatar,
@@ -93,7 +93,7 @@ function TimelineActivityRow({
       className="gap-1.5 rounded-2xl p-2.5 [contain-intrinsic-size:auto_76px] [content-visibility:auto]"
     >
       <div className="flex items-center gap-2">
-        <AnimatedEmoji emoji={content.emoji} size={22} replayOnTap />
+        <AnimatedEmoji emoji={content.emoji} size={22} loop={false} replayOnTap />
         <span className="text-xs font-medium text-foreground">
           {content.label}
         </span>
@@ -113,7 +113,7 @@ function TimelineActivityRow({
       )}
     </CustomItem>
   )
-}
+})
 
 export function InsightTimelineSection({
   startDate,
