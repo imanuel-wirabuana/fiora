@@ -45,7 +45,7 @@ export function ChatScreen() {
   const normalizedQuery = searchQuery.trim().toLowerCase()
   const visibleMessages = normalizedQuery
     ? messages.filter((msg) =>
-        msg.content.text.toLowerCase().includes(normalizedQuery)
+        (msg.content?.text ?? "").toLowerCase().includes(normalizedQuery)
       )
     : messages
 
