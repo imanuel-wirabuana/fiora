@@ -22,24 +22,28 @@ export function useLocationSharing() {
   const { user } = useAuth()
   const { relationship, locationSharing, partnerMember, updateMemberLocation } = useRelationship()
 
+  const userId = user?.id
+  const relationshipId = relationship?.id
+  const partnerUserId = partnerMember?.user_id
+
   // Hydrate initial states from relationship.content.locations if present
   const savedLocations = relationship?.content?.locations
-  const mySavedLocation = user?.id ? savedLocations?.[user.id] ?? null : null
-  const partnerSavedLocation = partnerMember?.user_id
-    ? savedLocations?.[partnerMember.user_id] ?? null
+  const mySavedLocation = userId ? savedLocations?.[userId] ?? null : null
+  const partnerSavedLocation = partnerUserId
+    ? savedLocations?.[partnerUserId] ?? null
     : null
 
   const [liveMyLocation, setLiveMyLocation] = useState<MemberLocation | null>(() =>
-    getSessionLocation(relationship?.id, user?.id)
+    getSessionLocation(relationshipId, userId)
   )
   const [livePartnerLocation, setLivePartnerLocation] = useState<MemberLocation | null>(() =>
-    getSessionLocation(relationship?.id, partnerMember?.user_id)
+    getSessionLocation(relationshipId, partnerUserId)
   )
   const [isLocating, setIsLocating] = useState(false)
   const [geoError, setGeoError] = useState<string | null>(null)
 
   const myLocation = useMemo(() => {
-    const cached = getSessionLocation(relationship?.id, user?.id)
+    const cached = getSessionLocation(relationshipId, userId)
     const candidates = [liveMyLocation, cached, mySavedLocation].filter(
       (loc): loc is MemberLocation => loc !== null
     )
@@ -49,10 +53,10 @@ export function useLocationSharing() {
         ? curr
         : latest
     )
-  }, [liveMyLocation, mySavedLocation, relationship?.id, user?.id])
+  }, [liveMyLocation, mySavedLocation, relationshipId, userId])
 
   const partnerLocation = useMemo(() => {
-    const cached = getSessionLocation(relationship?.id, partnerMember?.user_id)
+    const cached = getSessionLocation(relationshipId, partnerUserId)
     const candidates = [livePartnerLocation, cached, partnerSavedLocation].filter(
       (loc): loc is MemberLocation => loc !== null
     )
@@ -62,17 +66,20 @@ export function useLocationSharing() {
         ? curr
         : latest
     )
-  }, [livePartnerLocation, partnerSavedLocation, relationship?.id, partnerMember?.user_id])
+  }, [livePartnerLocation, partnerSavedLocation, relationshipId, partnerUserId])
 
   const channelRef = useRef<ReturnType<typeof locationService.createLocationChannel> | null>(null)
   const lastPersistedLocRef = useRef<MemberLocation | null>(mySavedLocation)
   const myLocationRef = useRef<MemberLocation | null>(null)
-  myLocationRef.current = myLocation
+
+  useEffect(() => {
+    myLocationRef.current = myLocation
+  }, [myLocation])
 
   // Smart persistence: ONLY on app open (first fix), manual refresh, or significant movement (>= 200m)
   const persistLocationSmartly = useCallback(
     async (coords: { lat: number; lng: number }, force = false) => {
-      if (!user?.id || !relationship?.id) return
+      if (!userId || !relationshipId) return
 
       const lastLoc = lastPersistedLocRef.current
 
@@ -93,14 +100,14 @@ export function useLocationSharing() {
       if (shouldPersist) {
         const placeName = await locationService.getPlaceName(coords.lat, coords.lng)
         const updatedPayload: MemberLocation = {
-          userId: user.id,
+          userId,
           lat: coords.lat,
           lng: coords.lng,
           updated_at: new Date().toISOString(),
           placeName,
         }
         lastPersistedLocRef.current = updatedPayload
-        setSessionLocation(relationship.id, updatedPayload)
+        setSessionLocation(relationshipId, updatedPayload)
         setLiveMyLocation(updatedPayload)
 
         try {
@@ -110,7 +117,7 @@ export function useLocationSharing() {
         }
       }
     },
-    [user?.id, relationship?.id, updateMemberLocation]
+    [userId, relationshipId, updateMemberLocation]
   )
 
   const broadcastCurrentCoords = useCallback(
@@ -119,7 +126,7 @@ export function useLocationSharing() {
       options: { force?: boolean; skipPersist?: boolean } = {}
     ) => {
       const { force = false, skipPersist = false } = options
-      if (!user?.id || !channelRef.current) return
+      if (!userId || !channelRef.current) return
 
       // Ignore micro-fluctuations under 200m unless forced or replying to a request
       const lastLoc = lastPersistedLocRef.current
@@ -139,7 +146,7 @@ export function useLocationSharing() {
           ...coords,
           placeName,
         })
-        setSessionLocation(relationship?.id, payload)
+        setSessionLocation(relationshipId, payload)
         setLiveMyLocation(payload)
         if (!skipPersist) {
           void persistLocationSmartly(coords, force)
@@ -148,7 +155,7 @@ export function useLocationSharing() {
         console.error("Failed to broadcast location:", err)
       }
     },
-    [user?.id, relationship?.id, persistLocationSmartly]
+    [userId, relationshipId, persistLocationSmartly]
   )
 
   const refreshLocation = useCallback(() => {
@@ -183,16 +190,18 @@ export function useLocationSharing() {
 
   // Setup broadcast channel & watcher when locationSharing is active
   useEffect(() => {
-    if (!locationSharing || !relationship?.id || !user?.id) {
+    if (!locationSharing || !relationshipId || !userId) {
       return
     }
 
+    let active = true
+
     const channelHandler = locationService.createLocationChannel(
-      relationship.id,
-      user.id,
+      relationshipId,
+      userId,
       {
         onPartnerLocation: (loc) => {
-          setSessionLocation(relationship.id, loc)
+          setSessionLocation(relationshipId, loc)
           setLivePartnerLocation(loc)
         },
         onLocationRequested: () => {
@@ -216,7 +225,9 @@ export function useLocationSharing() {
     // Watch current user position with relaxed accuracy (no battery drain, no jitter)
     let watchId: number | null = null
     if (navigator.geolocation) {
-      setIsLocating(true)
+      queueMicrotask(() => {
+        if (active) setIsLocating(true)
+      })
       watchId = navigator.geolocation.watchPosition(
         (pos) => {
           setIsLocating(false)
@@ -237,17 +248,20 @@ export function useLocationSharing() {
         }
       )
     } else {
-      setGeoError("Geolocation is not supported by your browser.")
+      queueMicrotask(() => {
+        if (active) setGeoError("Geolocation is not supported by your browser.")
+      })
     }
 
     return () => {
+      active = false
       if (watchId !== null && navigator.geolocation) {
         navigator.geolocation.clearWatch(watchId)
       }
       channelHandler.unsubscribe()
       channelRef.current = null
     }
-  }, [locationSharing, relationship?.id, user?.id, broadcastCurrentCoords, refreshLocation])
+  }, [locationSharing, relationshipId, userId, broadcastCurrentCoords, refreshLocation])
 
   const distanceMeters = useMemo(() => {
     if (!myLocation || !partnerLocation) return null

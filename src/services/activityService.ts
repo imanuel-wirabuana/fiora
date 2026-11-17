@@ -152,7 +152,7 @@ export const activityService = {
 
   subscribeToActivities(
     relationshipId: number,
-    onChange: () => void
+    onChange: (activityType?: ActivityType) => void
   ): () => void {
     const uniqueId = Math.random().toString(36).slice(2, 9)
     const channelName = `realtime-activities-${relationshipId}-${uniqueId}`
@@ -167,8 +167,11 @@ export const activityService = {
           table: "activities",
           filter: `relationship_id=eq.${relationshipId}`,
         },
-        () => {
-          onChange()
+        (payload) => {
+          const newRecord = payload.new as { type?: ActivityType } | null
+          const oldRecord = payload.old as { type?: ActivityType } | null
+          const activityType = newRecord?.type ?? oldRecord?.type
+          onChange(activityType)
         }
       )
       .subscribe()

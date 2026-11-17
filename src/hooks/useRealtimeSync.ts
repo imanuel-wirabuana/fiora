@@ -37,6 +37,14 @@ export function useRealtimeSync() {
         }
       )
 
+    return () => {
+      unsubscribeRelationship()
+    }
+  }, [userId, relationshipId, queryClient])
+
+  useEffect(() => {
+    if (!userId) return
+
     const unsubscribeNotifications =
       notificationService.subscribeToNotifications(userId, () => {
         queryClient.invalidateQueries({
@@ -45,23 +53,32 @@ export function useRealtimeSync() {
       })
 
     return () => {
-      unsubscribeRelationship()
       unsubscribeNotifications()
     }
-  }, [userId, relationshipId, queryClient])
+  }, [userId, queryClient])
 
   useEffect(() => {
     if (!relationshipId) return
 
     const unsubscribeActivities = activityService.subscribeToActivities(
       relationshipId,
-      () => {
-        queryClient.invalidateQueries({
-          queryKey: activityKeys.byRelationship(relationshipId),
-        })
-        queryClient.invalidateQueries({
-          queryKey: chatKeys.byRelationship(relationshipId),
-        })
+      (activityType) => {
+        if (activityType === "chat") {
+          queryClient.invalidateQueries({
+            queryKey: chatKeys.byRelationship(relationshipId),
+          })
+        } else if (activityType) {
+          queryClient.invalidateQueries({
+            queryKey: activityKeys.byRelationship(relationshipId),
+          })
+        } else {
+          queryClient.invalidateQueries({
+            queryKey: activityKeys.byRelationship(relationshipId),
+          })
+          queryClient.invalidateQueries({
+            queryKey: chatKeys.byRelationship(relationshipId),
+          })
+        }
       }
     )
 
