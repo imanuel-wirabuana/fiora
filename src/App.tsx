@@ -1,12 +1,9 @@
 import { lazy, Suspense, useEffect } from "react"
 import { Redirect, Route, Switch } from "wouter"
-import { DetailLayout, MainLayout } from "./components/layouts"
+import { DetailLayout, MainTabPager, type MainTabPane } from "./components/layouts"
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt"
 import {
   AuthScreenSkeleton,
-  ChatScreenSkeleton,
-  HomeScreenSkeleton,
-  InsightScreenSkeleton,
   JournalDetailScreenSkeleton,
   JournalScreenSkeleton,
   LocationSharingScreenSkeleton,
@@ -15,9 +12,12 @@ import {
   SettingScreenSkeleton,
   SettingSubScreenSkeleton,
   SetupScreenSkeleton,
-  SpaceScreenSkeleton,
 } from "./components/ScreenSkeletons"
 import { SplashScreen } from "./components/SplashScreen"
+import { ChatScreen } from "./screens/ChatScreen"
+import { HomeScreen } from "./screens/HomeScreen"
+import { InsightScreen } from "./screens/InsightScreen"
+import { SpaceScreen } from "./screens/SpaceScreen"
 import { useAuth } from "./hooks/useAuth"
 import { useIsMobile } from "./hooks/use-mobile"
 import { usePresenceTracker } from "./hooks/usePartnerPresence"
@@ -30,26 +30,10 @@ import { useDynamicFavicon } from "./hooks/useDynamicFavicon"
 const DesktopShell = lazy(() =>
   import("./components/DesktopShell").then((m) => ({ default: m.DesktopShell }))
 )
-const HomeScreen = lazy(() =>
-  import("./screens/HomeScreen").then((m) => ({ default: m.HomeScreen }))
-)
-const InsightScreen = lazy(() =>
-  import("./screens/InsightScreen").then((m) => ({
-    default: m.InsightScreen,
-  }))
-)
-const ChatScreen = lazy(() =>
-  import("./screens/ChatScreen").then((m) => ({
-    default: m.ChatScreen,
-  }))
-)
 const LocationSharingScreen = lazy(() =>
   import("./screens/LocationSharingScreen").then((m) => ({
     default: m.LocationSharingScreen,
   }))
-)
-const SpaceScreen = lazy(() =>
-  import("./screens/SpaceScreen").then((m) => ({ default: m.SpaceScreen }))
 )
 const JournalScreen = lazy(() =>
   import("./screens/JournalScreen").then((m) => ({ default: m.JournalScreen }))
@@ -108,6 +92,26 @@ const NotFoundScreen = lazy(() =>
     default: m.NotFoundScreen,
   }))
 )
+
+const MAIN_TAB_PANES: MainTabPane[] = [
+  {
+    path: "/home",
+    element: <HomeScreen />,
+  },
+  {
+    path: "/insight",
+    element: <InsightScreen />,
+  },
+  {
+    path: "/chat",
+    scrollMode: "fixed",
+    element: <ChatScreen />,
+  },
+  {
+    path: "/space",
+    element: <SpaceScreen />,
+  },
+]
 
 function AppRoutes() {
   const { isAuthenticated, isInitialized } = useAuth()
@@ -170,46 +174,14 @@ function AppRoutes() {
             )}
           </Route>
 
-          {/* 3. Main layout routes */}
-          <Route path="/home">
+          {/* 3. Main layout routes (persistent 4-pane horizontal pager) */}
+          <Route path={/^\/(home|insight|chat|space)\/?$/}>
             {!isAuthenticated ? (
               <Redirect to="/" />
             ) : !hasRelationship ? (
               <Redirect to="/setup" />
             ) : (
-              <MainLayout headerTone="primary-at-top">
-                <Suspense fallback={<HomeScreenSkeleton />}>
-                  <HomeScreen />
-                </Suspense>
-              </MainLayout>
-            )}
-          </Route>
-
-          <Route path="/insight">
-            {!isAuthenticated ? (
-              <Redirect to="/" />
-            ) : !hasRelationship ? (
-              <Redirect to="/setup" />
-            ) : (
-              <MainLayout>
-                <Suspense fallback={<InsightScreenSkeleton />}>
-                  <InsightScreen />
-                </Suspense>
-              </MainLayout>
-            )}
-          </Route>
-
-          <Route path="/chat">
-            {!isAuthenticated ? (
-              <Redirect to="/" />
-            ) : !hasRelationship ? (
-              <Redirect to="/setup" />
-            ) : (
-              <MainLayout>
-                <Suspense fallback={<ChatScreenSkeleton />}>
-                  <ChatScreen />
-                </Suspense>
-              </MainLayout>
+              <MainTabPager panes={MAIN_TAB_PANES} />
             )}
           </Route>
 
@@ -219,20 +191,6 @@ function AppRoutes() {
 
           <Route path="/journal">
             <Redirect to="/space/journal" />
-          </Route>
-
-          <Route path="/space">
-            {!isAuthenticated ? (
-              <Redirect to="/" />
-            ) : !hasRelationship ? (
-              <Redirect to="/setup" />
-            ) : (
-              <MainLayout>
-                <Suspense fallback={<SpaceScreenSkeleton />}>
-                  <SpaceScreen />
-                </Suspense>
-              </MainLayout>
-            )}
           </Route>
 
           <Route path="/space/journal">

@@ -50,8 +50,23 @@ export function useStickyHeader({
     atTopState.location === location ? atTopState.atTop : true
 
   useEffect(() => {
-    lastScrollYRef.current = 0
-    lastTargetRef.current = null
+    const activeScroller = document.querySelector<HTMLElement>(
+      '[data-sticky-scroll="true"]'
+    )
+    const initialScrollY = activeScroller
+      ? activeScroller.scrollTop
+      : getScrollTop(document)
+    lastScrollYRef.current = Math.max(0, initialScrollY)
+    lastTargetRef.current = activeScroller ?? null
+
+    const rafId = requestAnimationFrame(() => {
+      setAtTopState((prev) => {
+        const nextAtTop = initialScrollY <= 16
+        return prev.location === location && prev.atTop === nextAtTop
+          ? prev
+          : { location, atTop: nextAtTop }
+      })
+    })
 
     const handleScroll = (event: Event) => {
       const headerEl = headerRef.current
@@ -64,9 +79,11 @@ export function useStickyHeader({
         target === document.body
       const isAncestorTarget =
         target instanceof HTMLElement && target.contains(headerEl)
+      const isMarkedScroller =
+        target instanceof HTMLElement && target.dataset.stickyScroll === "true"
 
       // Ignore scroll events from inner carousels, filter bars, or textareas
-      if (!isDocumentTarget && !isAncestorTarget) {
+      if (!isDocumentTarget && !isAncestorTarget && !isMarkedScroller) {
         return
       }
 
@@ -115,6 +132,7 @@ export function useStickyHeader({
     })
 
     return () => {
+      cancelAnimationFrame(rafId)
       window.removeEventListener("scroll", handleScroll, { capture: true })
     }
   }, [threshold, hideOffset, location])

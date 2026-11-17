@@ -60,8 +60,8 @@ function BottomNavItem({
     >
       <div
         className={cn(
-          "flex size-9 items-center justify-center rounded-full transition-all",
-          isActive ? "bg-primary/10" : "hover:bg-muted/50"
+          "flex size-9 items-center justify-center rounded-full transition-all duration-200",
+          isActive ? "scale-105 bg-primary/10" : "scale-100 hover:bg-muted/50"
         )}
       >
         <Icon
