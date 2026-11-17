@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useLocation } from "wouter"
 import { presenceService } from "@/services/presenceService"
+import { useHeadsUpStore } from "@/stores/headsUpStore"
 import { usePresenceStore } from "@/stores/presenceStore"
 import { useAuth } from "./useAuth"
 import { useRelationship } from "./useRelationship"
@@ -19,6 +20,7 @@ const ROUTE_ACTIVITY_MAP: Record<string, string> = {
 }
 
 const LAST_SEEN_THROTTLE_MS = 120_000
+const PARTNER_ONLINE_COOLDOWN_MS = 60_000
 
 function resolveActivityLabel(
   pathname: string,
@@ -39,7 +41,8 @@ function resolveActivityLabel(
 
 export function usePresenceTracker() {
   const { user, isAuthenticated } = useAuth()
-  const { relationship, currentMember } = useRelationship()
+  const { relationship, currentMember, partnerMember, partnerName } =
+    useRelationship()
   const [location] = useLocation()
 
   const customActivityOverride = usePresenceStore(
@@ -73,6 +76,9 @@ export function usePresenceTracker() {
   const activityRef = useRef(activity)
   const userIdRef = useRef(userId)
   const isHiddenRef = useRef(isHidden)
+  const partnerNameRef = useRef(partnerName || "Partner")
+  const partnerAvatarRef = useRef(partnerMember?.content?.avatar || "💚")
+  const lastOnlineHeadsUpAtRef = useRef(0)
 
   useEffect(() => {
     activityRef.current = activity
@@ -85,6 +91,11 @@ export function usePresenceTracker() {
   useEffect(() => {
     isHiddenRef.current = isHidden
   }, [isHidden])
+
+  useEffect(() => {
+    partnerNameRef.current = partnerName || "Partner"
+    partnerAvatarRef.current = partnerMember?.content?.avatar || "💚"
+  }, [partnerName, partnerMember?.content?.avatar])
 
   const persistLastSeen = useCallback(
     (force = false, activityLabel?: string) => {
@@ -174,7 +185,29 @@ export function usePresenceTracker() {
       userId,
       {
         onPartnerPresenceChange: (state) => {
+          const prev = usePresenceStore.getState().partnerPresence
+          const wasActive = Boolean(prev?.isOnline && !prev?.isBackground)
+          const isNowActive = Boolean(state.isOnline && !state.isBackground)
+
           setPartnerPresence(state)
+
+          if (!wasActive && isNowActive) {
+            const now = Date.now()
+            if (
+              now - lastOnlineHeadsUpAtRef.current >=
+              PARTNER_ONLINE_COOLDOWN_MS
+            ) {
+              lastOnlineHeadsUpAtRef.current = now
+              useHeadsUpStore.getState().show({
+                id: "partner-online",
+                title: `${partnerNameRef.current} is online`,
+                body: state.activity || "Active in Fiora",
+                emoji: partnerAvatarRef.current,
+                type: "presence",
+                url: "/home",
+              })
+            }
+          }
         },
         onPartnerLeave: () => {
           setLastDisconnectedAt(new Date().toISOString())

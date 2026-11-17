@@ -8,7 +8,6 @@ import {
 import {
   Bell,
   BellRing,
-  BookOpen,
   Heart,
   MessageCircle,
   Send,
@@ -27,31 +26,43 @@ import { useNotifications } from "@/hooks/useNotifications"
 import { usePushNotifications } from "@/hooks/usePushNotifications"
 import { useRelationship } from "@/hooks/useRelationship"
 import type {
+  NotificationCategory,
   NotificationRecord,
-  NotificationType,
 } from "@/types/notification"
 
-type NotificationFilter = "all" | NotificationType
+type NotificationFilter = "all" | NotificationCategory
+
+const PRIMARY_NOTIFICATION_TYPES = new Set<string>([
+  "mood",
+  "nudge",
+  "chat",
+  "quiz",
+])
 
 const FILTER_OPTIONS: { value: NotificationFilter; label: string }[] = [
   { value: "all", label: "All" },
-  { value: "chat", label: "Chat" },
   { value: "mood", label: "Mood" },
   { value: "nudge", label: "Nudge" },
-  { value: "journal", label: "Journal" },
+  { value: "chat", label: "Chat" },
   { value: "quiz", label: "Quiz" },
+  { value: "other", label: "Other" },
 ]
 
+function getNotificationCategory(type?: string | null): NotificationCategory {
+  if (type && PRIMARY_NOTIFICATION_TYPES.has(type)) {
+    return type as NotificationCategory
+  }
+  return "other"
+}
+
 function getTypeIcon(type?: string | null) {
-  switch (type) {
+  switch (getNotificationCategory(type)) {
     case "chat":
       return <MessageCircle className="size-4 text-primary" />
     case "mood":
       return <Heart className="size-4 fill-primary text-primary" />
     case "nudge":
       return <Send className="size-4 text-amber-500" />
-    case "journal":
-      return <BookOpen className="size-4 text-blue-500" />
     case "quiz":
       return <Sparkles className="size-4 text-violet-500" />
     default:
@@ -74,6 +85,7 @@ export function NotificationListSection() {
   const [, navigate] = useLocation()
   const [filter, setFilter] = useState<NotificationFilter>("all")
   const [clearDrawerOpen, setClearDrawerOpen] = useState(false)
+  const [justReadIds, setJustReadIds] = useState<Set<number>>(() => new Set())
   const {
     notifications,
     unreadCount,
@@ -107,15 +119,36 @@ export function NotificationListSection() {
   const partnerName = partnerMember?.content?.name || "Partner"
   const partnerAvatar = partnerMember?.content?.avatar || "🤍"
 
-  // Automatically mark all unread notifications as read when opening or receiving while open
+  // Capture unread IDs for this visit before auto-marking all as read
   useEffect(() => {
     if (isLoading || unreadCount === 0) return
+
+    const unreadIds = notifications
+      .filter((item) => item.content && !item.content.isRead)
+      .map((item) => item.id)
+
+    if (unreadIds.length > 0) {
+      setJustReadIds((prev) => {
+        const next = new Set(prev)
+        let changed = false
+        for (const id of unreadIds) {
+          if (!next.has(id)) {
+            next.add(id)
+            changed = true
+          }
+        }
+        return changed ? next : prev
+      })
+    }
+
     void markAllAsRead()
-  }, [isLoading, unreadCount, markAllAsRead])
+  }, [isLoading, unreadCount, notifications, markAllAsRead])
 
   const filteredNotifications = useMemo(() => {
     if (filter === "all") return notifications
-    return notifications.filter((item) => item.content?.type === filter)
+    return notifications.filter(
+      (item) => getNotificationCategory(item.content?.type) === filter
+    )
   }, [notifications, filter])
 
   const groupedSections = useMemo(() => {
@@ -263,6 +296,8 @@ export function NotificationListSection() {
                   const content = item.content
                   if (!content) return null
 
+                  const isJustRead = !content.isRead || justReadIds.has(item.id)
+
                   return (
                     <div
                       key={item.id}
@@ -284,12 +319,22 @@ export function NotificationListSection() {
                       className="cursor-pointer text-left"
                     >
                       <CustomItem
-                        className="gap-1.5 rounded-2xl p-3 transition-colors hover:bg-muted/30"
+                        variant={isJustRead ? "soft" : "default"}
+                        className={
+                          isJustRead
+                            ? "gap-1.5 rounded-2xl p-3 transition-colors hover:bg-primary/15"
+                            : "gap-1.5 rounded-2xl p-3 transition-colors hover:bg-muted/30"
+                        }
                         icon={getTypeIcon(content.type)}
                         title={`${partnerAvatar} ${content.title || "Notification"}`}
                         description={content.body || undefined}
                         topRightActions={
                           <div className="flex items-center gap-1.5">
+                            {isJustRead && (
+                              <span className="rounded-full bg-primary/15 px-1.5 py-0.5 text-[9px] font-semibold text-primary">
+                                New
+                              </span>
+                            )}
                             <span className="text-[10px] whitespace-nowrap text-muted-foreground">
                               {formatNotificationTime(item.created_at)}
                             </span>

@@ -448,7 +448,7 @@ export function useActivities() {
 
     if (payload.isShared) {
       void notifyPartner({
-        type: "journal",
+        type: "other",
         title: `${senderName} added a new journal entry`,
         body: payload.title || "Shared a memory",
         url: "/space/journal",
@@ -475,7 +475,7 @@ export function useActivities() {
 
     if (nextShared) {
       void notifyPartner({
-        type: "journal",
+        type: "other",
         title: `${senderName} shared a journal entry`,
         body: currentContent.title || "Shared a memory",
         url: "/space/journal",

@@ -130,7 +130,11 @@ export const notificationService = {
     }
   },
 
-  subscribeToNotifications(userId: string, onChange: () => void): () => void {
+  subscribeToNotifications(
+    userId: string,
+    onChange: () => void,
+    onInsert?: (record: NotificationRecord) => void
+  ): () => void {
     const uniqueId = Math.random().toString(36).slice(2, 9)
     const channelName = `realtime-notifications-${userId}-${uniqueId}`
 
@@ -144,8 +148,11 @@ export const notificationService = {
           table: "notifications",
           filter: `user_id=eq.${userId}`,
         },
-        () => {
+        (payload) => {
           onChange()
+          if (payload.eventType === "INSERT" && payload.new) {
+            onInsert?.(payload.new as NotificationRecord)
+          }
         }
       )
       .subscribe()

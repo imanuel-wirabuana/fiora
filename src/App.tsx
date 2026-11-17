@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect } from "react"
 import { Redirect, Route, Switch } from "wouter"
 import { DetailLayout, MainTabPager, type MainTabPane } from "./components/layouts"
+import { HeadsUpNotification } from "./components/notification"
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt"
 import {
   AuthScreenSkeleton,
@@ -134,6 +135,7 @@ function AppRoutes() {
   return (
     <div className="relative min-h-svh w-full md:min-h-full">
       <SplashScreen isVisible={!isAppReady} />
+      {isAppReady && <HeadsUpNotification />}
       {isAppReady ? (
         <Switch>
           {/* 1. Auth routes (Login / Register) */}

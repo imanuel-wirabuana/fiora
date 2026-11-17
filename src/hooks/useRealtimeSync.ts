@@ -10,6 +10,7 @@ import { chatKeys } from "./useChat"
 import { notificationKeys } from "./useNotifications"
 import { quizKeys } from "./useQuiz"
 import { relationshipKeys, useRelationship } from "./useRelationship"
+import { useHeadsUpStore } from "../stores/headsUpStore"
 
 /**
  * Mounts a single set of Supabase Realtime subscriptions for the active user
@@ -46,11 +47,29 @@ export function useRealtimeSync() {
     if (!userId) return
 
     const unsubscribeNotifications =
-      notificationService.subscribeToNotifications(userId, () => {
-        queryClient.invalidateQueries({
-          queryKey: notificationKeys.byUser(userId),
-        })
-      })
+      notificationService.subscribeToNotifications(
+        userId,
+        () => {
+          queryClient.invalidateQueries({
+            queryKey: notificationKeys.byUser(userId),
+          })
+        },
+        (inserted) => {
+          if (!inserted.content) return
+          const path = window.location.pathname
+          if (path === "/notification") return
+          if (path === "/chat" && inserted.content.type === "chat") return
+          useHeadsUpStore.getState().show({
+            id: inserted.id,
+            title: inserted.content.title || "Notification",
+            body: inserted.content.body || undefined,
+            emoji: inserted.content.emoji,
+            type: inserted.content.type,
+            url: inserted.content.url,
+            notification: inserted,
+          })
+        }
+      )
 
     return () => {
       unsubscribeNotifications()
