@@ -219,3 +219,77 @@ export function generateInviteCode(): string {
   const code = Math.floor(10000 + Math.random() * 90000)
   return String(code)
 }
+
+export type ZodiacSign =
+  | "Capricorn"
+  | "Aquarius"
+  | "Pisces"
+  | "Aries"
+  | "Taurus"
+  | "Gemini"
+  | "Cancer"
+  | "Leo"
+  | "Virgo"
+  | "Libra"
+  | "Scorpio"
+  | "Sagittarius"
+
+const ZODIAC_BOUNDARIES: ReadonlyArray<{
+  month: number
+  day: number
+  sign: ZodiacSign
+}> = [
+  { month: 1, day: 19, sign: "Capricorn" },
+  { month: 2, day: 18, sign: "Aquarius" },
+  { month: 3, day: 20, sign: "Pisces" },
+  { month: 4, day: 19, sign: "Aries" },
+  { month: 5, day: 20, sign: "Taurus" },
+  { month: 6, day: 20, sign: "Gemini" },
+  { month: 7, day: 22, sign: "Cancer" },
+  { month: 8, day: 22, sign: "Leo" },
+  { month: 9, day: 22, sign: "Virgo" },
+  { month: 10, day: 22, sign: "Libra" },
+  { month: 11, day: 21, sign: "Scorpio" },
+  { month: 12, day: 21, sign: "Sagittarius" },
+]
+
+/**
+ * Determine Western zodiac sign from a birth date.
+ */
+export function getZodiacSign(date: Date): ZodiacSign {
+  const month = date.getMonth() + 1
+  const day = date.getDate()
+  const entry = ZODIAC_BOUNDARIES.find((b) => b.month === month)
+  if (!entry) return "Capricorn"
+  if (day <= entry.day) return entry.sign
+  const nextIndex = (ZODIAC_BOUNDARIES.indexOf(entry) + 1) % ZODIAC_BOUNDARIES.length
+  return ZODIAC_BOUNDARIES[nextIndex].sign
+}
+
+/**
+ * Compute days remaining until the next occurrence of a birth date (0 if today).
+ */
+export function getDaysUntilNextBirthday(
+  birthDate: Date,
+  referenceDate: Date = new Date()
+): number {
+  const today = new Date(
+    referenceDate.getFullYear(),
+    referenceDate.getMonth(),
+    referenceDate.getDate()
+  )
+  let next = new Date(
+    today.getFullYear(),
+    birthDate.getMonth(),
+    birthDate.getDate()
+  )
+  if (next < today) {
+    next = new Date(
+      today.getFullYear() + 1,
+      birthDate.getMonth(),
+      birthDate.getDate()
+    )
+  }
+  const msPerDay = 1000 * 60 * 60 * 24
+  return Math.round((next.getTime() - today.getTime()) / msPerDay)
+}

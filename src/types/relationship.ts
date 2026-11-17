@@ -38,10 +38,18 @@ export interface RelationshipContent {
   aliases?: Record<string, string>
 }
 
+export interface HoroscopeOpenedState {
+  date: string
+  self?: boolean
+  partner?: boolean
+}
+
 export interface RelationshipMemberContent {
   gender?: Gender
   name?: string
   avatar?: string
+  birth_date?: string | null
+  horoscope_opened?: HoroscopeOpenedState | null
   last_seen_at?: string
   last_activity?: string
   chat_read_at?: string

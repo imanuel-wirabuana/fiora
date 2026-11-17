@@ -5,4 +5,5 @@ export {
   type CustomDatePickerProps,
   type CustomDatePickerVariant,
 } from "./CustomDatePicker"
+export { AvatarPicker, type AvatarPickerProps } from "./AvatarPicker"
 

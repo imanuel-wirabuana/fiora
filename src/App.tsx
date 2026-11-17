@@ -67,6 +67,11 @@ const NotificationScreen = lazy(() =>
 const SettingScreen = lazy(() =>
   import("./screens/SettingScreen").then((m) => ({ default: m.SettingScreen }))
 )
+const ProfileSettingScreen = lazy(() =>
+  import("./screens/ProfileSettingScreen").then((m) => ({
+    default: m.ProfileSettingScreen,
+  }))
+)
 const MoodSettingScreen = lazy(() =>
   import("./screens/MoodSettingScreen").then((m) => ({
     default: m.MoodSettingScreen,
@@ -253,6 +258,20 @@ function AppRoutes() {
               <DetailLayout title="Settings" backHref="/space">
                 <Suspense fallback={<SettingScreenSkeleton />}>
                   <SettingScreen />
+                </Suspense>
+              </DetailLayout>
+            )}
+          </Route>
+
+          <Route path="/setting/profile">
+            {!isAuthenticated ? (
+              <Redirect to="/" />
+            ) : !hasRelationship ? (
+              <Redirect to="/setup" />
+            ) : (
+              <DetailLayout title="Profile" backHref="/setting">
+                <Suspense fallback={<SettingSubScreenSkeleton />}>
+                  <ProfileSettingScreen />
                 </Suspense>
               </DetailLayout>
             )}

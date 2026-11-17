@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react"
 import {
   DailyQuizSection,
+  HoroscopeSection,
   MoodSection,
   NudgeSection,
   PartnerPresenceSection,
@@ -23,7 +24,7 @@ export function HomeScreen() {
           <PartnerPresenceSection />
         </div>
       </section>
-      <section className="relative z-10 mx-auto -mt-28 flex w-full max-w-md flex-col gap-4 px-4 pb-20 sm:max-w-2xl">
+      <section className="relative z-10 mx-auto -mt-28 flex w-full max-w-md flex-col gap-4 px-4 sm:max-w-2xl">
         <MoodSection />
         <div className="flex items-stretch gap-3">
           {locationSharing ? (
@@ -37,6 +38,11 @@ export function HomeScreen() {
             <NudgeSection compact={Boolean(locationSharing)} />
           </div>
         </div>
+      </section>
+      <section className="mx-auto mt-2 w-full max-w-md sm:max-w-2xl">
+        <HoroscopeSection />
+      </section>
+      <section className="mx-auto mt-2 flex w-full max-w-md flex-col gap-4 px-4 pb-20 sm:max-w-2xl">
         <DailyQuizSection />
       </section>
     </div>
