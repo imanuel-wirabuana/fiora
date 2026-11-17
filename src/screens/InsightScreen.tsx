@@ -16,7 +16,7 @@ export function InsightScreen() {
   const [dateFilter, setDateFilter] = useState<InsightDateFilter>(() => {
     const today = new Date()
     return {
-      mode: "weekly",
+      mode: "daily",
       date: today,
       rangeStart: subDays(today, 6),
       rangeEnd: today,
