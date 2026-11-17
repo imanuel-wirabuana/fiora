@@ -201,6 +201,105 @@ interface HoroscopeDeckProps {
   emptyBirthDateContent: React.ReactNode
 }
 
+type ExitingCardSnapshot =
+  | { type: "cover" }
+  | {
+      type: "card"
+      card: HoroscopeCardItem
+      index: number
+      total: number
+    }
+
+const DECK_EASING = "ease-[cubic-bezier(0.22,1,0.36,1)]"
+const AUTO_CYCLE_MS = 33_000
+const EXIT_DURATION_MS = 570
+
+function CardFaceContent({
+  card,
+  index,
+  total,
+  zodiacIcon,
+}: {
+  card: HoroscopeCardItem
+  index: number
+  total: number
+  zodiacIcon: LucideIcon | null
+}) {
+  const ActiveIcon = card.Icon
+
+  return (
+    <>
+      <ZodiacWatermark
+        ZodiacIcon={zodiacIcon}
+        className="text-background/20"
+      />
+
+      <div className="relative z-10 flex w-full items-center justify-between gap-1">
+        <span className="flex items-center gap-1.5 text-xs font-semibold">
+          <ActiveIcon className="size-3.5 shrink-0" />
+          <span>{card.label}</span>
+        </span>
+
+        <span
+          className={cn(
+            "shrink-0 rounded-md px-1.5 py-0.5 font-mono text-[9px] font-semibold tabular-nums",
+            card.pillClass
+          )}
+        >
+          {index + 1}/{total}
+        </span>
+      </div>
+
+      <p className="relative z-10 line-clamp-3 text-xs leading-snug text-current/95">
+        {card.text}
+      </p>
+    </>
+  )
+}
+
+function CoverFaceContent({
+  coverTitle,
+  zodiac,
+  zodiacIcon: ZodiacIcon,
+  coverStyles,
+}: {
+  coverTitle: string
+  zodiac: ZodiacSign
+  zodiacIcon: LucideIcon | null
+  coverStyles: ReturnType<typeof getCoverGenderStyles>
+}) {
+  return (
+    <>
+      <ZodiacWatermark
+        ZodiacIcon={ZodiacIcon}
+        className={coverStyles.watermark}
+      />
+
+      <div className="relative z-10 flex items-center justify-between gap-1">
+        <span
+          className={cn(
+            "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium",
+            coverStyles.pill
+          )}
+        >
+          {ZodiacIcon && <ZodiacIcon className="size-2.5 shrink-0" />}
+          <span>{zodiac}</span>
+        </span>
+        <Sparkles className={cn("size-3.5", coverStyles.accent)} />
+      </div>
+
+      <div className="relative z-10 flex flex-col gap-0.5">
+        <span className="text-xs leading-snug font-semibold">
+          {coverTitle}
+        </span>
+        <span className={cn("text-[10px]", coverStyles.subtext)}>
+          Tap to open
+        </span>
+      </div>
+    </>
+  )
+}
+
 const HoroscopeDeck = memo(function HoroscopeDeck({
   coverTitle,
   gender,
@@ -214,8 +313,9 @@ const HoroscopeDeck = memo(function HoroscopeDeck({
   emptyBirthDateContent,
 }: HoroscopeDeckProps) {
   const [activeIndex, setActiveIndex] = useState(0)
-  const [isSwitching, setIsSwitching] = useState(false)
-  const switchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [exitingSnapshot, setExitingSnapshot] =
+    useState<ExitingCardSnapshot | null>(null)
+  const exitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const cards = buildHoroscopeCards(horoscope)
   const safeIndex = cards.length > 0 ? activeIndex % cards.length : 0
@@ -223,44 +323,66 @@ const HoroscopeDeck = memo(function HoroscopeDeck({
 
   useEffect(() => {
     return () => {
-      if (switchTimerRef.current) clearTimeout(switchTimerRef.current)
+      if (exitTimerRef.current) clearTimeout(exitTimerRef.current)
     }
   }, [])
 
-  const triggerSwitch = useCallback((nextAction: () => void) => {
-    setIsSwitching((prev) => {
-      if (prev) return prev
-      if (switchTimerRef.current) clearTimeout(switchTimerRef.current)
-      switchTimerRef.current = setTimeout(() => {
-        nextAction()
-        setIsSwitching(false)
-        switchTimerRef.current = null
-      }, 180)
-      return true
-    })
-  }, [])
+  const triggerSwitch = useCallback(
+    (snapshot: ExitingCardSnapshot, nextAction: () => void) => {
+      if (exitTimerRef.current) return
 
-  // Auto-cycle every 5 seconds infinitely once opened
+      setExitingSnapshot(snapshot)
+      nextAction()
+
+      exitTimerRef.current = setTimeout(() => {
+        setExitingSnapshot(null)
+        exitTimerRef.current = null
+      }, EXIT_DURATION_MS)
+    },
+    []
+  )
+
+  // Auto-cycle every 33 seconds infinitely once opened
   useEffect(() => {
     if (!isOpened || cards.length <= 1) return
 
     const autoTimer = setTimeout(() => {
-      triggerSwitch(() => setActiveIndex((prev) => (prev + 1) % cards.length))
-    }, 5000)
+      const currentCard = cards[safeIndex]
+      if (!currentCard) return
+      triggerSwitch(
+        {
+          type: "card",
+          card: currentCard,
+          index: safeIndex,
+          total: cards.length,
+        },
+        () => setActiveIndex((prev) => (prev + 1) % cards.length)
+      )
+    }, AUTO_CYCLE_MS)
 
     return () => {
       clearTimeout(autoTimer)
     }
-  }, [isOpened, cards.length, activeIndex, triggerSwitch])
+  }, [isOpened, cards, safeIndex, triggerSwitch])
 
   const handleTap = () => {
-    if (isSwitching) return
+    if (exitingSnapshot) return
     if (!isOpened) {
-      triggerSwitch(onOpen)
+      triggerSwitch({ type: "cover" }, onOpen)
       return
     }
     if (cards.length <= 1) return
-    triggerSwitch(() => setActiveIndex((prev) => (prev + 1) % cards.length))
+    const currentCard = cards[safeIndex]
+    if (!currentCard) return
+    triggerSwitch(
+      {
+        type: "card",
+        card: currentCard,
+        index: safeIndex,
+        total: cards.length,
+      },
+      () => setActiveIndex((prev) => (prev + 1) % cards.length)
+    )
   }
 
   if (isLoading) {
@@ -322,134 +444,128 @@ const HoroscopeDeck = memo(function HoroscopeDeck({
     )
   }
 
-  // Visible stack layers behind the front card (up to 3 peeking colored cards)
-  const trailingOffsets = [1, 2, 3]
-    .filter((offset) => offset < cards.length)
-    .reverse()
+  // Visible stack layers: when opened, offset 0 is the interactive front card;
+  // when closed, trailing cards peek behind the cover card.
+  const stackOffsets = (
+    isOpened
+      ? [0, 1, 2, 3].filter((offset) => offset < cards.length)
+      : [1, 2, 3].filter((offset) => offset <= cards.length)
+  ).reverse()
+
+  const coverStyles = getCoverGenderStyles(gender)
 
   return (
     <div className="relative h-32 w-full select-none">
-      {/* Trailing tilted stack layers */}
-      {trailingOffsets.map((offset) => {
+      {/* Stacked category cards with stable keys so promotions animate smoothly */}
+      {stackOffsets.map((offset) => {
         const cardIdx = isOpened
           ? (safeIndex + offset) % cards.length
-          : (offset - 1) % cards.length
-        const trailingCard = cards[cardIdx]
-        const tilt =
-          CARD_TILT_DEGREES[
-            (cardIdx + (isOpened ? 0 : 1)) % CARD_TILT_DEGREES.length
-          ]
-        const scale = 1 - offset * 0.035
-        const translateY = offset * 4
+          : offset - 1
+        const stackCard = cards[cardIdx]
+        const isFront = isOpened && offset === 0
+        const tilt = isFront
+          ? 0
+          : CARD_TILT_DEGREES[
+              (cardIdx + (isOpened ? 0 : 1)) % CARD_TILT_DEGREES.length
+            ]
+        const scale = isFront ? 1 : 1 - offset * 0.035
+        const translateY = isFront ? 0 : offset * 4
 
         return (
-          <div
-            key={`stack-${offset}`}
-            aria-hidden="true"
+          <button
+            key={stackCard.key}
+            type="button"
+            disabled={!isFront}
+            tabIndex={isFront ? 0 : -1}
+            aria-hidden={!isFront || undefined}
+            aria-label={
+              isFront
+                ? `${stackCard.label} horoscope (${safeIndex + 1} of ${cards.length}). Tap for next.`
+                : undefined
+            }
+            onClick={isFront ? handleTap : undefined}
             style={{
+              zIndex: 10 - offset,
               transform: `translate3d(0, ${translateY}px, 0) scale(${scale}) rotate(${tilt}deg)`,
             }}
             className={cn(
-              "pointer-events-none absolute inset-0 transform-gpu rounded-2xl border transition-transform duration-300 ease-out",
-              trailingCard.cardClass,
-              offset === 1 ? "opacity-90" : offset === 2 ? "opacity-75" : "opacity-60"
+              "absolute inset-0 flex h-full w-full transform-gpu flex-col justify-between gap-1.5 overflow-hidden rounded-2xl border p-3.5 text-left transition-[transform,opacity] duration-[550ms] motion-reduce:transition-none",
+              DECK_EASING,
+              stackCard.cardClass,
+              isFront
+                ? cn(
+                    "pointer-events-auto opacity-100 shadow-sm",
+                    cards.length > 1 && "cursor-pointer active:scale-[0.985]"
+                  )
+                : cn(
+                    "pointer-events-none",
+                    offset === 1
+                      ? "opacity-90"
+                      : offset === 2
+                        ? "opacity-75"
+                        : "opacity-60"
+                  )
             )}
-          />
+          >
+            <CardFaceContent
+              card={stackCard}
+              index={cardIdx}
+              total={cards.length}
+              zodiacIcon={ZodiacIcon}
+            />
+          </button>
         )
       })}
 
-      {/* Front interactive card: Cover Card (removed on tap) or active category card */}
-      {!isOpened ? (
-        (() => {
-          const coverStyles = getCoverGenderStyles(gender)
-          return (
-            <button
-              type="button"
-              onClick={handleTap}
-              aria-label={`${coverTitle} (${zodiac}). Tap to open.`}
-              className={cn(
-                "relative z-10 flex h-full w-full transform-gpu cursor-pointer flex-col justify-between overflow-hidden rounded-2xl border p-3.5 text-left shadow-sm transition-[transform,opacity] duration-200 ease-out",
-                coverStyles.card,
-                isSwitching
-                  ? "translate-x-4 -translate-y-3 scale-95 rotate-12 opacity-0"
-                  : "translate-x-0 translate-y-0 scale-100 rotate-0 opacity-100"
-              )}
-            >
-              <ZodiacWatermark
-                ZodiacIcon={ZodiacIcon}
-                className={coverStyles.watermark}
-              />
+      {/* Cover card (when not yet opened) */}
+      {!isOpened && (
+        <button
+          key="cover"
+          type="button"
+          onClick={handleTap}
+          aria-label={`${coverTitle} (${zodiac}). Tap to open.`}
+          className={cn(
+            "relative z-10 flex h-full w-full transform-gpu cursor-pointer flex-col justify-between overflow-hidden rounded-2xl border p-3.5 text-left shadow-sm transition-[transform,opacity] duration-[550ms] active:scale-[0.985] motion-reduce:transition-none",
+            DECK_EASING,
+            coverStyles.card
+          )}
+        >
+          <CoverFaceContent
+            coverTitle={coverTitle}
+            zodiac={zodiac}
+            zodiacIcon={ZodiacIcon}
+            coverStyles={coverStyles}
+          />
+        </button>
+      )}
 
-              <div className="relative z-10 flex items-center justify-between gap-1">
-                <span
-                  className={cn(
-                    "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium",
-                    coverStyles.pill
-                  )}
-                >
-                  {ZodiacIcon && <ZodiacIcon className="size-2.5 shrink-0" />}
-                  <span>{zodiac}</span>
-                </span>
-                <Sparkles className={cn("size-3.5", coverStyles.accent)} />
-              </div>
-
-              <div className="relative z-10 flex flex-col gap-0.5">
-                <span className="text-xs leading-snug font-semibold">
-                  {coverTitle}
-                </span>
-                <span className={cn("text-[10px]", coverStyles.subtext)}>
-                  Tap to open
-                </span>
-              </div>
-            </button>
-          )
-        })()
-      ) : (
-        (() => {
-          const activeCard = cards[safeIndex]
-          const ActiveIcon = activeCard.Icon
-
-          return (
-            <button
-              type="button"
-              onClick={handleTap}
-              aria-label={`${activeCard.label} horoscope (${safeIndex + 1} of ${cards.length}). Tap for next.`}
-              className={cn(
-                "relative z-10 flex h-full w-full transform-gpu flex-col justify-between gap-1.5 overflow-hidden rounded-2xl border p-3.5 text-left shadow-sm transition-[transform,opacity] duration-200 ease-out",
-                activeCard.cardClass,
-                cards.length > 1 && "cursor-pointer",
-                isSwitching
-                  ? "translate-x-4 -translate-y-3 scale-95 rotate-12 opacity-0"
-                  : "translate-x-0 translate-y-0 scale-100 rotate-0 opacity-100"
-              )}
-            >
-              <ZodiacWatermark
-                ZodiacIcon={ZodiacIcon}
-                className="text-background/20"
-              />
-
-              <div className="relative z-10 flex w-full items-center justify-between gap-1">
-                <span className="flex items-center gap-1.5 text-xs font-semibold">
-                  <ActiveIcon className="size-3.5 shrink-0" />
-                  <span>{activeCard.label}</span>
-                </span>
-
-                <span
-                  className={cn(
-                    "shrink-0 rounded-md px-1.5 py-0.5 font-mono text-[9px] font-semibold tabular-nums",
-                    activeCard.pillClass
-                  )}
-                >
-                  {safeIndex + 1}/{cards.length}
-                </span>
-              </div>
-
-              <p className="relative z-10 line-clamp-3 text-xs leading-snug text-current/95">
-                {activeCard.text}
-              </p>
-            </button>
-          )
-        })()
+      {/* Exiting card peel-away overlay */}
+      {exitingSnapshot && (
+        <div
+          aria-hidden="true"
+          className={cn(
+            "pointer-events-none absolute inset-0 z-20 flex h-full w-full transform-gpu animate-[horoscope-card-exit_550ms_cubic-bezier(0.22,1,0.36,1)_forwards] flex-col justify-between gap-1.5 overflow-hidden rounded-2xl border p-3.5 text-left shadow-sm motion-reduce:animate-none",
+            exitingSnapshot.type === "cover"
+              ? coverStyles.card
+              : exitingSnapshot.card.cardClass
+          )}
+        >
+          {exitingSnapshot.type === "cover" ? (
+            <CoverFaceContent
+              coverTitle={coverTitle}
+              zodiac={zodiac}
+              zodiacIcon={ZodiacIcon}
+              coverStyles={coverStyles}
+            />
+          ) : (
+            <CardFaceContent
+              card={exitingSnapshot.card}
+              index={exitingSnapshot.index}
+              total={exitingSnapshot.total}
+              zodiacIcon={ZodiacIcon}
+            />
+          )}
+        </div>
       )}
     </div>
   )
@@ -475,9 +591,9 @@ export function HoroscopeSection() {
     <div
       role="region"
       aria-label="Today's Horoscopes"
-      className="scrollbar-none flex w-full snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain scroll-px-4 pt-5 pb-7 [-webkit-overflow-scrolling:touch]"
+      className="scrollbar-none pointer-events-none -mt-9 -mb-5 flex w-full snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain scroll-px-4 pt-14 pb-12 [-webkit-overflow-scrolling:touch]"
     >
-      <div className="w-[86%] shrink-0 snap-start pl-4">
+      <div className="pointer-events-auto w-[86%] shrink-0 snap-start pl-4">
         <HoroscopeDeck
           coverTitle="Open your horoscope today"
           gender={currentMember?.content?.gender}
@@ -507,7 +623,7 @@ export function HoroscopeSection() {
         />
       </div>
 
-      <div className="w-[86%] shrink-0 snap-end pr-4">
+      <div className="pointer-events-auto w-[86%] shrink-0 snap-end pr-4">
         <HoroscopeDeck
           coverTitle="Open partner's horoscope today"
           gender={partnerMember?.content?.gender}

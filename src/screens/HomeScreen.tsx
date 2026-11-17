@@ -39,10 +39,10 @@ export function HomeScreen() {
           </div>
         </div>
       </section>
-      <section className="mx-auto mt-2 w-full max-w-md sm:max-w-2xl">
+      <section className="pointer-events-none relative z-20 mx-auto mt-2 w-full max-w-md sm:max-w-2xl">
         <HoroscopeSection />
       </section>
-      <section className="mx-auto mt-2 flex w-full max-w-md flex-col gap-4 px-4 pb-20 sm:max-w-2xl">
+      <section className="relative z-10 mx-auto mt-2 flex w-full max-w-md flex-col gap-4 px-4 pb-20 sm:max-w-2xl">
         <DailyQuizSection />
       </section>
     </div>
