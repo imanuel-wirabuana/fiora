@@ -72,14 +72,24 @@ export function LocationSharingSection() {
       mapInstanceRef.current = map
     }
 
+    const container = mapContainerRef.current
+    const resizeObserver = new ResizeObserver(() => {
+      const map = mapInstanceRef.current
+      if (!map) return
+      map.invalidateSize({ animate: false })
+      fitMapToPoints(map)
+    })
+    resizeObserver.observe(container)
+
     return () => {
+      resizeObserver.disconnect()
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove()
         mapInstanceRef.current = null
         markersLayerRef.current = null
       }
     }
-  }, [locationSharing])
+  }, [locationSharing, fitMapToPoints])
 
   // Update Markers & Zoom bounds whenever locations change
   useEffect(() => {

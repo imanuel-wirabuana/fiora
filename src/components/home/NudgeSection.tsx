@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { formatDistanceToNow } from "date-fns"
-import { Check, Plus, Send } from "lucide-react"
+import { Check, Pin, Plus, Send } from "lucide-react"
+import { useLocation } from "wouter"
 import { AnimatedEmoji } from "@/components/AnimatedEmoji"
 import { CustomItem } from "@/components/CustomItem"
 import { FormDrawer } from "@/components/FormDrawer"
@@ -10,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { useActivities } from "@/hooks/useActivities"
 import { useAuth } from "@/hooks/useAuth"
 import { useRelationship } from "@/hooks/useRelationship"
+import { MAX_PINNED_NUDGES } from "@/lib/relationship"
 import { cn } from "@/lib/utils"
 import type { NudgeOption } from "@/types/relationship"
 
@@ -30,6 +32,7 @@ interface LocalSentNudge {
 }
 
 export function NudgeSection({ compact = false }: NudgeSectionProps) {
+  const [, setLocation] = useLocation()
   const { nudgeOptions, partnerMember } = useRelationship()
   const { nudgeActivities, latestNudge, sendNudge } = useActivities()
   const { user } = useAuth()
@@ -49,8 +52,13 @@ export function NudgeSection({ compact = false }: NudgeSectionProps) {
   const partnerName = partnerMember?.content?.name || "Partner"
 
   const pinnedNudges = useMemo(
-    () => nudgeOptions.filter((n) => n.pinned),
+    () =>
+      nudgeOptions.filter((n) => n.pinned).slice(0, MAX_PINNED_NUDGES),
     [nudgeOptions]
+  )
+  const emptyPinnedSlotCount = Math.max(
+    0,
+    MAX_PINNED_NUDGES - pinnedNudges.length
   )
 
   const pinnedKeySet = useMemo(
@@ -305,6 +313,29 @@ export function NudgeSection({ compact = false }: NudgeSectionProps) {
               </Button>
             )
           })}
+
+          {Array.from({ length: emptyPinnedSlotCount }, (_, idx) => (
+            <Button
+              key={`empty-pin-${idx}`}
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setLocation("/setting/nudge")}
+              title="Pin nudges in settings"
+              aria-label="Pin nudges in settings"
+              className={cn(
+                "border-dashed font-normal text-muted-foreground transition hover:text-foreground active:scale-95",
+                compact
+                  ? "size-9 justify-center rounded-full p-0"
+                  : "h-9 justify-start gap-2 px-2.5 text-[11px]"
+              )}
+            >
+              <Pin className="size-3.5 shrink-0" />
+              {!compact && (
+                <span className="flex-1 truncate text-left">Pin nudge</span>
+              )}
+            </Button>
+          ))}
 
           <Button
             type="button"

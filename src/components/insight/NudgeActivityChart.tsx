@@ -1,6 +1,8 @@
+import { useMemo } from "react"
 import { HeartHandshake } from "lucide-react"
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
 import { CustomItem } from "@/components/CustomItem"
+import { CustomSkeleton } from "@/components/CustomSkeleton"
 import {
   ChartContainer,
   ChartTooltip,
@@ -17,6 +19,7 @@ interface NudgeActivityChartProps {
   topLabel: string | null
   myGender?: Gender | null
   partnerGender?: Gender | null
+  isLoading?: boolean
 }
 
 export function NudgeActivityChart({
@@ -25,19 +28,24 @@ export function NudgeActivityChart({
   topLabel,
   myGender,
   partnerGender,
+  isLoading = false,
 }: NudgeActivityChartProps) {
   const hasAnyNudge = data.some((d) => d.sent > 0 || d.received > 0)
 
-  const chartConfig = {
-    sent: {
-      label: "Sent",
-      color: getGenderChartColor(myGender, "var(--chart-1)"),
-    },
-    received: {
-      label: "Received",
-      color: getGenderChartColor(partnerGender, "var(--chart-2)"),
-    },
-  } satisfies ChartConfig
+  const chartConfig = useMemo(
+    () =>
+      ({
+        sent: {
+          label: "Sent",
+          color: getGenderChartColor(myGender, "var(--chart-1)"),
+        },
+        received: {
+          label: "Received",
+          color: getGenderChartColor(partnerGender, "var(--chart-2)"),
+        },
+      }) satisfies ChartConfig,
+    [myGender, partnerGender]
+  )
 
   return (
     <CustomItem
@@ -50,7 +58,9 @@ export function NudgeActivityChart({
       className="rounded-2xl p-3"
       contentClassName="w-full"
     >
-      {!hasAnyNudge ? (
+      {isLoading ? (
+        <CustomSkeleton className="h-36 w-full rounded-xl" />
+      ) : !hasAnyNudge ? (
         <div className="flex h-36 w-full items-center justify-center rounded-xl border border-dashed border-primary/25 px-2 text-center text-[11px] text-muted-foreground">
           No nudges in this range.
         </div>

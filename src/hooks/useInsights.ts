@@ -1,7 +1,11 @@
 import { useMemo } from "react"
 import { useQuery } from "@tanstack/react-query"
-import { eachDayOfInterval, format, startOfDay, subDays } from "date-fns"
-import { resolveInsightDateBounds } from "@/lib/insightDate"
+import { startOfDay, subDays } from "date-fns"
+import {
+  buildInsightBuckets,
+  getInsightBucketKey,
+  resolveInsightDateBounds,
+} from "@/lib/insightDate"
 import { clampMoodScore } from "@/lib/relationship"
 import { activityService } from "@/services/activityService"
 import type {
@@ -81,12 +85,11 @@ export function useInsights(filter: InsightDateFilter) {
       intervalEnd = intervalStart
     }
 
-    const days = eachDayOfInterval({
-      start: intervalStart,
-      end: intervalEnd,
-    })
-
-    const dateFormat = days.length <= 7 ? "EEE" : "MMM d"
+    const { granularity, buckets } = buildInsightBuckets(
+      filter.mode,
+      intervalStart,
+      intervalEnd
+    )
 
     const moodBuckets = new Map<
       string,
@@ -94,10 +97,9 @@ export function useInsights(filter: InsightDateFilter) {
     >()
     const nudgeBuckets = new Map<string, { sent: number; received: number }>()
 
-    for (const day of days) {
-      const key = format(day, "yyyy-MM-dd")
-      moodBuckets.set(key, { myScores: [], partnerScores: [] })
-      nudgeBuckets.set(key, { sent: 0, received: 0 })
+    for (const bucket of buckets) {
+      moodBuckets.set(bucket.key, { myScores: [], partnerScores: [] })
+      nudgeBuckets.set(bucket.key, { sent: 0, received: 0 })
     }
 
     const allMyScores: number[] = []
@@ -111,7 +113,10 @@ export function useInsights(filter: InsightDateFilter) {
     >()
 
     for (const activity of activities) {
-      const dayKey = format(new Date(activity.created_at), "yyyy-MM-dd")
+      const bucketKey = getInsightBucketKey(
+        new Date(activity.created_at),
+        granularity
+      )
       const isMine = activity.user_id === currentUserId
 
       if (activity.type === "mood") {
@@ -129,7 +134,7 @@ export function useInsights(filter: InsightDateFilter) {
         const resolvedScore = clampMoodScore(rawScore)
 
         moodCount += 1
-        const bucket = moodBuckets.get(dayKey)
+        const bucket = moodBuckets.get(bucketKey)
         if (isMine) {
           allMyScores.push(resolvedScore)
           bucket?.myScores.push(resolvedScore)
@@ -139,7 +144,7 @@ export function useInsights(filter: InsightDateFilter) {
         }
       } else if (activity.type === "nudge") {
         const content = activity.content as NudgeActivityContent | null
-        const bucket = nudgeBuckets.get(dayKey)
+        const bucket = nudgeBuckets.get(bucketKey)
 
         if (isMine) {
           nudgeSentCount += 1
@@ -165,9 +170,8 @@ export function useInsights(filter: InsightDateFilter) {
       }
     }
 
-    const moodTrendData: MoodTrendPoint[] = days.map((day) => {
-      const key = format(day, "yyyy-MM-dd")
-      const bucket = moodBuckets.get(key)
+    const moodTrendData: MoodTrendPoint[] = buckets.map((b) => {
+      const bucket = moodBuckets.get(b.key)
       const myAvg =
         bucket && bucket.myScores.length > 0
           ? roundToTwoDecimals(
@@ -184,19 +188,18 @@ export function useInsights(filter: InsightDateFilter) {
           : null
 
       return {
-        dateKey: key,
-        label: format(day, dateFormat),
+        dateKey: b.key,
+        label: b.label,
         me: myAvg,
         partner: partnerAvg,
       }
     })
 
-    const nudgeActivityData: NudgeActivityPoint[] = days.map((day) => {
-      const key = format(day, "yyyy-MM-dd")
-      const bucket = nudgeBuckets.get(key)
+    const nudgeActivityData: NudgeActivityPoint[] = buckets.map((b) => {
+      const bucket = nudgeBuckets.get(b.key)
       return {
-        dateKey: key,
-        label: format(day, dateFormat),
+        dateKey: b.key,
+        label: b.label,
         sent: bucket?.sent ?? 0,
         received: bucket?.received ?? 0,
       }
@@ -247,7 +250,7 @@ export function useInsights(filter: InsightDateFilter) {
       nudgeActivity: nudgeActivityData,
       summary: summaryData,
     }
-  }, [activitiesQuery.data, bounds.endDate, bounds.startDate, currentUserId, moodScoreMap])
+  }, [activitiesQuery.data, bounds.endDate, bounds.startDate, currentUserId, filter.mode, moodScoreMap])
 
   const quizSummary = useMemo<QuizInsightSummary>(() => {
     const filteredQuizzes = answeredQuizzes.filter((q) => {

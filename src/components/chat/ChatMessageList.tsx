@@ -52,6 +52,7 @@ const QUICK_REACTIONS = ["❤️", "😂", "😮", "😢", "🙏", "👍"] as co
 
 interface ChatMessageListProps {
   messages: Activity<ChatActivityContent>[]
+  searchQuery?: string
   currentUserId?: string
   currentUserName: string
   partnerName: string
@@ -96,7 +97,10 @@ function formatDayLabel(date: Date): string {
 
 function groupReactions(reactions?: Record<string, string>) {
   if (!reactions) return []
-  const counts = new Map<string, { emoji: string; count: number; userIds: string[] }>()
+  const counts = new Map<
+    string,
+    { emoji: string; count: number; userIds: string[] }
+  >()
   for (const [uid, emoji] of Object.entries(reactions)) {
     const existing = counts.get(emoji)
     if (existing) {
@@ -181,11 +185,11 @@ function ChatMessageRow({
       {!isMine ? (
         isLastInRun ? (
           <MessageAvatar>
-            <Avatar size="sm">
+            <Avatar className="size-7">
               {hasImageAvatar ? (
                 <AvatarImage src={partnerAvatar} alt={partnerName} />
               ) : null}
-              <AvatarFallback>
+              <AvatarFallback className="text-xs">
                 {partnerAvatar && !hasImageAvatar
                   ? partnerAvatar
                   : partnerName.slice(0, 1).toUpperCase()}
@@ -193,7 +197,7 @@ function ChatMessageRow({
             </Avatar>
           </MessageAvatar>
         ) : (
-          <div className="w-8 shrink-0" aria-hidden="true" />
+          <div className="w-7 shrink-0" aria-hidden="true" />
         )
       ) : null}
 
@@ -260,7 +264,8 @@ function ChatMessageRow({
                       aria-label={`Toggle ${r.emoji} reaction`}
                       className={cn(
                         "inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-xs leading-none transition-colors hover:bg-muted-foreground/15",
-                        isMineReaction && "bg-primary/15 font-medium text-primary"
+                        isMineReaction &&
+                          "bg-primary/15 font-medium text-primary"
                       )}
                     >
                       <span>{r.emoji}</span>
@@ -346,10 +351,7 @@ function ChatMessageRow({
             <span>{timeLabel}</span>
             {isMine ? (
               isRead ? (
-                <CheckCheck
-                  className="size-3 text-primary"
-                  aria-label="Read"
-                />
+                <CheckCheck className="size-3 text-primary" aria-label="Read" />
               ) : (
                 <Check
                   className="size-3 text-muted-foreground"
@@ -366,6 +368,7 @@ function ChatMessageRow({
 
 export function ChatMessageList({
   messages,
+  searchQuery = "",
   currentUserId,
   currentUserName,
   partnerName,
@@ -417,16 +420,19 @@ export function ChatMessageList({
 
   if (messages.length === 0 && !isPartnerTyping) {
     return (
-      <div className="flex min-h-0 flex-1 items-center justify-center px-4">
+      <div className="flex min-h-0 flex-1 items-center justify-center px-4 pt-20 pb-28">
         <Empty>
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <MessageCircle />
             </EmptyMedia>
-            <EmptyTitle>No messages yet</EmptyTitle>
+            <EmptyTitle>
+              {searchQuery ? "No matching messages" : "No messages yet"}
+            </EmptyTitle>
             <EmptyDescription>
-              Start a private conversation with {partnerName}. Messages sync in
-              real time.
+              {searchQuery
+                ? `No loaded messages match "${searchQuery}".`
+                : `Start a private conversation with ${partnerName}. Messages sync in real time.`}
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
@@ -437,7 +443,7 @@ export function ChatMessageList({
   return (
     <MessageScrollerProvider autoScroll>
       <MessageScroller className="min-h-0 flex-1">
-        <MessageScrollerViewport className="px-4 pt-2.5 pb-16">
+        <MessageScrollerViewport className="px-4 pt-[calc(3.5rem+env(safe-area-inset-top))] pb-[calc(8.5rem+env(safe-area-inset-bottom))]">
           <MessageScrollerContent className="gap-3">
             {hasNextPage ? (
               <MessageScrollerItem messageId="load-more">
@@ -502,11 +508,11 @@ export function ChatMessageList({
               <MessageScrollerItem messageId="partner-typing">
                 <Message align="start">
                   <MessageAvatar>
-                    <Avatar size="sm">
+                    <Avatar className="size-7">
                       {hasImageAvatar ? (
                         <AvatarImage src={partnerAvatar} alt={partnerName} />
                       ) : null}
-                      <AvatarFallback>
+                      <AvatarFallback className="text-xs">
                         {partnerAvatar && !hasImageAvatar
                           ? partnerAvatar
                           : partnerName.slice(0, 1).toUpperCase()}

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react"
+import { memo, useCallback, useEffect, useRef, useState } from "react"
 import { useLocation } from "wouter"
 import {
   Briefcase,
@@ -26,11 +26,6 @@ import {
 } from "lucide-react"
 import { CustomSkeleton } from "@/components/CustomSkeleton"
 import { Button } from "@/components/ui/button"
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-} from "@/components/ui/carousel"
 import { useHoroscopes } from "@/hooks/useHoroscopes"
 import { useRelationship } from "@/hooks/useRelationship"
 import type { ZodiacSign } from "@/lib/relationship"
@@ -206,7 +201,7 @@ interface HoroscopeDeckProps {
   emptyBirthDateContent: React.ReactNode
 }
 
-function HoroscopeDeck({
+const HoroscopeDeck = memo(function HoroscopeDeck({
   coverTitle,
   gender,
   zodiac,
@@ -352,10 +347,10 @@ function HoroscopeDeck({
             key={`stack-${offset}`}
             aria-hidden="true"
             style={{
-              transform: `translateY(${translateY}px) scale(${scale}) rotate(${tilt}deg)`,
+              transform: `translate3d(0, ${translateY}px, 0) scale(${scale}) rotate(${tilt}deg)`,
             }}
             className={cn(
-              "pointer-events-none absolute inset-0 rounded-2xl border shadow-xs transition-transform duration-300 ease-out",
+              "pointer-events-none absolute inset-0 transform-gpu rounded-2xl border transition-transform duration-300 ease-out",
               trailingCard.cardClass,
               offset === 1 ? "opacity-90" : offset === 2 ? "opacity-75" : "opacity-60"
             )}
@@ -373,7 +368,7 @@ function HoroscopeDeck({
               onClick={handleTap}
               aria-label={`${coverTitle} (${zodiac}). Tap to open.`}
               className={cn(
-                "relative z-10 flex h-full w-full cursor-pointer flex-col justify-between overflow-hidden rounded-2xl border p-3.5 text-left shadow-md transition-all duration-200 ease-out hover:brightness-105 active:scale-[0.98]",
+                "relative z-10 flex h-full w-full transform-gpu cursor-pointer flex-col justify-between overflow-hidden rounded-2xl border p-3.5 text-left shadow-sm transition-[transform,opacity] duration-200 ease-out",
                 coverStyles.card,
                 isSwitching
                   ? "translate-x-4 -translate-y-3 scale-95 rotate-12 opacity-0"
@@ -420,10 +415,9 @@ function HoroscopeDeck({
               onClick={handleTap}
               aria-label={`${activeCard.label} horoscope (${safeIndex + 1} of ${cards.length}). Tap for next.`}
               className={cn(
-                "relative z-10 flex h-full w-full flex-col justify-between gap-1.5 overflow-hidden rounded-2xl border p-3.5 text-left shadow-md transition-all duration-200 ease-out",
+                "relative z-10 flex h-full w-full transform-gpu flex-col justify-between gap-1.5 overflow-hidden rounded-2xl border p-3.5 text-left shadow-sm transition-[transform,opacity] duration-200 ease-out",
                 activeCard.cardClass,
-                cards.length > 1 &&
-                  "cursor-pointer hover:brightness-105 active:scale-[0.98]",
+                cards.length > 1 && "cursor-pointer",
                 isSwitching
                   ? "translate-x-4 -translate-y-3 scale-95 rotate-12 opacity-0"
                   : "translate-x-0 translate-y-0 scale-100 rotate-0 opacity-100"
@@ -459,7 +453,7 @@ function HoroscopeDeck({
       )}
     </div>
   )
-}
+})
 
 export function HoroscopeSection() {
   const [, setLocation] = useLocation()
@@ -478,67 +472,66 @@ export function HoroscopeSection() {
   } = useHoroscopes()
 
   return (
-    <Carousel
-      opts={{ align: "start", containScroll: "trimSnaps" }}
-      className="w-full"
+    <div
+      role="region"
+      aria-label="Today's Horoscopes"
+      className="scrollbar-none flex w-full snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain scroll-px-4 pt-5 pb-7 [-webkit-overflow-scrolling:touch]"
     >
-      <CarouselContent className="ml-0 pt-5 pb-7">
-        <CarouselItem className="basis-[86%] pl-4">
-          <HoroscopeDeck
-            coverTitle="Open your horoscope today"
-            gender={currentMember?.content?.gender}
-            zodiac={myZodiac}
-            horoscope={myHoroscope}
-            isOpened={isMyHoroscopeOpened}
-            onOpen={() => markHoroscopeOpened("self")}
-            isLoading={Boolean(myZodiac && isLoading)}
-            isError={Boolean(myZodiac && isError)}
-            onRetry={() => void refetch()}
-            emptyBirthDateContent={
-              <div className="flex flex-col items-center gap-2">
-                <p className="text-xs leading-snug text-muted-foreground">
-                  Set birth date for your horoscope
-                </p>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="xs"
-                  onClick={() => setLocation("/setting/profile")}
-                  className="h-7 border-primary/30 px-2.5 text-[11px] font-medium text-primary hover:bg-primary/10"
-                >
-                  Set Birth Date
-                </Button>
-              </div>
-            }
-          />
-        </CarouselItem>
+      <div className="w-[86%] shrink-0 snap-start pl-4">
+        <HoroscopeDeck
+          coverTitle="Open your horoscope today"
+          gender={currentMember?.content?.gender}
+          zodiac={myZodiac}
+          horoscope={myHoroscope}
+          isOpened={isMyHoroscopeOpened}
+          onOpen={() => markHoroscopeOpened("self")}
+          isLoading={Boolean(myZodiac && isLoading)}
+          isError={Boolean(myZodiac && isError)}
+          onRetry={() => void refetch()}
+          emptyBirthDateContent={
+            <div className="flex flex-col items-center gap-2">
+              <p className="text-xs leading-snug text-muted-foreground">
+                Set birth date for your horoscope
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="xs"
+                onClick={() => setLocation("/setting/profile")}
+                className="h-7 border-primary/30 px-2.5 text-[11px] font-medium text-primary hover:bg-primary/10"
+              >
+                Set Birth Date
+              </Button>
+            </div>
+          }
+        />
+      </div>
 
-        <CarouselItem className="basis-[86%] pr-4 pl-5">
-          <HoroscopeDeck
-            coverTitle="Open partner's horoscope today"
-            gender={partnerMember?.content?.gender}
-            zodiac={partnerZodiac}
-            horoscope={partnerHoroscope}
-            isOpened={isPartnerHoroscopeOpened}
-            onOpen={() => markHoroscopeOpened("partner")}
-            isLoading={Boolean(partnerZodiac && isLoading)}
-            isError={Boolean(partnerZodiac && isError)}
-            onRetry={() => void refetch()}
-            emptyBirthDateContent={
-              partnerMember ? (
-                <p className="text-xs leading-snug text-muted-foreground">
-                  Partner hasn&apos;t set their birth date yet
-                </p>
-              ) : (
-                <div className="flex flex-col items-center gap-1.5 text-muted-foreground">
-                  <UserPlus className="size-4 opacity-60" />
-                  <p className="text-xs leading-snug">Waiting for partner</p>
-                </div>
-              )
-            }
-          />
-        </CarouselItem>
-      </CarouselContent>
-    </Carousel>
+      <div className="w-[86%] shrink-0 snap-end pr-4">
+        <HoroscopeDeck
+          coverTitle="Open partner's horoscope today"
+          gender={partnerMember?.content?.gender}
+          zodiac={partnerZodiac}
+          horoscope={partnerHoroscope}
+          isOpened={isPartnerHoroscopeOpened}
+          onOpen={() => markHoroscopeOpened("partner")}
+          isLoading={Boolean(partnerZodiac && isLoading)}
+          isError={Boolean(partnerZodiac && isError)}
+          onRetry={() => void refetch()}
+          emptyBirthDateContent={
+            partnerMember ? (
+              <p className="text-xs leading-snug text-muted-foreground">
+                Partner hasn&apos;t set their birth date yet
+              </p>
+            ) : (
+              <div className="flex flex-col items-center gap-1.5 text-muted-foreground">
+                <UserPlus className="size-4 opacity-60" />
+                <p className="text-xs leading-snug">Waiting for partner</p>
+              </div>
+            )
+          }
+        />
+      </div>
+    </div>
   )
 }

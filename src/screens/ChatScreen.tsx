@@ -34,22 +34,46 @@ export function ChatScreen() {
     stopTyping,
   } = useChatRoom(messages)
   const [replyingTo, setReplyingTo] = useState<ChatReplyRef | null>(null)
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
 
   if (isLoading) {
     return <ChatScreenSkeleton />
   }
 
   const currentUserName = currentMember?.content?.name || "You"
+  const normalizedQuery = searchQuery.trim().toLowerCase()
+  const visibleMessages = normalizedQuery
+    ? messages.filter((msg) =>
+        msg.content.text.toLowerCase().includes(normalizedQuery)
+      )
+    : messages
+
+  const handleToggleSearch = () => {
+    setIsSearchOpen((prev) => {
+      if (prev) {
+        setSearchQuery("")
+      }
+      return !prev
+    })
+  }
 
   return (
-    <section className="mx-auto flex h-[calc(100svh-7.75rem-env(safe-area-inset-bottom))] w-full max-w-md flex-col sm:max-w-2xl md:h-auto md:min-h-0 md:flex-1 md:pb-19">
-      <ChatHeader isPartnerTyping={isPartnerTyping} />
-
+    <section className="mx-auto flex h-[calc(100svh-3rem)] w-full max-w-md flex-col sm:max-w-2xl md:h-auto md:min-h-0 md:flex-1 md:pb-0">
       <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-[oklch(from_var(--primary)_0.94_calc(c*0.35)_h)] dark:bg-[oklch(from_var(--primary)_0.22_calc(c*0.35)_h)]">
         <ChatZodiacWatermark />
 
+        <ChatHeader
+          isPartnerTyping={isPartnerTyping}
+          isSearchOpen={isSearchOpen}
+          searchQuery={searchQuery}
+          onToggleSearch={handleToggleSearch}
+          onSearchQueryChange={setSearchQuery}
+        />
+
         <ChatMessageList
-          messages={messages}
+          messages={visibleMessages}
+          searchQuery={normalizedQuery}
           currentUserId={user?.id}
           currentUserName={currentUserName}
           partnerName={partnerName}

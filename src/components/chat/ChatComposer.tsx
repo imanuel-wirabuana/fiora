@@ -65,7 +65,7 @@ export function ChatComposer({
   return (
     <form
       onSubmit={handleSubmit}
-      className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col gap-1.5 px-3 pb-2"
+      className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col gap-1.5 px-3 pb-[calc(4.75rem+env(safe-area-inset-bottom))]"
     >
       {replyingTo ? (
         <div className="pointer-events-auto flex items-center justify-between gap-2 rounded-2xl border border-border/60 bg-background/90 px-3 py-1.5 text-[11px] shadow-md backdrop-blur-md">

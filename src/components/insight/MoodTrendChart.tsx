@@ -1,6 +1,8 @@
+import { useMemo } from "react"
 import { Smile } from "lucide-react"
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts"
 import { CustomItem } from "@/components/CustomItem"
+import { CustomSkeleton } from "@/components/CustomSkeleton"
 import {
   ChartContainer,
   ChartTooltip,
@@ -17,6 +19,7 @@ interface MoodTrendChartProps {
   partnerName: string
   myGender?: Gender | null
   partnerGender?: Gender | null
+  isLoading?: boolean
 }
 
 export function MoodTrendChart({
@@ -25,19 +28,24 @@ export function MoodTrendChart({
   partnerName,
   myGender,
   partnerGender,
+  isLoading = false,
 }: MoodTrendChartProps) {
   const hasAnyMood = data.some((d) => d.me !== null || d.partner !== null)
 
-  const chartConfig = {
-    me: {
-      label: myName,
-      color: getGenderChartColor(myGender, "var(--chart-1)"),
-    },
-    partner: {
-      label: partnerName,
-      color: getGenderChartColor(partnerGender, "var(--chart-2)"),
-    },
-  } satisfies ChartConfig
+  const chartConfig = useMemo(
+    () =>
+      ({
+        me: {
+          label: myName,
+          color: getGenderChartColor(myGender, "var(--chart-1)"),
+        },
+        partner: {
+          label: partnerName,
+          color: getGenderChartColor(partnerGender, "var(--chart-2)"),
+        },
+      }) satisfies ChartConfig,
+    [myGender, myName, partnerGender, partnerName]
+  )
 
   return (
     <CustomItem
@@ -48,7 +56,9 @@ export function MoodTrendChart({
       className="rounded-2xl p-3"
       contentClassName="w-full"
     >
-      {!hasAnyMood ? (
+      {isLoading ? (
+        <CustomSkeleton className="h-36 w-full rounded-xl" />
+      ) : !hasAnyMood ? (
         <div className="flex h-36 w-full items-center justify-center rounded-xl border border-dashed border-border/60 px-2 text-center text-[11px] text-muted-foreground">
           No mood logs in this range.
         </div>
