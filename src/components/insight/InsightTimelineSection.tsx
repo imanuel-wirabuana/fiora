@@ -90,7 +90,7 @@ function TimelineActivityRow({
           {isMood ? "Mood" : "Nudge"}
         </Badge>
       }
-      className="gap-1.5 rounded-2xl p-2.5"
+      className="gap-1.5 rounded-2xl p-2.5 [contain-intrinsic-size:auto_76px] [content-visibility:auto]"
     >
       <div className="flex items-center gap-2">
         <AnimatedEmoji emoji={content.emoji} size={22} replayOnTap />

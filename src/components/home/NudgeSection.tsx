@@ -303,7 +303,7 @@ export function NudgeSection({ compact = false }: NudgeSectionProps) {
                 {isOnCooldown && (
                   <span
                     className={cn(
-                      "absolute inset-0 flex items-center justify-center bg-background/80 text-[11px] font-semibold text-primary tabular-nums backdrop-blur-[1px]",
+                      "absolute inset-0 flex items-center justify-center bg-background/90 text-[11px] font-semibold text-primary tabular-nums",
                       compact ? "rounded-full" : "rounded-md"
                     )}
                   >
@@ -365,7 +365,7 @@ export function NudgeSection({ compact = false }: NudgeSectionProps) {
             {customCooldownSeconds > 0 && (
               <span
                 className={cn(
-                  "absolute inset-0 flex items-center justify-center bg-background/80 text-[11px] font-semibold text-primary tabular-nums backdrop-blur-[1px]",
+                  "absolute inset-0 flex items-center justify-center bg-background/90 text-[11px] font-semibold text-primary tabular-nums",
                   compact ? "rounded-full" : "rounded-md"
                 )}
               >

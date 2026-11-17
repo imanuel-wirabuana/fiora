@@ -1,4 +1,4 @@
-import { memo, type ReactNode } from "react"
+import { memo, useEffect, useState, type ReactNode } from "react"
 import { useLocation } from "wouter"
 import { useTabSwipe } from "@/hooks/useTabSwipe"
 import { cn } from "@/lib/utils"
@@ -23,19 +23,25 @@ interface MainTabPagerProps {
 const TabPaneItem = memo(function TabPaneItem({
   pane,
   isActive,
+  isNearViewport,
+  deferInert,
 }: {
   pane: MainTabPane
   isActive: boolean
+  isNearViewport: boolean
+  deferInert: boolean
 }) {
   const isScrollable = pane.scrollMode !== "fixed"
 
   return (
     <div
       aria-hidden={!isActive}
-      inert={!isActive ? true : undefined}
+      inert={!isActive && !deferInert ? true : undefined}
       data-sticky-scroll={isActive && isScrollable ? "true" : undefined}
       className={cn(
-        "h-full w-full shrink-0 pt-12 backface-hidden [contain:layout_paint]",
+        "h-full w-full shrink-0 transform-gpu pt-12 backface-hidden [contain:layout_paint]",
+        !isActive && "pointer-events-none",
+        !isNearViewport && "invisible",
         isScrollable
           ? "overflow-x-hidden overflow-y-auto"
           : "flex flex-col overflow-hidden"
@@ -53,6 +59,17 @@ export function MainTabPager({ panes }: MainTabPagerProps) {
     0,
     panes.findIndex((pane) => location.startsWith(pane.path))
   )
+  const [settledIndex, setSettledIndex] = useState(activeIndex)
+  const isTransitioning = settledIndex !== activeIndex
+
+  useEffect(() => {
+    if (settledIndex === activeIndex) return
+    const timer = setTimeout(() => {
+      setSettledIndex(activeIndex)
+    }, 320)
+    return () => clearTimeout(timer)
+  }, [activeIndex, settledIndex])
+
   const activePane = panes[activeIndex]
   const activePath = activePane?.path ?? "/home"
 
@@ -84,13 +101,20 @@ export function MainTabPager({ panes }: MainTabPagerProps) {
             transform: `translate3d(-${activeIndex * 100}%, 0, 0)`,
           }}
         >
-          {panes.map((pane, index) => (
-            <TabPaneItem
-              key={pane.path}
-              pane={pane}
-              isActive={index === activeIndex}
-            />
-          ))}
+          {panes.map((pane, index) => {
+            const isNearViewport =
+              isTransitioning || Math.abs(index - activeIndex) <= 1
+
+            return (
+              <TabPaneItem
+                key={pane.path}
+                pane={pane}
+                isActive={index === activeIndex}
+                isNearViewport={isNearViewport}
+                deferInert={isTransitioning}
+              />
+            )
+          })}
         </div>
       </div>
     </MainLayout>

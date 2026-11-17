@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { memo, useState } from "react"
 import { Link, useLocation } from "wouter"
 import {
   BarChart3,
@@ -37,7 +37,7 @@ const navItemsRight: NavItem[] = [
   { href: "/space", label: "Space", icon: LayoutGrid, align: "center" },
 ]
 
-function BottomNavItem({
+const BottomNavItem = memo(function BottomNavItem({
   item,
   isActive,
 }: {
@@ -70,7 +70,7 @@ function BottomNavItem({
       </div>
     </Link>
   )
-}
+})
 
 interface BottomNavProps {
   className?: string
@@ -79,11 +79,13 @@ interface BottomNavProps {
 export function BottomNav({ className }: BottomNavProps) {
   const [location] = useLocation()
   const [isMoodDrawerOpen, setIsMoodDrawerOpen] = useState(false)
+  const [hasOpenedMoodDrawer, setHasOpenedMoodDrawer] = useState(false)
   const setCustomActivityOverride = usePresenceStore(
     (s) => s.setCustomActivityOverride
   )
 
   const handleMoodDrawerOpenChange = (open: boolean) => {
+    if (open) setHasOpenedMoodDrawer(true)
     setIsMoodDrawerOpen(open)
     setCustomActivityOverride(open ? "Logging a Mood" : null)
   }
@@ -153,10 +155,12 @@ export function BottomNav({ className }: BottomNavProps) {
       </div>
 
       {/* Mood Drawer Component */}
-      <MoodDrawer
-        open={isMoodDrawerOpen}
-        onOpenChange={handleMoodDrawerOpenChange}
-      />
+      {hasOpenedMoodDrawer && (
+        <MoodDrawer
+          open={isMoodDrawerOpen}
+          onOpenChange={handleMoodDrawerOpenChange}
+        />
+      )}
     </nav>
   )
 }
