@@ -23,7 +23,7 @@ function ToastProvider({ ...props }: ToastPrimitive.Provider.Props) {
 
 function ToastPortal({ container, ...props }: ToastPrimitive.Portal.Props) {
   const phonePortalRef = usePhonePortal()
-  const targetContainer = container ?? phonePortalRef?.current ?? undefined
+  const targetContainer = container ?? phonePortalRef ?? undefined
 
   return (
     <ToastPrimitive.Portal

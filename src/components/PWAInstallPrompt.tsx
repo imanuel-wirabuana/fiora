@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Download, Share, X, PlusSquare } from "lucide-react"
 import { usePWAInstall } from "@/hooks/usePWAInstall"
 import { Button } from "@/components/ui/button"
@@ -7,17 +7,12 @@ const DISMISSED_KEY = "fiora_pwa_prompt_dismissed"
 
 export function PWAInstallPrompt() {
   const { isStandalone, isIOS, canInstall, install } = usePWAInstall()
-  const [isDismissed, setIsDismissed] = useState(true)
+  // Only check sessionStorage so user is prompted again in new sessions,
+  // or localStorage if you want it once. We'll use sessionStorage so it's not overly intrusive.
+  const [isDismissed, setIsDismissed] = useState(() =>
+    typeof window !== "undefined" ? Boolean(sessionStorage.getItem(DISMISSED_KEY)) : true
+  )
   const [showIOSInstructions, setShowIOSInstructions] = useState(false)
-
-  useEffect(() => {
-    // Only check sessionStorage so user is prompted again in new sessions,
-    // or localStorage if you want it once. We'll use sessionStorage so it's not overly intrusive.
-    const dismissed = sessionStorage.getItem(DISMISSED_KEY)
-    if (!dismissed) {
-      setIsDismissed(false)
-    }
-  }, [])
 
   // If already installed/standalone or dismissed, don't render anything
   if (isStandalone || isDismissed) {

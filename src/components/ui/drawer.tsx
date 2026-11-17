@@ -56,7 +56,7 @@ function DrawerTrigger({ ...props }: DrawerPrimitive.Trigger.Props) {
 
 function DrawerPortal({ container, ...props }: DrawerPrimitive.Portal.Props) {
   const phonePortalRef = usePhonePortal()
-  const targetContainer = container ?? phonePortalRef?.current ?? undefined
+  const targetContainer = container ?? phonePortalRef ?? undefined
 
   return (
     <DrawerPrimitive.Portal
