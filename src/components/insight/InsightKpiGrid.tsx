@@ -1,3 +1,4 @@
+import { memo } from "react"
 import { HeartHandshake, Smile, Sparkles } from "lucide-react"
 import { CustomItem } from "@/components/CustomItem"
 import type { InsightSummary, QuizInsightSummary } from "@/types/insight"
@@ -7,7 +8,10 @@ interface InsightKpiGridProps {
   quizSummary: QuizInsightSummary
 }
 
-export function InsightKpiGrid({ summary, quizSummary }: InsightKpiGridProps) {
+export const InsightKpiGrid = memo(function InsightKpiGrid({
+  summary,
+  quizSummary,
+}: InsightKpiGridProps) {
   return (
     <div className="grid grid-cols-3 gap-2">
       <CustomItem
@@ -65,4 +69,4 @@ export function InsightKpiGrid({ summary, quizSummary }: InsightKpiGridProps) {
       </CustomItem>
     </div>
   )
-}
+})

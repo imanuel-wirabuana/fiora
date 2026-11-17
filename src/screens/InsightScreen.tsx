@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { memo, useState } from "react"
 import { subDays } from "date-fns"
 import {
   InsightDatePicker,
@@ -12,7 +12,7 @@ import { useInsights } from "@/hooks/useInsights"
 import { useRelationship } from "@/hooks/useRelationship"
 import type { InsightDateFilter } from "@/types/insight"
 
-export function InsightScreen() {
+export const InsightScreen = memo(function InsightScreen() {
   const [dateFilter, setDateFilter] = useState<InsightDateFilter>(() => {
     const today = new Date()
     return {
@@ -66,4 +66,4 @@ export function InsightScreen() {
       />
     </section>
   )
-}
+})

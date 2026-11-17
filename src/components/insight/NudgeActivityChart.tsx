@@ -1,4 +1,4 @@
-import { useMemo } from "react"
+import { memo, useMemo } from "react"
 import { HeartHandshake } from "lucide-react"
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
 import { CustomItem } from "@/components/CustomItem"
@@ -22,7 +22,7 @@ interface NudgeActivityChartProps {
   isLoading?: boolean
 }
 
-export function NudgeActivityChart({
+export const NudgeActivityChart = memo(function NudgeActivityChart({
   data,
   topEmoji,
   topLabel,
@@ -95,16 +95,18 @@ export function NudgeActivityChart({
               stackId="nudges"
               fill="var(--color-sent)"
               radius={[0, 0, 3, 3]}
+              isAnimationActive={false}
             />
             <Bar
               dataKey="received"
               stackId="nudges"
               fill="var(--color-received)"
               radius={[3, 3, 0, 0]}
+              isAnimationActive={false}
             />
           </BarChart>
         </ChartContainer>
       )}
     </CustomItem>
   )
-}
+})

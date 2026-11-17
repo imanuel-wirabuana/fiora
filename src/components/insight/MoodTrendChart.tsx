@@ -1,4 +1,4 @@
-import { useMemo } from "react"
+import { memo, useMemo } from "react"
 import { Smile } from "lucide-react"
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts"
 import { CustomItem } from "@/components/CustomItem"
@@ -22,7 +22,7 @@ interface MoodTrendChartProps {
   isLoading?: boolean
 }
 
-export function MoodTrendChart({
+export const MoodTrendChart = memo(function MoodTrendChart({
   data,
   myName,
   partnerName,
@@ -124,6 +124,7 @@ export function MoodTrendChart({
               connectNulls
               dot={{ r: 2 }}
               activeDot={{ r: 3.5 }}
+              isAnimationActive={false}
             />
             <Area
               dataKey="partner"
@@ -134,10 +135,11 @@ export function MoodTrendChart({
               connectNulls
               dot={{ r: 2 }}
               activeDot={{ r: 3.5 }}
+              isAnimationActive={false}
             />
           </AreaChart>
         </ChartContainer>
       )}
     </CustomItem>
   )
-}
+})

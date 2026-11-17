@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react"
+import { lazy, memo, Suspense } from "react"
 import {
   DailyQuizSection,
   HoroscopeSection,
@@ -14,7 +14,7 @@ const LocationSharingSection = lazy(() =>
   }))
 )
 
-export function HomeScreen() {
+export const HomeScreen = memo(function HomeScreen() {
   const { locationSharing } = useRelationship()
 
   return (
@@ -47,4 +47,4 @@ export function HomeScreen() {
       </section>
     </div>
   )
-}
+})

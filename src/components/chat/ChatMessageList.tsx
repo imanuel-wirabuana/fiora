@@ -1,4 +1,5 @@
 import {
+  memo,
   useCallback,
   useEffect,
   useMemo,
@@ -181,7 +182,7 @@ interface ChatMessageRowProps {
   onHighlightMessage: (activityId: number) => void
 }
 
-function ChatMessageRow({
+const ChatMessageRow = memo(function ChatMessageRow({
   item,
   isMine,
   isLastInRun,
@@ -427,9 +428,9 @@ function ChatMessageRow({
       </div>
     </div>
   )
-}
+})
 
-export function ChatMessageList({
+export const ChatMessageList = memo(function ChatMessageList({
   messages,
   searchQuery = "",
   activeSearchMatchId = null,
@@ -565,7 +566,10 @@ export function ChatMessageList({
                 </MessageScrollerItem>
 
                 {section.runs.map((run) => (
-                  <MessageGroup key={run.runKey} className="gap-1">
+                  <MessageGroup
+                    key={run.runKey}
+                    className="gap-1 [content-visibility:auto] [contain-intrinsic-size:auto_72px]"
+                  >
                     {run.items.map((item, index) => {
                       const isSelected = selectedIds.has(item.id)
                       return (
@@ -639,4 +643,4 @@ export function ChatMessageList({
       </MessageScroller>
     </MessageScrollerProvider>
   )
-}
+})
