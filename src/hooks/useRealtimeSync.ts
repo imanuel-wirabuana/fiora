@@ -2,12 +2,14 @@ import { useEffect } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { activityService } from "../services/activityService"
 import { notificationService } from "../services/notificationService"
+import { petService } from "../services/petService"
 import { quizService } from "../services/quizService"
 import { relationshipService } from "../services/relationshipService"
 import { activityKeys } from "./useActivities"
 import { useAuth } from "./useAuth"
 import { chatKeys } from "./useChat"
 import { notificationKeys } from "./useNotifications"
+import { petKeys } from "./usePet"
 import { quizKeys } from "./useQuiz"
 import { relationshipKeys, useRelationship } from "./useRelationship"
 import { useHeadsUpStore } from "../stores/headsUpStore"
@@ -110,9 +112,19 @@ export function useRealtimeSync() {
       }
     )
 
+    const unsubscribePet = petService.subscribeToPetChanges(
+      relationshipId,
+      () => {
+        queryClient.invalidateQueries({
+          queryKey: petKeys.byRelationship(relationshipId),
+        })
+      }
+    )
+
     return () => {
       unsubscribeActivities()
       unsubscribeQuizAnswers()
+      unsubscribePet()
     }
   }, [relationshipId, queryClient])
 }

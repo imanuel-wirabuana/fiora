@@ -33,7 +33,7 @@ export function DetailLayout({
       />
 
       {/* Main content area */}
-      <main className="w-full flex-1">
+      <main className="flex min-h-0 w-full flex-1 flex-col">
         {children}
       </main>
 

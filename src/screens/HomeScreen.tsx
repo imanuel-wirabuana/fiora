@@ -1,6 +1,7 @@
 import { lazy, memo, Suspense } from "react"
 import {
   DailyQuizSection,
+  HomePetSection,
   HoroscopeSection,
   MoodSection,
   NudgeSection,
@@ -20,8 +21,11 @@ export const HomeScreen = memo(function HomeScreen() {
   return (
     <div className="flex flex-col">
       <section className="bg-linear-to-b from-primary/90 via-primary/40 via-55% to-background pt-1 pb-32">
-        <div className="mx-auto w-full max-w-md px-0.5 sm:max-w-2xl">
-          <PartnerPresenceSection />
+        <div className="mx-auto flex w-full max-w-md items-center gap-1 pr-3 pl-0.5 sm:max-w-2xl">
+          <div className="min-w-0 flex-1">
+            <PartnerPresenceSection />
+          </div>
+          <HomePetSection />
         </div>
       </section>
       <section className="relative z-10 mx-auto -mt-28 flex w-full max-w-md flex-col gap-4 px-4 sm:max-w-2xl">

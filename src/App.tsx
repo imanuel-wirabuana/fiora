@@ -40,6 +40,16 @@ const LocationSharingScreen = lazy(() =>
 const JournalScreen = lazy(() =>
   import("./screens/JournalScreen").then((m) => ({ default: m.JournalScreen }))
 )
+const VirtualPetsScreen = lazy(() =>
+  import("./screens/VirtualPetsScreen").then((m) => ({
+    default: m.VirtualPetsScreen,
+  }))
+)
+const PetMinigameScreen = lazy(() =>
+  import("./screens/PetMinigameScreen").then((m) => ({
+    default: m.PetMinigameScreen,
+  }))
+)
 const JournalDetailScreen = lazy(() =>
   import("./screens/JournalDetailScreen").then((m) => ({
     default: m.JournalDetailScreen,
@@ -195,6 +205,41 @@ function AppRoutes() {
 
           <Route path="/journal">
             <Redirect to="/space/journal" />
+          </Route>
+
+          <Route path="/virtual-pets">
+            <Redirect to="/space/virtual-pets" />
+          </Route>
+
+          <Route path="/space/virtual-pets/play/:gameId">
+            {!isAuthenticated ? (
+              <Redirect to="/" />
+            ) : !hasRelationship ? (
+              <Redirect to="/setup" />
+            ) : (
+              <DetailLayout
+                title={t("routes.virtualPets")}
+                backHref="/space/virtual-pets"
+              >
+                <Suspense fallback={<SettingSubScreenSkeleton />}>
+                  <PetMinigameScreen />
+                </Suspense>
+              </DetailLayout>
+            )}
+          </Route>
+
+          <Route path="/space/virtual-pets">
+            {!isAuthenticated ? (
+              <Redirect to="/" />
+            ) : !hasRelationship ? (
+              <Redirect to="/setup" />
+            ) : (
+              <DetailLayout title={t("routes.virtualPets")} backHref="/space">
+                <Suspense fallback={<SettingSubScreenSkeleton />}>
+                  <VirtualPetsScreen />
+                </Suspense>
+              </DetailLayout>
+            )}
           </Route>
 
           <Route path="/space/journal">

@@ -5,6 +5,10 @@
       "title": "Jurnal",
       "description": "Tulis catatan pribadi atau bagikan pikiranmu ke pasangan"
     },
+    "virtual-pets": {
+      "title": "Peliharaan Virtual",
+      "description": "Rawat, beri makan, dan jaga peliharaan virtual kalian bersama"
+    },
     "itinerary": {
       "title": "Itinerary",
       "description": "Rencanakan liburan, kencan, dan perjalanan bareng"
@@ -32,6 +36,95 @@
     "setting": {
       "title": "Pengaturan",
       "description": "Kelola profil, hubungan, mood, dan preferensi aplikasi"
+    }
+  },
+  "pet": {
+    "level": "Lv. {{level}}",
+    "rename": "Ubah nama peliharaan",
+    "idleHint": "Sentuh untuk menyayangi, atau pilih aktivitas di bawah",
+    "cancel": "Batal",
+    "interactive": {
+      "eat": "Seret makanan ke mulut peliharaanmu!",
+      "play": "Seret atau ketuk mainan untuk bermain!",
+      "bath": "Gosokkan sabun ke tubuh peliharaanmu!",
+      "sleep": "Seret tempat tidur untuk menyelimuti!",
+      "wakeUp": "Bangunkan"
+    },
+    "adopt": {
+      "title": "Adopsi peliharaan bersama",
+      "description": "Beri nama teman virtual kalian untuk mulai merawatnya bersama",
+      "placeholder": "mis. Mochi",
+      "button": "Adopsi Peliharaan",
+      "adopting": "Mengadopsi..."
+    },
+    "stats": {
+      "hunger": "Kenyang",
+      "happiness": "Senang",
+      "energy": "Energi",
+      "hygiene": "Bersih"
+    },
+    "activities": {
+      "eat": "Makan",
+      "play": "Main",
+      "bath": "Mandi",
+      "sleep": "Tidur"
+    },
+    "activityStatus": {
+      "eat": "Sedang makan...",
+      "play": "Sedang bermain...",
+      "bath": "Sedang mandi...",
+      "sleep": "Sedang tidur..."
+    },
+    "cosmetics": {
+      "default": "Bawaan",
+      "drawerDescription": "Buka gaya baru setiap 10 level!",
+      "editMode": "Atur Gaya",
+      "editHint": "Geser untuk pindah · Cubit atau tarik pegangan untuk ubah ukuran & miringkan",
+      "adjustFit": "Atur Posisi & Ukuran",
+      "size": "Ukuran",
+      "resetFit": "Atur ulang posisi & ukuran",
+      "done": "Selesai",
+      "yourLevel": "Levelmu: {{level}}",
+      "levelsToUnlock": "{{count}} level lagi untuk membuka!",
+      "slots": {
+        "room": "Ruangan",
+        "headwear": "Topi",
+        "facewear": "Kacamata",
+        "clothes": "Pakaian"
+      }
+    },
+    "minigames": {
+      "pickerTitle": "Pilih Minigame",
+      "pickerDescription": "Bermain bersama peliharaanmu untuk menambah senang dan XP!",
+      "endless": "Sampai Kalah",
+      "score": "Skor",
+      "next": "Berikutnya",
+      "swap": "Tukar",
+      "tapToFlap": "Ketuk di mana saja untuk terbang!",
+      "finishedTitle": "Permainan Selesai!",
+      "finalScore": "Skor Akhir: {{score}}",
+      "backToPet": "Kembali",
+      "playAgain": "Main Lagi",
+      "unavailable": "Minigame tidak tersedia saat ini.",
+      "items": {
+        "fruit-catcher": {
+          "title": "Tangkap Buah",
+          "description": "Gerakkan peliharaanmu untuk menangkap buah dan hindari bom"
+        },
+        "zuma": {
+          "title": "Zuma",
+          "description": "Arahkan dan tembak bola ke rantai untuk mencocokkan 3+"
+        },
+        "flappy-pet": {
+          "title": "Flappy Pet",
+          "description": "Ketuk untuk menerbangkan peliharaanmu melewati celah"
+        }
+      },
+      "hints": {
+        "fruit-catcher": "Geser ke kiri atau kanan untuk menggerakkan peliharaan",
+        "zuma": "Ketuk untuk menembak bola; ketuk Tukar untuk ganti warna",
+        "flappy-pet": "Ketuk di mana saja atau tekan Spasi untuk terbang"
+      }
     }
   }
 }

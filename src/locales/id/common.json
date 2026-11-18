@@ -36,6 +36,7 @@
   },
   "routes": {
     "journal": "Jurnal",
+    "virtualPets": "Peliharaan Virtual",
     "settings": "Pengaturan",
     "profile": "Profil",
     "moodOptions": "Pilihan Mood",

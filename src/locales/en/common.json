@@ -36,6 +36,7 @@
   },
   "routes": {
     "journal": "Journal",
+    "virtualPets": "Virtual Pets",
     "settings": "Settings",
     "profile": "Profile",
     "moodOptions": "Mood Options",

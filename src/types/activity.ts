@@ -1,4 +1,4 @@
-export type ActivityType = "mood" | "nudge" | "journal" | "chat"
+export type ActivityType = "mood" | "nudge" | "journal" | "chat" | "pet"
 
 export interface MoodActivityContent {
   emoji: string
@@ -33,11 +33,20 @@ export interface ChatActivityContent {
   deletedFor?: string[]
 }
 
+export interface PetActivityContent {
+  petId: number
+  petName: string
+  action: "eat" | "play" | "bath" | "sleep" | "adopt" | "rename"
+  emoji: string
+  level?: number
+}
+
 export type ActivityContent =
   | MoodActivityContent
   | NudgeActivityContent
   | JournalActivityContent
   | ChatActivityContent
+  | PetActivityContent
 
 export interface Activity<T = ActivityContent> {
   id: number

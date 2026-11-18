@@ -5,6 +5,10 @@
       "title": "Journal",
       "description": "Write personal notes or share thoughts with your partner"
     },
+    "virtual-pets": {
+      "title": "Virtual Pets",
+      "description": "Raise, feed, and care for your shared virtual pets together"
+    },
     "itinerary": {
       "title": "Itinerary",
       "description": "Plan trips, date nights, and shared travel plans"
@@ -32,6 +36,95 @@
     "setting": {
       "title": "Settings",
       "description": "Manage your profile, relationship, mood, and app preferences"
+    }
+  },
+  "pet": {
+    "level": "Lv. {{level}}",
+    "rename": "Rename pet",
+    "idleHint": "Tap pet for love, or pick an activity below",
+    "cancel": "Cancel",
+    "interactive": {
+      "eat": "Drag food to your pet's mouth!",
+      "play": "Drag or tap the toy to play together!",
+      "bath": "Scrub the soap over your pet!",
+      "sleep": "Drag the bed to tuck your pet in!",
+      "wakeUp": "Wake up"
+    },
+    "adopt": {
+      "title": "Adopt your shared pet",
+      "description": "Give your virtual companion a name to start caring for it together",
+      "placeholder": "e.g. Mochi",
+      "button": "Adopt Pet",
+      "adopting": "Adopting..."
+    },
+    "stats": {
+      "hunger": "Hunger",
+      "happiness": "Happiness",
+      "energy": "Energy",
+      "hygiene": "Hygiene"
+    },
+    "activities": {
+      "eat": "Eat",
+      "play": "Play",
+      "bath": "Bath",
+      "sleep": "Sleep"
+    },
+    "activityStatus": {
+      "eat": "Eating...",
+      "play": "Playing...",
+      "bath": "Bathing...",
+      "sleep": "Sleeping..."
+    },
+    "cosmetics": {
+      "default": "Default",
+      "drawerDescription": "Unlock new styles every 10 levels!",
+      "editMode": "Edit Fit",
+      "editHint": "Drag to move · Pinch or use handles to stretch & tilt",
+      "adjustFit": "Adjust Position & Size",
+      "size": "Size",
+      "resetFit": "Reset position & size",
+      "done": "Done",
+      "yourLevel": "Your level: {{level}}",
+      "levelsToUnlock": "{{count}} more levels to unlock!",
+      "slots": {
+        "room": "Room",
+        "headwear": "Headwear",
+        "facewear": "Facewear",
+        "clothes": "Clothes"
+      }
+    },
+    "minigames": {
+      "pickerTitle": "Choose a Minigame",
+      "pickerDescription": "Play together with your pet to boost happiness and earn XP!",
+      "endless": "Until Lose",
+      "score": "Score",
+      "next": "Next",
+      "swap": "Swap",
+      "tapToFlap": "Tap anywhere to flap!",
+      "finishedTitle": "Great Game!",
+      "finalScore": "Final Score: {{score}}",
+      "backToPet": "Back to Pet",
+      "playAgain": "Play Again",
+      "unavailable": "Minigame unavailable right now.",
+      "items": {
+        "fruit-catcher": {
+          "title": "Fruit Catcher",
+          "description": "Move your pet to catch falling fruits and dodge bombs"
+        },
+        "zuma": {
+          "title": "Zuma",
+          "description": "Aim and shoot orbs into the rolling chain to match 3+"
+        },
+        "flappy-pet": {
+          "title": "Flappy Pet",
+          "description": "Tap to fly your pet through the gaps"
+        }
+      },
+      "hints": {
+        "fruit-catcher": "Drag left or right to move your pet",
+        "zuma": "Tap anywhere to shoot orbs; tap Swap to switch color",
+        "flappy-pet": "Tap anywhere or press Space to flap"
+      }
     }
   }
 }

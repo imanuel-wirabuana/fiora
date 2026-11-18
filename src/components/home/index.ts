@@ -4,4 +4,5 @@ export * from "./NudgeSection"
 export * from "./DailyQuizSection"
 export * from "./HoroscopeSection"
 export * from "./PartnerPresenceSection"
+export * from "./HomePetSection"
 
