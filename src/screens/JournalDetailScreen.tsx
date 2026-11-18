@@ -127,7 +127,7 @@ export function JournalDetailScreen() {
   }
 
   return (
-    <div className="relative flex h-dvh w-full flex-col overflow-hidden bg-background lg:h-full">
+    <div className="relative flex h-dvh w-full flex-col overflow-hidden bg-background md:h-full">
       {/* Top Floating Bar */}
       <header className="z-20 flex shrink-0 items-center justify-between gap-2 border-b border-border/50 bg-background/95 px-4 py-3 backdrop-blur-md">
         <div className="flex items-center gap-2">

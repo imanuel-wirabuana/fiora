@@ -133,7 +133,7 @@ function AppRoutes() {
   // 3. Authenticated WITH relationship -> access protected routes; /setup and auth pages redirect to /home
 
   return (
-    <div className="relative min-h-svh w-full md:min-h-full">
+    <div className="relative min-h-svh w-full md:h-full md:min-h-0">
       <SplashScreen isVisible={!isAppReady} />
       {isAppReady && <HeadsUpNotification />}
       {isAppReady ? (
@@ -347,7 +347,7 @@ function AppRoutes() {
 
           {/* Fallback */}
           <Route>
-            <div className="flex min-h-svh items-center justify-center p-4">
+            <div className="flex min-h-svh items-center justify-center p-4 md:h-full md:min-h-0">
               <Suspense fallback={<AuthScreenSkeleton />}>
                 <NotFoundScreen />
               </Suspense>

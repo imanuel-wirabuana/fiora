@@ -532,7 +532,7 @@ export const ChatMessageList = memo(function ChatMessageList({
     <MessageScrollerProvider autoScroll>
       <SearchScrollSync activeSearchMatchId={activeSearchMatchId} />
       <MessageScroller className="min-h-0 flex-1">
-        <MessageScrollerViewport className="px-2 pt-[calc(3.5rem+env(safe-area-inset-top))] pb-[calc(8.5rem+env(safe-area-inset-bottom))]">
+        <MessageScrollerViewport className="px-2 pt-[calc(3.5rem+env(safe-area-inset-top))] pb-[calc(8rem+env(safe-area-inset-bottom))]">
           <MessageScrollerContent className="gap-3">
             {hasNextPage ? (
               <MessageScrollerItem messageId="load-more">
@@ -639,7 +639,7 @@ export const ChatMessageList = memo(function ChatMessageList({
           </MessageScrollerContent>
         </MessageScrollerViewport>
 
-        <MessageScrollerButton className="data-[direction=end]:bottom-16" />
+        <MessageScrollerButton className="z-30 shadow-md data-[direction=end]:bottom-[calc(7.75rem+env(safe-area-inset-bottom))]" />
       </MessageScroller>
     </MessageScrollerProvider>
   )

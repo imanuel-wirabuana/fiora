@@ -260,7 +260,7 @@ export function LocationSharingScreen() {
   }
 
   return (
-    <div className="flex h-dvh w-full flex-col overflow-hidden bg-background lg:h-full">
+    <div className="flex h-dvh w-full flex-col overflow-hidden bg-background md:h-full">
       {/* 1. Interactive map area (flex-1 so zoom controls stay above docked drawer) */}
       <div className="relative min-h-0 flex-1">
         <div

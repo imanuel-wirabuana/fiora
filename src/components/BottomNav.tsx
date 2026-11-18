@@ -92,7 +92,7 @@ export function BottomNav({ className }: BottomNavProps) {
     <nav
       aria-label="Bottom Navigation"
       className={cn(
-        "fixed inset-x-0 bottom-0 z-40 pb-[env(safe-area-inset-bottom)]",
+        "fixed inset-x-0 bottom-0 z-40 pb-[env(safe-area-inset-bottom)] md:pb-4",
         className
       )}
     >

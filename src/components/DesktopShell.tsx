@@ -5,8 +5,8 @@ import { PhoneMockup } from "./PhoneMockup"
 
 export function DesktopShell({ children }: { children: ReactNode }) {
   return (
-    <div className="flex h-svh max-h-svh w-full items-center justify-center overflow-hidden bg-gradient-to-br from-background via-muted/20 to-primary/5 p-4 lg:p-8">
-      <div className="mx-auto grid h-full max-h-[920px] w-full max-w-6xl grid-cols-1 items-center gap-8 lg:grid-cols-12">
+    <div className="flex min-h-svh w-full items-center justify-center overflow-x-hidden overflow-y-auto bg-gradient-to-br from-background via-muted/20 to-primary/5 p-4 lg:p-8">
+      <div className="mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-8 lg:grid-cols-12">
         {/* Left column: App Description & PWA Notice */}
         <div className="space-y-6 lg:col-span-7">
           <Brand

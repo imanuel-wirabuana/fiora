@@ -1,12 +1,7 @@
 import { useState, type FormEvent, type KeyboardEvent } from "react"
 import { Check, Pencil, Reply, SendHorizontal, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupTextarea,
-} from "@/components/ui/input-group"
+import { Textarea } from "@/components/ui/textarea"
 import type {
   Activity,
   ChatActivityContent,
@@ -99,7 +94,7 @@ export function ChatComposer({
   return (
     <form
       onSubmit={handleSubmit}
-      className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col gap-1.5 px-3 pb-[calc(4.75rem+env(safe-area-inset-bottom))]"
+      className="pointer-events-none absolute inset-x-0 bottom-[calc(3.625rem+env(safe-area-inset-bottom))] z-20 flex flex-col gap-1.5 px-3 md:bottom-[3.375rem]"
     >
       {editingMessage ? (
         <div className="pointer-events-auto flex items-center justify-between gap-2 rounded-2xl border border-border/60 bg-background/90 px-3 py-1.5 text-[11px] shadow-md backdrop-blur-md">
@@ -149,41 +144,64 @@ export function ChatComposer({
         </div>
       ) : null}
 
-      <InputGroup className="pointer-events-auto items-end border-border/60 bg-background/90 shadow-lg backdrop-blur-md">
-        <InputGroupTextarea
-          value={text}
-          onChange={(e) => handleChange(e.target.value)}
-          onKeyDown={handleKeyDown}
-          onBlur={onStopTyping}
-          autoFocus={Boolean(editingMessage)}
-          placeholder={
-            editingMessage
-              ? "Edit message..."
-              : `Message ${partnerName}...`
-          }
-          rows={1}
-          disabled={disabled}
-          aria-label={
-            editingMessage ? "Edit message" : `Message ${partnerName}`
-          }
-          className="max-h-28 min-h-9 py-2 text-xs leading-5"
-        />
-        <InputGroupAddon align="inline-end" className="py-0.5 pr-1">
-          <InputGroupButton
-            type="submit"
-            variant="default"
-            size="icon-sm"
-            disabled={!canSend}
-            aria-label={editingMessage ? "Save edited message" : "Send message"}
+      {/* Floating input pill with smooth SVG cradle + standalone larger Send button */}
+      <div className="pointer-events-auto flex items-center gap-2">
+        <div className="relative flex min-h-13 min-w-0 flex-1 items-start px-4 pt-1.5 pb-4">
+          {/* Smooth floating backdrop with BottomNav-style shoulder fillets */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 flex flex-col drop-shadow-[0_4px_12px_rgba(0,0,0,0.08)]"
           >
-            {editingMessage ? (
-              <Check data-icon />
-            ) : (
-              <SendHorizontal data-icon />
-            )}
-          </InputGroupButton>
-        </InputGroupAddon>
-      </InputGroup>
+            <div className="flex-1 rounded-t-3xl bg-background" />
+            <div className="grid h-6 w-full grid-cols-[calc(50%-30px)_112px_1fr]">
+              <div className="h-full rounded-bl-3xl bg-background" />
+              <svg
+                viewBox="0 0 112 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-[112px] shrink-0 fill-background"
+              >
+                <path d="M0 0H112V24H99C92 24 89 22 85 20A33 33 0 0 0 27 20C23 22 20 24 13 24H0V0Z" />
+              </svg>
+              <div className="h-full rounded-br-3xl bg-background" />
+            </div>
+          </div>
+
+          <Textarea
+            value={text}
+            onChange={(e) => handleChange(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onBlur={onStopTyping}
+            autoFocus={Boolean(editingMessage)}
+            placeholder={
+              editingMessage
+                ? "Edit message..."
+                : `Message ${partnerName}...`
+            }
+            rows={1}
+            disabled={disabled}
+            aria-label={
+              editingMessage ? "Edit message" : `Message ${partnerName}`
+            }
+            className="relative z-10 max-h-28 min-h-7 w-full resize-none border-0 bg-transparent px-0 py-1 text-xs leading-5 shadow-none outline-none focus-visible:ring-0 focus-visible:outline-none"
+          />
+        </div>
+
+        <Button
+          type="submit"
+          variant="default"
+          size="icon"
+          disabled={!canSend}
+          aria-label={editingMessage ? "Save edited message" : "Send message"}
+          className="size-11 shrink-0 rounded-full shadow-lg"
+        >
+          {editingMessage ? (
+            <Check className="size-5" />
+          ) : (
+            <SendHorizontal className="size-5" />
+          )}
+        </Button>
+      </div>
     </form>
   )
 }

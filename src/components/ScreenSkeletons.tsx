@@ -2,7 +2,7 @@ import { CustomSkeleton } from "@/components/CustomSkeleton"
 
 export function AuthScreenSkeleton() {
   return (
-    <div className="relative mx-auto flex h-full min-h-svh w-full max-w-md flex-col justify-between overflow-hidden bg-background p-6 lg:min-h-full">
+    <div className="relative mx-auto flex h-full min-h-svh w-full max-w-md flex-col justify-between overflow-hidden bg-background p-6 md:h-full md:min-h-0">
       <div className="flex flex-1 flex-col items-center justify-center gap-3">
         <CustomSkeleton className="size-16 rounded-3xl" />
         <CustomSkeleton className="h-6 w-28 rounded-lg" />
@@ -20,7 +20,7 @@ export function AuthScreenSkeleton() {
 
 export function SetupScreenSkeleton() {
   return (
-    <div className="mx-auto flex min-h-svh w-full max-w-md flex-col justify-between gap-6 p-5">
+    <div className="mx-auto flex min-h-svh w-full max-w-md flex-col justify-between gap-6 p-5 md:h-full md:min-h-0">
       <div className="flex flex-col gap-3 pt-4">
         <CustomSkeleton className="h-2 w-full rounded-full" />
         <CustomSkeleton className="h-6 w-40 rounded-lg" />
@@ -163,7 +163,7 @@ export function JournalScreenSkeleton() {
 
 export function JournalDetailScreenSkeleton() {
   return (
-    <div className="flex min-h-svh flex-col bg-background">
+    <div className="flex min-h-svh flex-col bg-background md:h-full md:min-h-0">
       <header className="flex h-13 items-center justify-between border-b border-border/50 px-4">
         <CustomSkeleton className="size-8 rounded-full" />
         <div className="flex gap-1.5">
