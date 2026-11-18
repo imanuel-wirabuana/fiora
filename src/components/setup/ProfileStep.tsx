@@ -1,4 +1,5 @@
 import { User } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { AvatarPicker } from "@/components/pickers"
 import { Field, FieldLabel } from "@/components/ui/field"
 import {
@@ -25,12 +26,14 @@ export function ProfileStep({
   onChangeAvatar,
   error,
 }: ProfileStepProps) {
+  const { t } = useTranslation("setup")
+
   return (
     <div className="flex flex-col gap-5">
       {/* Avatar Picker */}
       <div className="space-y-2">
         <span className="text-xs font-medium text-muted-foreground">
-          Select Avatar
+          {t("profileStep.selectAvatar")}
         </span>
         <AvatarPicker
           gender={gender}
@@ -45,7 +48,7 @@ export function ProfileStep({
           htmlFor="profile-name"
           className="text-xs font-medium text-muted-foreground"
         >
-          Your Name / Nickname
+          {t("profileStep.nameLabel")}
         </FieldLabel>
         <InputGroup className="h-10 rounded-2xl border border-input bg-background focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
           <InputGroupAddon
@@ -57,7 +60,7 @@ export function ProfileStep({
           <InputGroupInput
             id="profile-name"
             required
-            placeholder="e.g. Alex or Honey"
+            placeholder={t("profileStep.namePlaceholder")}
             value={name}
             onChange={(e) => onChangeName(e.target.value)}
             className="text-sm placeholder:text-muted-foreground/60"

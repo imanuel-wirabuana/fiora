@@ -1,5 +1,6 @@
 import { memo, useMemo } from "react"
 import { HeartHandshake } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
 import { CustomItem } from "@/components/CustomItem"
 import { CustomSkeleton } from "@/components/CustomSkeleton"
@@ -30,29 +31,32 @@ export const NudgeActivityChart = memo(function NudgeActivityChart({
   partnerGender,
   isLoading = false,
 }: NudgeActivityChartProps) {
+  const { t } = useTranslation("insight")
   const hasAnyNudge = data.some((d) => d.sent > 0 || d.received > 0)
 
   const chartConfig = useMemo(
     () =>
       ({
         sent: {
-          label: "Sent",
+          label: t("nudgeChart.sent"),
           color: getGenderChartColor(myGender, "var(--chart-1)"),
         },
         received: {
-          label: "Received",
+          label: t("nudgeChart.received"),
           color: getGenderChartColor(partnerGender, "var(--chart-2)"),
         },
       }) satisfies ChartConfig,
-    [myGender, partnerGender]
+    [myGender, partnerGender, t]
   )
 
   return (
     <CustomItem
       variant="soft"
-      title="Nudges"
+      title={t("nudgeChart.title")}
       description={
-        topEmoji && topLabel ? `Top: ${topEmoji} ${topLabel}` : "Sent vs. rec"
+        topEmoji && topLabel
+          ? t("nudgeChart.top", { emoji: topEmoji, label: topLabel })
+          : t("nudgeChart.subtitle")
       }
       icon={<HeartHandshake className="size-4 text-primary" />}
       className="rounded-2xl p-3"
@@ -62,7 +66,7 @@ export const NudgeActivityChart = memo(function NudgeActivityChart({
         <CustomSkeleton className="h-36 w-full rounded-xl" />
       ) : !hasAnyNudge ? (
         <div className="flex h-36 w-full items-center justify-center rounded-xl border border-dashed border-primary/25 px-2 text-center text-[11px] text-muted-foreground">
-          No nudges in this range.
+          {t("nudgeChart.empty")}
         </div>
       ) : (
         <ChartContainer config={chartConfig} className="h-36 w-full">

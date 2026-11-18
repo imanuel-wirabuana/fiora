@@ -1,10 +1,12 @@
 import * as React from "react"
 import { Moon } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { useTheme } from "@/components/theme-provider"
 import { Switch } from "@/components/ui/switch"
 import { SettingRow } from "./SettingRow"
 
 export function ThemeSection() {
+  const { t } = useTranslation("setting")
   const { theme, setTheme } = useTheme()
   const switchRef = React.useRef<HTMLSpanElement>(null)
 
@@ -29,14 +31,14 @@ export function ThemeSection() {
   return (
     <SettingRow
       icon={<Moon className="size-3.5" />}
-      title="Dark Mode"
-      description="Toggle dark and light appearance."
+      title={t("theme.title")}
+      description={t("theme.description")}
       action={
         <Switch
           ref={switchRef}
           checked={isDarkMode}
           onCheckedChange={handleToggleDarkMode}
-          aria-label="Toggle dark mode"
+          aria-label={t("theme.ariaLabel")}
         />
       }
     />

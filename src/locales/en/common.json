@@ -1,0 +1,79 @@
+{
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "close": "Close",
+    "back": "Back",
+    "continue": "Continue",
+    "confirm": "Confirm",
+    "edit": "Edit",
+    "add": "Add",
+    "done": "Done",
+    "retry": "Try again",
+    "send": "Send"
+  },
+  "status": {
+    "comingSoon": "Coming soon",
+    "loading": "Loading...",
+    "saving": "Saving...",
+    "saved": "Saved",
+    "error": "Something went wrong. Please try again."
+  },
+  "date": {
+    "today": "Today",
+    "selectDate": "Select date"
+  },
+  "nav": {
+    "home": "Home",
+    "insight": "Insight",
+    "chat": "Chat",
+    "space": "Space",
+    "bottomNavigation": "Bottom Navigation",
+    "trackMood": "Track Mood",
+    "openMoodTracker": "Open mood tracker",
+    "loggingMood": "Logging a Mood"
+  },
+  "routes": {
+    "journal": "Journal",
+    "settings": "Settings",
+    "profile": "Profile",
+    "moodOptions": "Mood Options",
+    "nudges": "Nudges",
+    "importantDates": "Important Dates",
+    "appAppearance": "App Appearance",
+    "notification": "Notification",
+    "quiz": "Daily Quiz"
+  },
+  "moodDrawer": {
+    "title": "Quick Mood Check-in",
+    "description": "Let your partner know how you feel right now",
+    "notePlaceholder": "Add a sweet note or what's on your mind... (optional)",
+    "shared": "Shared with Partner!",
+    "sharing": "Sharing...",
+    "send": "Send to Partner",
+    "pickerAriaLabel": "Mood picker"
+  },
+  "moodCategory": {
+    "very-good": "Very Good",
+    "good": "Good",
+    "neutral": "Neutral",
+    "bad": "Bad",
+    "very-bad": "Very Bad"
+  },
+  "splash": {
+    "subtitle": "Mood tracker for couples",
+    "loading": "Loading your relationship..."
+  },
+  "pwa": {
+    "closeAria": "Close install prompt",
+    "title": "Install Fiora App",
+    "description": "Install to your home screen for instant mood tracking & couple alerts.",
+    "iosTitle": "To install on iOS Safari:",
+    "iosStep1": "Tap the <0>Share</0> button in Safari toolbar",
+    "iosStep2": "Scroll and tap <0>Add to Home Screen</0>",
+    "gotIt": "Got it",
+    "later": "Maybe Later",
+    "install": "Install"
+  }
+}

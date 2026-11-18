@@ -1,4 +1,5 @@
 import { formatDistanceToNow } from "date-fns"
+import { useTranslation } from "react-i18next"
 import {
   ChevronDown,
   ChevronUp,
@@ -13,6 +14,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { usePartnerPresence } from "@/hooks/usePartnerPresence"
+import { getDateFnsLocale } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 
 const HEADER_ACTION_BUTTON_CLASS =
@@ -68,6 +70,7 @@ export function ChatHeader({
   onDeleteSelected,
   onUnsendSelected,
 }: ChatHeaderProps) {
+  const { t, i18n } = useTranslation("chat")
   const { isOnline, currentActivity, lastSeenAt, partnerMember, partnerName } =
     usePartnerPresence()
 
@@ -75,18 +78,23 @@ export function ChatHeader({
   const hasImageAvatar = isImageUrl(avatarValue)
 
   const statusText = isSelectionMode
-    ? `${selectedCount} selected`
+    ? t("header.selected", { count: selectedCount })
     : isPartnerTyping
-      ? "Typing..."
+      ? t("header.typing")
       : isOnline
         ? currentActivity
-          ? `Online · ${currentActivity}`
-          : "Online"
+          ? t("header.onlineActivity", { activity: currentActivity })
+          : t("header.online")
         : partnerMember
           ? lastSeenAt
-            ? `Last seen ${formatDistanceToNow(new Date(lastSeenAt), { addSuffix: true })}`
-            : "Offline"
-          : "Waiting for partner"
+            ? t("header.lastSeen", {
+                time: formatDistanceToNow(new Date(lastSeenAt), {
+                  addSuffix: true,
+                  locale: getDateFnsLocale(i18n.language),
+                }),
+              })
+            : t("header.offline")
+          : t("header.waitingPartner")
 
   const hasQuery = searchQuery.trim().length > 0
 
@@ -109,9 +117,9 @@ export function ChatHeader({
                 }
               }
             }}
-            placeholder="Search messages..."
+            placeholder={t("header.searchPlaceholder")}
             autoFocus
-            aria-label="Search messages"
+            aria-label={t("header.searchAria")}
             className="h-full min-w-0 flex-1 bg-transparent text-xs text-foreground outline-none placeholder:text-muted-foreground"
           />
           {hasQuery ? (
@@ -127,7 +135,7 @@ export function ChatHeader({
                 size="icon-xs"
                 disabled={searchMatchCount === 0}
                 onClick={onPrevSearchMatch}
-                aria-label="Previous search match"
+                aria-label={t("header.prevMatchAria")}
               >
                 <ChevronUp data-icon />
               </Button>
@@ -137,7 +145,7 @@ export function ChatHeader({
                 size="icon-xs"
                 disabled={searchMatchCount === 0}
                 onClick={onNextSearchMatch}
-                aria-label="Next search match"
+                aria-label={t("header.nextMatchAria")}
               >
                 <ChevronDown data-icon />
               </Button>
@@ -146,7 +154,7 @@ export function ChatHeader({
                 variant="ghost"
                 size="icon-xs"
                 onClick={() => onSearchQueryChange("")}
-                aria-label="Clear search query"
+                aria-label={t("header.clearSearchAria")}
               >
                 <X data-icon />
               </Button>
@@ -209,8 +217,8 @@ export function ChatHeader({
               variant="outline"
               size="icon"
               onClick={onReplySelected}
-              aria-label="Reply to selected message"
-              title="Reply"
+              aria-label={t("header.replyAria")}
+              title={t("header.replyTitle")}
               className={HEADER_ACTION_BUTTON_CLASS}
             >
               <Reply className="size-3.5" />
@@ -223,8 +231,8 @@ export function ChatHeader({
               variant="outline"
               size="icon"
               onClick={onEditSelected}
-              aria-label="Edit message"
-              title="Edit"
+              aria-label={t("header.editAria")}
+              title={t("header.editTitle")}
               className={HEADER_ACTION_BUTTON_CLASS}
             >
               <Pencil className="size-3.5" />
@@ -238,9 +246,11 @@ export function ChatHeader({
             disabled={selectedCount === 0}
             onClick={onDeleteSelected}
             aria-label={
-              selectedCount > 1 ? "Delete selected messages" : "Delete message"
+              selectedCount > 1
+                ? t("header.deleteSelectedAria")
+                : t("header.deleteAria")
             }
-            title="Delete for me"
+            title={t("header.deleteTitle")}
             className={HEADER_ACTION_BUTTON_CLASS}
           >
             <Trash className="size-3.5" />
@@ -254,10 +264,10 @@ export function ChatHeader({
               onClick={onUnsendSelected}
               aria-label={
                 selectedCount > 1
-                  ? "Unsend selected messages"
-                  : "Unsend message"
+                  ? t("header.unsendSelectedAria")
+                  : t("header.unsendAria")
               }
-              title="Unsend for everyone"
+              title={t("header.unsendTitle")}
               className={cn(
                 HEADER_ACTION_BUTTON_CLASS,
                 "text-destructive hover:text-destructive"
@@ -272,8 +282,8 @@ export function ChatHeader({
             variant="outline"
             size="icon"
             onClick={onClearSelection}
-            aria-label="Cancel selection"
-            title="Cancel selection"
+            aria-label={t("header.cancelSelectionAria")}
+            title={t("header.cancelSelectionAria")}
             className={HEADER_ACTION_BUTTON_CLASS}
           >
             <X className="size-3.5" />
@@ -285,7 +295,11 @@ export function ChatHeader({
           variant="outline"
           size="icon"
           onClick={onToggleSearch}
-          aria-label={isSearchOpen ? "Close search" : "Search messages"}
+          aria-label={
+            isSearchOpen
+              ? t("header.closeSearchAria")
+              : t("header.searchAria")
+          }
           className={HEADER_ACTION_BUTTON_CLASS}
         >
           {isSearchOpen ? (

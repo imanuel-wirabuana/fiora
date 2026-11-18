@@ -1,0 +1,33 @@
+{
+  "partner": "Partner",
+  "notificationFallback": "Notification",
+  "newBadge": "New",
+  "filters": {
+    "all": "All",
+    "mood": "Mood",
+    "nudge": "Nudge",
+    "chat": "Chat",
+    "quiz": "Quiz",
+    "other": "Other"
+  },
+  "groups": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "earlier": "Earlier"
+  },
+  "enablePrompt": {
+    "title": "Get alerts when the app is closed",
+    "description": "Enable phone notifications so you never miss a nudge or mood update.",
+    "button": "Enable"
+  },
+  "clear": "Clear",
+  "emptyAll": "No updates from {{name}} yet.",
+  "emptyFiltered": "No {{filter}} notifications yet.",
+  "dismissAria": "Dismiss notification",
+  "clearDrawer": {
+    "title": "Clear all notifications?",
+    "description": "This will permanently remove all notifications.",
+    "submit": "Clear All",
+    "success": "Cleared!"
+  }
+}

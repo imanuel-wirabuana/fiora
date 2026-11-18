@@ -1,9 +1,11 @@
 import { MapPin } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { Switch } from "@/components/ui/switch"
 import { useRelationship } from "@/hooks/useRelationship"
 import { SettingRow } from "./SettingRow"
 
 export function LocationSharingSection() {
+  const { t } = useTranslation("setting")
   const {
     relationship,
     locationSharing,
@@ -25,13 +27,13 @@ export function LocationSharingSection() {
   return (
     <SettingRow
       icon={<MapPin className="size-3.5" />}
-      title="Location Sharing"
-      description="Share real-time location with your partner on the home screen."
+      title={t("locationSharing.title")}
+      description={t("locationSharing.description")}
       action={
         <Switch
           checked={locationSharing}
           onCheckedChange={handleToggleLocationSharing}
-          aria-label="Toggle location sharing"
+          aria-label={t("locationSharing.ariaLabel")}
         />
       }
     />

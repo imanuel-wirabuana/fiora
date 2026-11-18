@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { format, formatDistanceToNow } from "date-fns"
 import { ArrowLeft, BookOpen, Check, Globe, Lock, Trash2 } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { useLocation, useRoute } from "wouter"
 import { AnimatedEmoji } from "@/components/AnimatedEmoji"
 import { FormDrawer } from "@/components/FormDrawer"
@@ -12,9 +13,11 @@ import { useActivities } from "@/hooks/useActivities"
 import { useAuth } from "@/hooks/useAuth"
 import { useRelationship } from "@/hooks/useRelationship"
 import { useScrollToTop } from "@/hooks/useScrollToTop"
+import { getDateFnsLocale } from "@/lib/i18n"
 import type { JournalActivityContent } from "@/types/activity"
 
 export function JournalDetailScreen() {
+  const { t, i18n } = useTranslation(["journalDetail", "common"])
   const [, setLocation] = useLocation()
   const [, params] = useRoute("/journal/:id")
   const [deleteDrawerOpen, setDeleteDrawerOpen] = useState(false)
@@ -51,8 +54,8 @@ export function JournalDetailScreen() {
     ? currentMember?.content?.avatar || "💙"
     : partnerMember?.content?.avatar || "🤍"
   const authorName = isMe
-    ? "You"
-    : partnerMember?.content?.name || "Partner"
+    ? t("you")
+    : partnerMember?.content?.name || t("partner")
 
   const titleValue =
     journal && draft?.id === journal.id ? draft.title : (content?.title ?? "")
@@ -137,28 +140,28 @@ export function JournalDetailScreen() {
             size="icon"
             onClick={handleBack}
             className="size-9 rounded-full border border-border/60 bg-background/90 shadow-xs hover:bg-muted/60"
-            title="Back to journal"
-            aria-label="Back to journal"
+            title={t("backAria")}
+            aria-label={t("backAria")}
           >
             <ArrowLeft className="size-4" />
           </Button>
           <div className="flex items-center gap-1.5 rounded-full border border-border/60 bg-background/90 px-3 py-1.5 shadow-xs">
             <BookOpen className="size-3.5 text-primary" />
             <span className="text-xs font-semibold text-foreground">
-              Journal
+              {t("headerTitle")}
             </span>
           </div>
 
           {saveState === "saving" && (
             <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
               <Spinner className="size-3" />
-              Saving
+              {t("saving")}
             </span>
           )}
           {saveState === "saved" && (
             <span className="inline-flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400">
               <Check className="size-3" />
-              Saved
+              {t("saved")}
             </span>
           )}
         </div>
@@ -181,12 +184,12 @@ export function JournalDetailScreen() {
               {content.isShared ? (
                 <>
                   <Lock className="size-3" />
-                  <span>Make Private</span>
+                  <span>{t("makePrivate")}</span>
                 </>
               ) : (
                 <>
                   <Globe className="size-3" />
-                  <span>Share</span>
+                  <span>{t("share")}</span>
                 </>
               )}
             </Button>
@@ -196,8 +199,8 @@ export function JournalDetailScreen() {
               size="icon-sm"
               onClick={() => setDeleteDrawerOpen(true)}
               className="size-8 rounded-full text-muted-foreground hover:bg-destructive/15 hover:text-destructive"
-              title="Delete journal"
-              aria-label="Delete journal"
+              title={t("deleteAria")}
+              aria-label={t("deleteAria")}
             >
               <Trash2 className="size-3.5" />
             </Button>
@@ -231,7 +234,7 @@ export function JournalDetailScreen() {
         ) : !journal || !content ? (
           <div className="mx-auto flex max-w-md flex-col items-center justify-center gap-3 py-16 text-center text-muted-foreground">
             <BookOpen className="size-8 opacity-40" />
-            <p className="text-xs">Journal entry not found.</p>
+            <p className="text-xs">{t("notFound")}</p>
             <Button
               type="button"
               variant="outline"
@@ -239,7 +242,7 @@ export function JournalDetailScreen() {
               onClick={() => setLocation("/journal")}
               className="rounded-xl text-xs"
             >
-              Back to Journal
+              {t("backToJournal")}
             </Button>
           </div>
         ) : (
@@ -260,10 +263,13 @@ export function JournalDetailScreen() {
                     {authorName}
                   </span>
                   <span className="text-[11px] text-muted-foreground">
-                    {format(new Date(journal.created_at), "MMM d, yyyy · h:mm a")}{" "}
+                    {format(new Date(journal.created_at), "MMM d, yyyy · h:mm a", {
+                      locale: getDateFnsLocale(i18n.language),
+                    })}{" "}
                     ·{" "}
                     {formatDistanceToNow(new Date(journal.created_at), {
                       addSuffix: true,
+                      locale: getDateFnsLocale(i18n.language),
                     })}
                   </span>
                 </div>
@@ -275,7 +281,7 @@ export function JournalDetailScreen() {
                   className="shrink-0 gap-1 border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-normal text-emerald-600 dark:text-emerald-400"
                 >
                   <Globe className="size-2.5" />
-                  Shared
+                  {t("sharedBadge")}
                 </Badge>
               ) : (
                 <Badge
@@ -283,7 +289,7 @@ export function JournalDetailScreen() {
                   className="shrink-0 gap-1 border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[10px] font-normal text-amber-600 dark:text-amber-400"
                 >
                   <Lock className="size-2.5" />
-                  Private
+                  {t("privateBadge")}
                 </Badge>
               )}
             </div>
@@ -296,8 +302,8 @@ export function JournalDetailScreen() {
                   value={titleValue}
                   onChange={(e) => handleDraftChange(e.target.value, bodyValue)}
                   onBlur={handleBlur}
-                  placeholder="Title"
-                  aria-label="Journal title"
+                  placeholder={t("titlePlaceholder")}
+                  aria-label={t("titleAria")}
                   className="w-full border-0 bg-transparent p-0 text-base leading-snug font-semibold text-foreground outline-none placeholder:text-muted-foreground/50 focus:ring-0"
                 />
 
@@ -308,8 +314,8 @@ export function JournalDetailScreen() {
                       handleDraftChange(titleValue, e.target.value)
                     }
                     onBlur={handleBlur}
-                    placeholder="Write your thoughts..."
-                    aria-label="Journal content"
+                    placeholder={t("bodyPlaceholder")}
+                    aria-label={t("bodyAria")}
                     className="field-sizing-content min-h-[50dvh] w-full resize-none border-0 bg-transparent p-0 text-xs leading-relaxed text-foreground/90 outline-none placeholder:text-muted-foreground/50 focus:ring-0"
                   />
                 </div>
@@ -334,12 +340,14 @@ export function JournalDetailScreen() {
       <FormDrawer
         open={deleteDrawerOpen}
         onOpenChange={setDeleteDrawerOpen}
-        title="Delete journal entry?"
+        title={t("deleteConfirmTitle")}
         description={
-          content ? `Permanently delete "${content.title}"?` : undefined
+          content
+            ? t("deleteConfirmDesc", { title: content.title })
+            : undefined
         }
-        submitLabel="Delete"
-        successLabel="Deleted!"
+        submitLabel={t("common:actions.delete")}
+        successLabel={t("deleted")}
         onSubmit={async () => {
           if (!journal) return false
           try {

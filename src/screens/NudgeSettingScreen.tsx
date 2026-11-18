@@ -18,6 +18,7 @@ import {
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { Pencil, Pin, Plus, Send, Trash2 } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { AnimatedEmoji } from "@/components/AnimatedEmoji"
 import { CustomItem } from "@/components/CustomItem"
 import { FormDrawer } from "@/components/FormDrawer"
@@ -72,6 +73,7 @@ const SortableNudgeRow = memo(function SortableNudgeRow({
   onEdit,
   onDelete,
 }: SortableNudgeRowProps) {
+  const { t } = useTranslation("nudgeSetting")
   const {
     attributes,
     listeners,
@@ -137,7 +139,7 @@ const SortableNudgeRow = memo(function SortableNudgeRow({
             <div className="flex items-center">
               <span className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
                 <Pin className="size-2.5" />
-                Pinned
+                {t("row.pinnedBadge")}
               </span>
             </div>
           )}
@@ -156,10 +158,10 @@ const SortableNudgeRow = memo(function SortableNudgeRow({
           disabled={pinDisabled}
           title={
             nudge.pinned
-              ? "Unpin nudge"
+              ? t("row.unpinTitle")
               : canPinMore
-                ? "Pin nudge"
-                : `Max ${MAX_PINNED_NUDGES} pinned nudges`
+                ? t("row.pinTitle")
+                : t("row.maxPinnedTitle", { max: MAX_PINNED_NUDGES })
           }
           className={cn(
             "size-8 transition-colors",
@@ -176,7 +178,7 @@ const SortableNudgeRow = memo(function SortableNudgeRow({
           size="icon-sm"
           onClick={handleEdit}
           disabled={isSaving}
-          title="Edit nudge"
+          title={t("row.editTitle")}
           className="size-8 text-muted-foreground hover:text-foreground"
         >
           <Pencil className="size-3.5" />
@@ -189,8 +191,8 @@ const SortableNudgeRow = memo(function SortableNudgeRow({
           disabled={!canRemove || isSaving}
           title={
             canRemove
-              ? "Remove nudge"
-              : `At least ${MIN_NUDGES} nudges are required`
+              ? t("row.removeTitle")
+              : t("row.minRequired", { min: MIN_NUDGES })
           }
           className="size-8 text-muted-foreground hover:bg-destructive/15 hover:text-destructive disabled:opacity-30"
         >
@@ -206,6 +208,7 @@ const SortableNudgeRow = memo(function SortableNudgeRow({
  * with drag-and-drop reordering and up to 3 pinned nudges.
  */
 export function NudgeSettingScreen() {
+  const { t } = useTranslation("nudgeSetting")
   const {
     relationship,
     nudgeOptions,
@@ -432,15 +435,15 @@ export function NudgeSettingScreen() {
       <CustomItem
         variant="solid"
         icon={<Send className="size-4 text-primary-foreground" />}
-        title="Your Nudges"
+        title={t("title")}
         description={
           isSaving ? (
             <span className="inline-flex items-center gap-1.5 font-medium text-primary-foreground">
               <Spinner className="size-3" />
-              <span>Saving nudges...</span>
+              <span>{t("saving")}</span>
             </span>
           ) : (
-            `Long-press to reorder • ${pinnedCount}/${MAX_PINNED_NUDGES} pinned`
+            t("subtitle", { pinned: pinnedCount, maxPinned: MAX_PINNED_NUDGES })
           )
         }
         topRightActions={
@@ -457,7 +460,7 @@ export function NudgeSettingScreen() {
               className="h-8 gap-1 rounded-xl px-2.5 text-xs"
             >
               <Plus className="size-3.5" />
-              Add
+              {t("addButton")}
             </Button>
           </div>
         }
@@ -466,8 +469,7 @@ export function NudgeSettingScreen() {
       {/* Error Banner */}
       {updateRelationshipContentMutation.isError && (
         <div className="rounded-2xl border border-destructive/40 bg-destructive/10 px-3.5 py-2.5 text-xs text-destructive">
-          {updateRelationshipContentMutation.error.message ||
-            "Failed to update nudges. Please try again."}
+          {updateRelationshipContentMutation.error.message || t("updateError")}
         </div>
       )}
 
@@ -506,25 +508,33 @@ export function NudgeSettingScreen() {
       <FormDrawer
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
-        title={editingIndex !== null ? "Edit Nudge" : "Add Nudge"}
-        description="Customize an emoji and quick message to send to your partner."
+        title={
+          editingIndex !== null
+            ? t("editDrawer.editTitle")
+            : t("editDrawer.addTitle")
+        }
+        description={t("editDrawer.description")}
         onSubmit={handleApplyDrawer}
-        submitLabel={editingIndex !== null ? "Save Nudge" : "Add Nudge"}
-        successLabel="Saved!"
+        submitLabel={
+          editingIndex !== null
+            ? t("editDrawer.saveSubmit")
+            : t("editDrawer.addSubmit")
+        }
+        successLabel={t("editDrawer.success")}
         isPending={isSaving}
         submitDisabled={!formValid}
       >
         {updateRelationshipContentMutation.isError && (
           <div className="rounded-2xl border border-destructive/40 bg-destructive/10 px-3.5 py-2 text-xs text-destructive">
             {updateRelationshipContentMutation.error.message ||
-              "Failed to save nudge. Please try again."}
+              t("editDrawer.saveError")}
           </div>
         )}
 
         <div className="grid grid-cols-4 gap-2.5">
           <Field className="col-span-1 gap-1.5">
             <FieldLabel className="text-[11px] font-medium text-muted-foreground">
-              Emoji
+              {t("editDrawer.emojiLabel")}
             </FieldLabel>
             <Input
               type="text"
@@ -539,11 +549,11 @@ export function NudgeSettingScreen() {
 
           <Field className="col-span-3 gap-1.5">
             <FieldLabel className="text-[11px] font-medium text-muted-foreground">
-              Nudge Message
+              {t("editDrawer.messageLabel")}
             </FieldLabel>
             <Input
               type="text"
-              placeholder="e.g. Thinking of you, Need a hug"
+              placeholder={t("editDrawer.messagePlaceholder")}
               value={formLabel}
               onChange={(e) => setFormLabel(e.target.value)}
               maxLength={24}
@@ -563,10 +573,10 @@ export function NudgeSettingScreen() {
             </span>
             <div className="flex min-w-0 flex-col">
               <span className="text-[10px] font-medium text-muted-foreground">
-                Lottie Preview
+                {t("editDrawer.previewTitle")}
               </span>
               <span className="truncate text-xs font-medium text-foreground">
-                {formLabel.trim() || "Nudge message"}
+                {formLabel.trim() || t("editDrawer.previewFallback")}
               </span>
             </div>
           </div>
@@ -579,15 +589,18 @@ export function NudgeSettingScreen() {
         onOpenChange={(open) => {
           if (!open) setDeleteIndex(null)
         }}
-        title="Remove nudge?"
+        title={t("deleteDrawer.title")}
         description={
           deleteIndex !== null && nudgesList[deleteIndex]
-            ? `Remove "${nudgesList[deleteIndex].emoji} ${nudgesList[deleteIndex].label}" from your nudge list?`
+            ? t("deleteDrawer.description", {
+                emoji: nudgesList[deleteIndex].emoji,
+                label: nudgesList[deleteIndex].label,
+              })
             : undefined
         }
         onSubmit={handleConfirmRemoveNudge}
-        submitLabel="Remove"
-        successLabel="Removed"
+        submitLabel={t("deleteDrawer.submit")}
+        successLabel={t("deleteDrawer.success")}
         isPending={isSaving}
       />
     </div>

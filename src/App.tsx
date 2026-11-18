@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect } from "react"
+import { useTranslation } from "react-i18next"
 import { Redirect, Route, Switch } from "wouter"
 import { DetailLayout, MainTabPager, type MainTabPane } from "./components/layouts"
 import { HeadsUpNotification } from "./components/notification"
@@ -115,6 +116,7 @@ const MAIN_TAB_PANES: MainTabPane[] = [
 ]
 
 function AppRoutes() {
+  const { t } = useTranslation("common")
   const { isAuthenticated, isInitialized } = useAuth()
   const { hasRelationship, isLoading: isRelationshipLoading } =
     useRelationship()
@@ -201,7 +203,7 @@ function AppRoutes() {
             ) : !hasRelationship ? (
               <Redirect to="/setup" />
             ) : (
-              <DetailLayout title="Journal" backHref="/space">
+              <DetailLayout title={t("routes.journal")} backHref="/space">
                 <Suspense fallback={<JournalScreenSkeleton />}>
                   <JournalScreen />
                 </Suspense>
@@ -215,7 +217,7 @@ function AppRoutes() {
             ) : !hasRelationship ? (
               <Redirect to="/setup" />
             ) : (
-              <DetailLayout title="Settings" backHref="/space">
+              <DetailLayout title={t("routes.settings")} backHref="/space">
                 <Suspense fallback={<SettingScreenSkeleton />}>
                   <SettingScreen />
                 </Suspense>
@@ -229,7 +231,7 @@ function AppRoutes() {
             ) : !hasRelationship ? (
               <Redirect to="/setup" />
             ) : (
-              <DetailLayout title="Profile" backHref="/setting">
+              <DetailLayout title={t("routes.profile")} backHref="/setting">
                 <Suspense fallback={<SettingSubScreenSkeleton />}>
                   <ProfileSettingScreen />
                 </Suspense>
@@ -243,7 +245,7 @@ function AppRoutes() {
             ) : !hasRelationship ? (
               <Redirect to="/setup" />
             ) : (
-              <DetailLayout title="Mood Options" backHref="/setting">
+              <DetailLayout title={t("routes.moodOptions")} backHref="/setting">
                 <Suspense fallback={<SettingSubScreenSkeleton />}>
                   <MoodSettingScreen />
                 </Suspense>
@@ -257,7 +259,7 @@ function AppRoutes() {
             ) : !hasRelationship ? (
               <Redirect to="/setup" />
             ) : (
-              <DetailLayout title="Nudges" backHref="/setting">
+              <DetailLayout title={t("routes.nudges")} backHref="/setting">
                 <Suspense fallback={<SettingSubScreenSkeleton />}>
                   <NudgeSettingScreen />
                 </Suspense>
@@ -271,7 +273,10 @@ function AppRoutes() {
             ) : !hasRelationship ? (
               <Redirect to="/setup" />
             ) : (
-              <DetailLayout title="Important Dates" backHref="/setting">
+              <DetailLayout
+                title={t("routes.importantDates")}
+                backHref="/setting"
+              >
                 <Suspense fallback={<SettingSubScreenSkeleton />}>
                   <ImportantDatesSettingScreen />
                 </Suspense>
@@ -285,7 +290,10 @@ function AppRoutes() {
             ) : !hasRelationship ? (
               <Redirect to="/setup" />
             ) : (
-              <DetailLayout title="App Appearance" backHref="/setting">
+              <DetailLayout
+                title={t("routes.appAppearance")}
+                backHref="/setting"
+              >
                 <Suspense fallback={<SettingSubScreenSkeleton />}>
                   <AppAppearanceSettingScreen />
                 </Suspense>
@@ -299,7 +307,7 @@ function AppRoutes() {
             ) : !hasRelationship ? (
               <Redirect to="/setup" />
             ) : (
-              <DetailLayout title="Notification">
+              <DetailLayout title={t("routes.notification")}>
                 <Suspense fallback={<NotificationScreenSkeleton />}>
                   <NotificationScreen />
                 </Suspense>
@@ -337,7 +345,7 @@ function AppRoutes() {
             ) : !hasRelationship ? (
               <Redirect to="/setup" />
             ) : (
-              <DetailLayout title="Quiz Summary" backHref="/home">
+              <DetailLayout title={t("routes.quiz")} backHref="/home">
                 <Suspense fallback={<QuizSummaryScreenSkeleton />}>
                   <QuizSummaryScreen />
                 </Suspense>

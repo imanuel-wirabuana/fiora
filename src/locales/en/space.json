@@ -1,0 +1,37 @@
+{
+  "soon": "Soon",
+  "tools": {
+    "journal": {
+      "title": "Journal",
+      "description": "Write personal notes or share thoughts with your partner"
+    },
+    "itinerary": {
+      "title": "Itinerary",
+      "description": "Plan trips, date nights, and shared travel plans"
+    },
+    "todo-list": {
+      "title": "Todo List",
+      "description": "Keep track of shared chores, goals, and bucket list items"
+    },
+    "reminder": {
+      "title": "Reminder",
+      "description": "Gentle alerts for important moments"
+    },
+    "gallery": {
+      "title": "Gallery",
+      "description": "Save and revisit your favorite photos together"
+    },
+    "financial": {
+      "title": "Financial",
+      "description": "Shared budget & expense splits"
+    },
+    "period-cycle": {
+      "title": "Period Cycle",
+      "description": "Care & cycle tracking"
+    },
+    "setting": {
+      "title": "Settings",
+      "description": "Manage your profile, relationship, mood, and app preferences"
+    }
+  }
+}

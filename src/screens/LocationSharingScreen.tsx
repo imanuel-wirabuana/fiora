@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { useLocation } from "wouter"
 import { format, isToday } from "date-fns"
 import L from "leaflet"
@@ -17,10 +18,12 @@ import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { useLocationSharing } from "@/hooks/useLocationSharing"
 import { useRelationship } from "@/hooks/useRelationship"
+import { getDateFnsLocale } from "@/lib/i18n"
 import { createMapTileLayer, getGenderMarkerBg } from "@/lib/map"
 import { cn } from "@/lib/utils"
 
 export function LocationSharingScreen() {
+  const { t, i18n } = useTranslation("locationSharing")
   const [, setLocation] = useLocation()
   const {
     myLocation,
@@ -54,7 +57,7 @@ export function LocationSharingScreen() {
   const myAvatar = currentMember?.content?.avatar || "💙"
   const myGender = currentMember?.content?.gender
   const partnerAvatar = partnerMember?.content?.avatar || "🤍"
-  const partnerName = partnerMember?.content?.name || "Partner"
+  const partnerName = partnerMember?.content?.name || t("partner")
   const partnerGender = partnerMember?.content?.gender
 
   // Initialize Leaflet Map
@@ -252,11 +255,12 @@ export function LocationSharingScreen() {
 
   const formatLastUpdated = (dateStr: string) => {
     const d = new Date(dateStr)
-    const exactTime = format(d, "h:mm a")
+    const locale = getDateFnsLocale(i18n.language)
+    const exactTime = format(d, "h:mm a", { locale })
     if (isToday(d)) {
-      return `Today at ${exactTime}`
+      return t("todayAt", { time: exactTime })
     }
-    return `${format(d, "MMM d")} · ${exactTime}`
+    return `${format(d, "MMM d", { locale })} · ${exactTime}`
   }
 
   return (
@@ -277,14 +281,14 @@ export function LocationSharingScreen() {
               size="icon"
               onClick={() => setLocation("/home")}
               className="size-9 rounded-full border border-border/60 bg-background/90 shadow-md backdrop-blur-md hover:bg-background"
-              title="Back to home"
+              title={t("backTitle")}
             >
               <ArrowLeft className="size-4" />
             </Button>
             <div className="flex items-center gap-1.5 rounded-full border border-border/60 bg-background/90 px-3 py-1.5 shadow-md backdrop-blur-md">
               <MapPin className="size-3.5 text-primary" />
               <span className="text-xs font-semibold text-foreground">
-                Couple Map
+                {t("headerTitle")}
               </span>
               {formattedDistance && (
                 <span className="ml-1 text-[11px] font-medium text-primary">
@@ -302,7 +306,7 @@ export function LocationSharingScreen() {
               onClick={refreshLocation}
               disabled={isLocating}
               className="size-9 rounded-full border border-border/60 bg-background/90 shadow-md backdrop-blur-md hover:bg-background"
-              title="Refresh location"
+              title={t("refreshTitle")}
             >
               {isLocating ? (
                 <Spinner className="size-4" />
@@ -320,7 +324,7 @@ export function LocationSharingScreen() {
         <button
           type="button"
           onClick={() => setIsDrawerExpanded((prev) => !prev)}
-          aria-label={isDrawerExpanded ? "Collapse locations" : "Expand locations"}
+          aria-label={isDrawerExpanded ? t("collapseAria") : t("expandAria")}
           className="mx-auto mb-2 flex w-16 justify-center py-0.5"
         >
           <span className="h-1 w-10 rounded-full bg-muted-foreground/25 transition-colors hover:bg-muted-foreground/45" />
@@ -333,7 +337,7 @@ export function LocationSharingScreen() {
             onClick={() => setIsDrawerExpanded((prev) => !prev)}
             className="flex items-center gap-1.5 text-xs font-semibold text-foreground transition-colors hover:text-primary"
           >
-            <span>Locations</span>
+            <span>{t("locations")}</span>
             {isDrawerExpanded ? (
               <ChevronDown className="size-3.5 text-muted-foreground" />
             ) : (
@@ -351,10 +355,10 @@ export function LocationSharingScreen() {
               activeFocus === "both" &&
                 "ring-2 ring-primary/40 ring-offset-1 ring-offset-card"
             )}
-            title="Fit both markers"
+            title={t("fitBothTitle")}
           >
             <Users className="size-3" />
-            <span>Fit both</span>
+            <span>{t("fitBoth")}</span>
           </Button>
         </div>
 
@@ -401,7 +405,7 @@ export function LocationSharingScreen() {
                       className="shrink-0"
                       fallbackClassName="text-sm"
                     />
-                    <span className="truncate">You</span>
+                    <span className="truncate">{t("you")}</span>
                   </div>
                   <Crosshair className="size-3.5 shrink-0 text-primary" />
                 </div>
@@ -427,7 +431,7 @@ export function LocationSharingScreen() {
                   </div>
                 ) : (
                   <span className="text-[10px] text-muted-foreground italic">
-                    {isLocating ? "Locating..." : "Not shared yet"}
+                    {isLocating ? t("locating") : t("notSharedYet")}
                   </span>
                 )}
               </button>
@@ -482,7 +486,7 @@ export function LocationSharingScreen() {
                   </div>
                 ) : (
                   <span className="text-[10px] text-muted-foreground italic">
-                    {partnerMember ? "Waiting for update..." : "No partner"}
+                    {partnerMember ? t("waitingUpdate") : t("noPartner")}
                   </span>
                 )}
               </button>

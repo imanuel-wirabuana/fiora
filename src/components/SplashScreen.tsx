@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { Brand, FioraLogo } from "@/components/Brand"
 import { Spinner } from "@/components/ui/spinner"
 import { cn } from "@/lib/utils"
@@ -8,6 +9,7 @@ interface SplashScreenProps {
 }
 
 export function SplashScreen({ isVisible = true }: SplashScreenProps) {
+  const { t } = useTranslation("common")
   const [isUnmounted, setIsUnmounted] = useState(false)
 
   useEffect(() => {
@@ -47,14 +49,14 @@ export function SplashScreen({ isVisible = true }: SplashScreenProps) {
         <Brand
           size="lg"
           align="center"
-          subtitle="Mood tracker for couples"
+          subtitle={t("splash.subtitle")}
           className="text-primary-foreground"
         />
       </div>
       <div className="flex flex-1 flex-col items-center justify-end pb-8">
         <div className="flex items-center gap-2.5 text-xs font-medium tracking-wide text-primary-foreground/80">
           <Spinner className="size-4 text-primary-foreground" />
-          <span>Loading your relationship...</span>
+          <span>{t("splash.loading")}</span>
         </div>
       </div>
     </div>

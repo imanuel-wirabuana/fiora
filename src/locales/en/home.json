@@ -1,0 +1,91 @@
+{
+  "mood": {
+    "you": "You",
+    "loading": "Loading...",
+    "checkedIn": "Checked in",
+    "tapToLog": "Tap + to log mood",
+    "noMoodYet": "No mood logged yet",
+    "waitingPartner": "Waiting for partner"
+  },
+  "presence": {
+    "waitingPartner": "Waiting for partner",
+    "shareInviteCode": "Share your invite code in Settings to connect",
+    "online": "Online",
+    "offline": "Offline",
+    "lastSeen": "Last seen {{time}}",
+    "notSeenYet": "Not seen yet",
+    "lastActive": "Last active: {{activity}}",
+    "locationShared": "Location shared",
+    "daysTogether_one": "{{count}} day together",
+    "daysTogether_other": "{{count}} days together"
+  },
+  "location": {
+    "title": "Location",
+    "you": "You",
+    "partner": "Partner",
+    "apart": "{{distance}} apart",
+    "tapToOpen": "Tap to open location sharing"
+  },
+  "nudge": {
+    "title": "Quick Nudge",
+    "partnerFallback": "Partner",
+    "connectFirst": "Connect with a partner first to send nudges.",
+    "youSent": "You sent: ",
+    "partnerSent": "{{name}} sent: ",
+    "waitCooldown": "Wait {{seconds}}s before sending \"{{label}}\" again",
+    "sent": "Sent!",
+    "pinInSettings": "Pin nudges in settings",
+    "pinNudge": "Pin nudge",
+    "waitCustomCooldown": "Wait {{seconds}}s before sending another custom nudge",
+    "sendCustom": "Send custom nudge",
+    "custom": "Custom",
+    "drawerTitle": "Send Custom Nudge",
+    "drawerDescription": "Send a quick nudge to {{name}}.",
+    "waitButton": "Wait {{seconds}}s",
+    "sendButton": "Send Nudge",
+    "iconLabel": "Icon",
+    "messageLabel": "Message",
+    "messagePlaceholder": "Thinking of you..."
+  },
+  "horoscope": {
+    "ariaLabel": "Today's Horoscopes",
+    "tapToOpen": "Tap to open",
+    "loadError": "Couldn't load horoscope",
+    "retry": "Retry",
+    "empty": "No horoscope for today yet",
+    "cardAria": "{{category}} horoscope ({{current}} of {{total}}). Tap for next.",
+    "coverAria": "{{title}} ({{zodiac}}). Tap to open.",
+    "setBirthDatePrompt": "Set birth date for your horoscope",
+    "setBirthDate": "Set Birth Date",
+    "openMyHoroscope": "Open your horoscope today",
+    "openPartnerHoroscope": "Open partner's horoscope today",
+    "partnerNoBirthDate": "Partner hasn't set their birth date yet",
+    "waitingPartner": "Waiting for partner",
+    "categories": {
+      "mood": "Mood",
+      "love": "Love",
+      "money": "Money",
+      "career": "Career",
+      "summary": "Summary",
+      "advice": "Advice"
+    }
+  },
+  "quiz": {
+    "title": "Daily Quiz",
+    "partnerFallback": "Partner",
+    "allCaughtUp": "All Caught Up",
+    "allCaughtUpDesc": "You and your partner have completed all available quizzes!",
+    "hour_one": "{{count}} hour",
+    "hour_other": "{{count}} hours",
+    "newQuizIn": "New quiz in {{time}}",
+    "bothFinished": "You and {{name}} finished all {{total}} questions! Your quiz summary is ready.",
+    "waitingPartner": "All {{total}} answered! Waiting for {{name}} ({{partnerCount}}/{{total}}) to unlock full results.",
+    "viewSummary": "View Quiz Summary",
+    "savedProgress": "Saved! ({{answered}}/{{total}} answered)",
+    "progressPrompt": "{{answered}}/{{total}} answered · Complete all to see results",
+    "prevQuiz": "Previous quiz",
+    "nextQuiz": "Next quiz",
+    "youChoseThis": "You chose this",
+    "you": "You"
+  }
+}

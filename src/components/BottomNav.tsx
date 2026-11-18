@@ -1,4 +1,5 @@
 import { memo, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { Link, useLocation } from "wouter"
 import {
   BarChart3,
@@ -28,13 +29,13 @@ const alignClassMap: Record<NavAlign, string> = {
 }
 
 const navItemsLeft: NavItem[] = [
-  { href: "/home", label: "Home", icon: Home, align: "center" },
-  { href: "/insight", label: "Insight", icon: BarChart3, align: "right" },
+  { href: "/home", label: "nav.home", icon: Home, align: "center" },
+  { href: "/insight", label: "nav.insight", icon: BarChart3, align: "right" },
 ]
 
 const navItemsRight: NavItem[] = [
-  { href: "/chat", label: "Chat", icon: MessageCircle, align: "left" },
-  { href: "/space", label: "Space", icon: LayoutGrid, align: "center" },
+  { href: "/chat", label: "nav.chat", icon: MessageCircle, align: "left" },
+  { href: "/space", label: "nav.space", icon: LayoutGrid, align: "center" },
 ]
 
 const BottomNavItem = memo(function BottomNavItem({
@@ -44,12 +45,13 @@ const BottomNavItem = memo(function BottomNavItem({
   item: NavItem
   isActive: boolean
 }) {
+  const { t } = useTranslation("common")
   const Icon = item.icon
 
   return (
     <Link
       href={item.href}
-      aria-label={item.label}
+      aria-label={t(item.label as "nav.home")}
       className={cn(
         "flex h-full w-full items-center py-1 text-center transition-colors",
         alignClassMap[item.align],
@@ -77,6 +79,7 @@ interface BottomNavProps {
 }
 
 export function BottomNav({ className }: BottomNavProps) {
+  const { t } = useTranslation("common")
   const [location] = useLocation()
   const [isMoodDrawerOpen, setIsMoodDrawerOpen] = useState(false)
   const setCustomActivityOverride = usePresenceStore(
@@ -85,12 +88,12 @@ export function BottomNav({ className }: BottomNavProps) {
 
   const handleMoodDrawerOpenChange = (open: boolean) => {
     setIsMoodDrawerOpen(open)
-    setCustomActivityOverride(open ? "Logging a Mood" : null)
+    setCustomActivityOverride(open ? t("nav.loggingMood") : null)
   }
 
   return (
     <nav
-      aria-label="Bottom Navigation"
+      aria-label={t("nav.bottomNavigation")}
       className={cn(
         "fixed inset-x-0 bottom-0 z-40 pb-[env(safe-area-inset-bottom)] md:pb-4",
         className
@@ -135,10 +138,10 @@ export function BottomNav({ className }: BottomNavProps) {
               "group relative flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-95",
               isMoodDrawerOpen ? "rotate-45" : ""
             )}
-            aria-label="Track Mood"
+            aria-label={t("nav.trackMood")}
           >
             <Plus className="size-6 stroke-[2.5] transition-transform duration-200" />
-            <span className="sr-only">Open mood tracker</span>
+            <span className="sr-only">{t("nav.openMoodTracker")}</span>
           </button>
         </div>
 

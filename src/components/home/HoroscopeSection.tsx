@@ -1,4 +1,5 @@
 import { memo, useCallback, useEffect, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { useLocation } from "wouter"
 import {
   Briefcase,
@@ -199,6 +200,7 @@ function CardFaceContent({
   total: number
   zodiacIcon: LucideIcon | null
 }) {
+  const { t } = useTranslation("home")
   const ActiveIcon = card.Icon
 
   return (
@@ -211,7 +213,7 @@ function CardFaceContent({
       <div className="relative z-10 flex w-full items-center justify-between gap-1">
         <span className="flex items-center gap-1.5 text-xs font-semibold">
           <ActiveIcon className="size-3.5 shrink-0" />
-          <span>{card.label}</span>
+          <span>{t(`horoscope.categories.${card.key}`)}</span>
         </span>
 
         <span
@@ -242,6 +244,7 @@ function CoverFaceContent({
   zodiacIcon: LucideIcon | null
   coverStyles: ReturnType<typeof getCoverGenderStyles>
 }) {
+  const { t } = useTranslation("home")
   return (
     <>
       <ZodiacWatermark
@@ -267,7 +270,7 @@ function CoverFaceContent({
           {coverTitle}
         </span>
         <span className={cn("text-[10px]", coverStyles.subtext)}>
-          Tap to open
+          {t("horoscope.tapToOpen")}
         </span>
       </div>
     </>
@@ -286,6 +289,7 @@ const HoroscopeDeck = memo(function HoroscopeDeck({
   onRetry,
   emptyBirthDateContent,
 }: HoroscopeDeckProps) {
+  const { t } = useTranslation("home")
   const [activeIndex, setActiveIndex] = useState(0)
   const [exitingSnapshot, setExitingSnapshot] =
     useState<ExitingCardSnapshot | null>(null)
@@ -388,7 +392,7 @@ const HoroscopeDeck = memo(function HoroscopeDeck({
     return (
       <div className="flex h-32 w-full flex-col items-center justify-center gap-1.5 rounded-2xl border border-border bg-card/80 p-4 text-center">
         <p className="text-xs text-muted-foreground">
-          Couldn&apos;t load horoscope
+          {t("horoscope.loadError")}
         </p>
         <Button
           type="button"
@@ -398,7 +402,7 @@ const HoroscopeDeck = memo(function HoroscopeDeck({
           className="h-7 gap-1 px-2.5 text-xs text-primary"
         >
           <RefreshCw className="size-3" />
-          Retry
+          {t("horoscope.retry")}
         </Button>
       </div>
     )
@@ -412,7 +416,7 @@ const HoroscopeDeck = memo(function HoroscopeDeck({
           className="text-primary/12"
         />
         <p className="relative z-10 text-xs leading-snug text-muted-foreground">
-          No horoscope for today yet
+          {t("horoscope.empty")}
         </p>
       </div>
     )
@@ -454,7 +458,11 @@ const HoroscopeDeck = memo(function HoroscopeDeck({
             aria-hidden={!isFront || undefined}
             aria-label={
               isFront
-                ? `${stackCard.label} horoscope (${safeIndex + 1} of ${cards.length}). Tap for next.`
+                ? t("horoscope.cardAria", {
+                    category: t(`horoscope.categories.${stackCard.key}`),
+                    current: safeIndex + 1,
+                    total: cards.length,
+                  })
                 : undefined
             }
             onClick={isFront ? handleTap : undefined}
@@ -497,7 +505,10 @@ const HoroscopeDeck = memo(function HoroscopeDeck({
           key="cover"
           type="button"
           onClick={handleTap}
-          aria-label={`${coverTitle} (${zodiac}). Tap to open.`}
+          aria-label={t("horoscope.coverAria", {
+            title: coverTitle,
+            zodiac,
+          })}
           className={cn(
             "relative z-10 flex h-full w-full transform-gpu cursor-pointer flex-col justify-between overflow-hidden rounded-2xl border p-3.5 text-left shadow-sm transition-[transform,opacity] duration-[550ms] active:scale-[0.985] motion-reduce:transition-none",
             DECK_EASING,
@@ -546,6 +557,7 @@ const HoroscopeDeck = memo(function HoroscopeDeck({
 })
 
 export function HoroscopeSection() {
+  const { t } = useTranslation("home")
   const [, setLocation] = useLocation()
   const { currentMember, partnerMember } = useRelationship()
   const {
@@ -564,12 +576,12 @@ export function HoroscopeSection() {
   return (
     <div
       role="region"
-      aria-label="Today's Horoscopes"
+      aria-label={t("horoscope.ariaLabel")}
       className="scrollbar-none pointer-events-none -mt-9 -mb-5 flex w-full snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain scroll-px-4 pt-14 pb-12 [-webkit-overflow-scrolling:touch]"
     >
       <div className="pointer-events-auto w-[86%] shrink-0 snap-start pl-4">
         <HoroscopeDeck
-          coverTitle="Open your horoscope today"
+          coverTitle={t("horoscope.openMyHoroscope")}
           gender={currentMember?.content?.gender}
           zodiac={myZodiac}
           horoscope={myHoroscope}
@@ -581,7 +593,7 @@ export function HoroscopeSection() {
           emptyBirthDateContent={
             <div className="flex flex-col items-center gap-2">
               <p className="text-xs leading-snug text-muted-foreground">
-                Set birth date for your horoscope
+                {t("horoscope.setBirthDatePrompt")}
               </p>
               <Button
                 type="button"
@@ -590,7 +602,7 @@ export function HoroscopeSection() {
                 onClick={() => setLocation("/setting/profile")}
                 className="h-7 border-primary/30 px-2.5 text-[11px] font-medium text-primary hover:bg-primary/10"
               >
-                Set Birth Date
+                {t("horoscope.setBirthDate")}
               </Button>
             </div>
           }
@@ -599,7 +611,7 @@ export function HoroscopeSection() {
 
       <div className="pointer-events-auto w-[86%] shrink-0 snap-end pr-4">
         <HoroscopeDeck
-          coverTitle="Open partner's horoscope today"
+          coverTitle={t("horoscope.openPartnerHoroscope")}
           gender={partnerMember?.content?.gender}
           zodiac={partnerZodiac}
           horoscope={partnerHoroscope}
@@ -611,12 +623,14 @@ export function HoroscopeSection() {
           emptyBirthDateContent={
             partnerMember ? (
               <p className="text-xs leading-snug text-muted-foreground">
-                Partner hasn&apos;t set their birth date yet
+                {t("horoscope.partnerNoBirthDate")}
               </p>
             ) : (
               <div className="flex flex-col items-center gap-1.5 text-muted-foreground">
                 <UserPlus className="size-4 opacity-60" />
-                <p className="text-xs leading-snug">Waiting for partner</p>
+                <p className="text-xs leading-snug">
+                  {t("horoscope.waitingPartner")}
+                </p>
               </div>
             )
           }

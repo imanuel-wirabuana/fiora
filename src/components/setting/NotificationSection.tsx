@@ -1,10 +1,12 @@
 import { Bell, BellOff } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { Spinner } from "@/components/ui/spinner"
 import { Switch } from "@/components/ui/switch"
 import { usePushNotifications } from "@/hooks/usePushNotifications"
 import { SettingRow } from "./SettingRow"
 
 export function NotificationSection() {
+  const { t } = useTranslation("setting")
   const {
     isSupported,
     isStandalone,
@@ -22,17 +24,15 @@ export function NotificationSection() {
   const isBusy = isLoading || isPending
   const isDisabled = !isSupported || needsIOSInstall || isBlocked || isBusy
 
-  let description = "Receive alerts on this phone even when Fiora is closed."
+  let description = t("notification.descriptionDefault")
   if (needsIOSInstall) {
-    description =
-      "Add Fiora to your iPhone Home Screen (Share → Add to Home Screen) to enable push notifications."
+    description = t("notification.descriptionIosInstall")
   } else if (!isSupported) {
-    description = "Push notifications are not supported in this browser."
+    description = t("notification.descriptionUnsupported")
   } else if (isBlocked) {
-    description =
-      "Notifications are blocked. Enable them in your browser or phone settings."
+    description = t("notification.descriptionBlocked")
   } else if (isSubscribed) {
-    description = "Active on this device. You will receive partner alerts."
+    description = t("notification.descriptionActive")
   }
 
   return (
@@ -45,7 +45,7 @@ export function NotificationSection() {
             <BellOff className="size-3.5 text-muted-foreground" />
           )
         }
-        title="Phone Notifications"
+        title={t("notification.title")}
         description={description}
         action={
           <div className="flex items-center gap-2">
@@ -56,7 +56,7 @@ export function NotificationSection() {
               onCheckedChange={() => {
                 void togglePush().catch(() => {})
               }}
-              aria-label="Toggle phone push notifications"
+              aria-label={t("notification.ariaLabel")}
             />
           </div>
         }

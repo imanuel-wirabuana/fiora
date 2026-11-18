@@ -1,4 +1,5 @@
 import { HelpCircle } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { CustomSelect } from "@/components/pickers"
 import { Button } from "@/components/ui/button"
 import { useQuiz } from "@/hooks/useQuiz"
@@ -7,6 +8,7 @@ import { DAILY_QUIZ_COUNT_OPTIONS } from "@/lib/relationship"
 import { SettingRow } from "./SettingRow"
 
 export function QuizSection() {
+  const { t } = useTranslation("setting")
   const { relationship, dailyQuizCount, hasRelationship } = useRelationship()
   const { updateDailyQuizCount } = useQuiz()
 
@@ -15,27 +17,27 @@ export function QuizSection() {
   }
 
   const quizOptions = DAILY_QUIZ_COUNT_OPTIONS.map((count) => ({
-    label: `${count} ${count === 1 ? "question" : "questions"}`,
+    label: t("quiz.option", { count }),
     value: count,
   }))
 
   const currentLabel =
     quizOptions.find((opt) => opt.value === dailyQuizCount)?.label ??
-    "Questions"
+    t("quiz.placeholder")
 
   return (
     <SettingRow
       icon={<HelpCircle className="size-3.5" />}
-      title="Daily Quiz"
-      description="Questions per day on home screen."
+      title={t("quiz.title")}
+      description={t("quiz.description")}
       action={
         <CustomSelect
           value={dailyQuizCount}
           onValueChange={updateDailyQuizCount}
           options={quizOptions}
-          placeholder="Questions"
-          title="Daily Quiz"
-          description="Questions per day on home screen."
+          placeholder={t("quiz.placeholder")}
+          title={t("quiz.title")}
+          description={t("quiz.description")}
           trigger={
             <Button
               type="button"

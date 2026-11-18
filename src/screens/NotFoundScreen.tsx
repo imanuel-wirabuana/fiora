@@ -1,3 +1,6 @@
+import { useTranslation } from "react-i18next"
+
 export function NotFoundScreen() {
-  return <h1 className="text-2xl font-bold tracking-tight">Not Found</h1>
+  const { t } = useTranslation("notFound")
+  return <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
 }

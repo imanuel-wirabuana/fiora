@@ -1,0 +1,22 @@
+{
+  "you": "You",
+  "partner": "Partner",
+  "backAria": "Back to journal",
+  "headerTitle": "Journal",
+  "saving": "Saving",
+  "saved": "Saved",
+  "makePrivate": "Make Private",
+  "share": "Share",
+  "deleteAria": "Delete journal",
+  "notFound": "Journal entry not found.",
+  "backToJournal": "Back to Journal",
+  "sharedBadge": "Shared",
+  "privateBadge": "Private",
+  "titlePlaceholder": "Title",
+  "titleAria": "Journal title",
+  "bodyPlaceholder": "Write your thoughts...",
+  "bodyAria": "Journal content",
+  "deleteConfirmTitle": "Delete journal entry?",
+  "deleteConfirmDesc": "Permanently delete \"{{title}}\"?",
+  "deleted": "Deleted!"
+}

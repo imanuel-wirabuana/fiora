@@ -1,0 +1,47 @@
+{
+  "title": "Your Moods",
+  "rearranging": "Rearranging with AI...",
+  "subtitle": "Auto-scored and arranged from good to bad by AI",
+  "aiAssistantTitle": "AI Mood Assistant",
+  "aiButton": "AI",
+  "addButton": "Add",
+  "rearrangeError": "Failed to rearrange moods. Please try again.",
+  "row": {
+    "editTitle": "Edit mood",
+    "removeTitle": "Remove mood",
+    "minRequired": "At least {{min}} mood is required"
+  },
+  "editDrawer": {
+    "editTitle": "Edit Mood",
+    "addTitle": "Add Mood",
+    "description": "AI will automatically score and sort this mood from good to bad based on its icon and label.",
+    "saveSubmit": "Save & Rearrange",
+    "addSubmit": "Add & Rearrange",
+    "success": "Rearranged!",
+    "emojiLabel": "Emoji",
+    "moodLabel": "Mood Label",
+    "labelPlaceholder": "e.g. Cozy, Excited, Stressed",
+    "previewTitle": "Lottie Preview",
+    "previewFallback": "Mood label"
+  },
+  "aiDrawer": {
+    "title": "AI Mood Assistant",
+    "description": "Rearrange your current moods or prompt AI to customize your mood list.",
+    "rearrangeSubmit": "Rearrange Moods",
+    "promptSubmit": "Apply AI Prompt",
+    "success": "Done!",
+    "errorFallback": "AI request failed. Please try again.",
+    "rearrangeTitle": "Rearrange Only",
+    "rearrangeDesc": "Re-score & sort current moods good to bad",
+    "promptTitle": "Prompt AI",
+    "promptDesc": "Add, edit, or remove moods with a prompt",
+    "promptFieldLabel": "Your Prompt",
+    "promptPlaceholder": "e.g. Add 2 cozy weekend moods, or replace Tired with Sleepy 😪"
+  },
+  "deleteDrawer": {
+    "title": "Remove mood?",
+    "description": "Remove \"{{emoji}} {{label}}\" from your mood list?",
+    "submit": "Remove",
+    "success": "Removed!"
+  }
+}

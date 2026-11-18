@@ -1,4 +1,5 @@
 import { useState, type FormEvent, type KeyboardEvent } from "react"
+import { useTranslation } from "react-i18next"
 import { Check, Pencil, Reply, SendHorizontal, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -43,6 +44,7 @@ export function ChatComposer({
   onTypingChange,
   onStopTyping,
 }: ChatComposerProps) {
+  const { t } = useTranslation("chat")
   const [text, setText] = useState(
     () => editingMessage?.content?.text ?? ""
   )
@@ -102,7 +104,7 @@ export function ChatComposer({
             <Pencil className="size-3 shrink-0 text-primary" />
             <div className="flex min-w-0 flex-col">
               <span className="truncate font-semibold text-foreground">
-                Editing message
+                {t("composer.editing")}
               </span>
               <span className="truncate text-muted-foreground">
                 {editingMessage.content?.text ?? ""}
@@ -114,7 +116,7 @@ export function ChatComposer({
             variant="ghost"
             size="icon-xs"
             onClick={onCancelEdit}
-            aria-label="Cancel edit"
+            aria-label={t("composer.cancelEditAria")}
           >
             <X data-icon />
           </Button>
@@ -125,7 +127,7 @@ export function ChatComposer({
             <Reply className="size-3 shrink-0 text-primary" />
             <div className="flex min-w-0 flex-col">
               <span className="truncate font-semibold text-foreground">
-                Replying to {replyingTo.senderName}
+                {t("composer.replyingTo", { name: replyingTo.senderName })}
               </span>
               <span className="truncate text-muted-foreground">
                 {replyingTo.text}
@@ -137,7 +139,7 @@ export function ChatComposer({
             variant="ghost"
             size="icon-xs"
             onClick={onCancelReply}
-            aria-label="Cancel reply"
+            aria-label={t("composer.cancelReplyAria")}
           >
             <X data-icon />
           </Button>
@@ -175,13 +177,15 @@ export function ChatComposer({
             autoFocus={Boolean(editingMessage)}
             placeholder={
               editingMessage
-                ? "Edit message..."
-                : `Message ${partnerName}...`
+                ? t("composer.editPlaceholder")
+                : t("composer.messagePlaceholder", { name: partnerName })
             }
             rows={1}
             disabled={disabled}
             aria-label={
-              editingMessage ? "Edit message" : `Message ${partnerName}`
+              editingMessage
+                ? t("composer.editAria")
+                : t("composer.messageAria", { name: partnerName })
             }
             className="relative z-10 max-h-28 min-h-7 w-full resize-none border-0 bg-transparent px-0 py-1 text-xs leading-5 shadow-none outline-none focus-visible:ring-0 focus-visible:outline-none"
           />
@@ -192,7 +196,11 @@ export function ChatComposer({
           variant="default"
           size="icon"
           disabled={!canSend}
-          aria-label={editingMessage ? "Save edited message" : "Send message"}
+          aria-label={
+            editingMessage
+              ? t("composer.saveEditAria")
+              : t("composer.sendAria")
+          }
           className="size-11 shrink-0 rounded-full shadow-lg"
         >
           {editingMessage ? (

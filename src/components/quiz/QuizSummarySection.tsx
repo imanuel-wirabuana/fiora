@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from "react"
 import { format, formatDistanceToNow, isToday } from "date-fns"
 import { HelpCircle, History, Lock, Sparkles } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { CustomItem } from "@/components/CustomItem"
 import { CustomTabs } from "@/components/CustomTabs"
 import { Badge } from "@/components/ui/badge"
@@ -8,20 +9,23 @@ import { CustomSkeleton } from "@/components/CustomSkeleton"
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll"
 import { useQuiz } from "@/hooks/useQuiz"
 import { useRelationship } from "@/hooks/useRelationship"
+import { getDateFnsLocale } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 
 const QUIZ_SUMMARY_PAGE_SIZE = 15
 
-function formatQuizTime(dateStr: string) {
+function formatQuizTime(dateStr: string, language?: string) {
   const date = new Date(dateStr)
-  const exactTime = format(date, "h:mm a")
+  const locale = getDateFnsLocale(language)
+  const exactTime = format(date, "h:mm a", { locale })
   if (isToday(date)) {
-    return `${exactTime} · ${formatDistanceToNow(date, { addSuffix: true })}`
+    return `${exactTime} · ${formatDistanceToNow(date, { addSuffix: true, locale })}`
   }
-  return `${format(date, "MMM d")} · ${exactTime}`
+  return `${format(date, "MMM d", { locale })} · ${exactTime}`
 }
 
 export function QuizSummarySection() {
+  const { t, i18n } = useTranslation("quizSummary")
   const {
     todayQuizzes,
     answeredQuizzes,
@@ -83,7 +87,7 @@ export function QuizSummarySection() {
     fetchNextPage: loadMoreHistory,
   })
 
-  const partnerName = partnerMember?.content?.name || "Partner"
+  const partnerName = partnerMember?.content?.name || t("partner")
   const partnerAvatar = partnerMember?.content?.avatar || "🤍"
   const myAvatar = currentMember?.content?.avatar || "🙋"
 
@@ -110,13 +114,13 @@ export function QuizSummarySection() {
         items={[
           {
             value: "today",
-            label: "Today",
+            label: t("tabs.today"),
             icon: <Sparkles className="size-3.5" />,
             badge: todayQuizzes.length,
           },
           {
             value: "history",
-            label: "History",
+            label: t("tabs.history"),
             icon: <History className="size-3.5" />,
             badge: sortedHistoryQuizzes.length,
           },
@@ -128,7 +132,7 @@ export function QuizSummarySection() {
         {todayQuizzes.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-2 py-12 text-center text-muted-foreground">
             <Sparkles className="size-8 opacity-40" />
-            <p className="text-[11px]">No daily quizzes for today.</p>
+            <p className="text-[11px]">{t("todayEmpty")}</p>
           </div>
         ) : (
           <>
@@ -136,15 +140,21 @@ export function QuizSummarySection() {
             <CustomItem
               variant="solid"
               icon={<Sparkles className="size-3.5 text-primary-foreground" />}
-              title="Today's Results"
+              title={t("todayResults")}
               topRightActions={
                 <Badge
                   variant="outline"
                   className="border-primary-foreground/25 bg-primary-foreground/15 px-2 py-0.5 text-[10px] font-medium text-primary-foreground"
                 >
                   {isAllBothAnswered
-                    ? `${matchedCount}/${totalCount} Matched`
-                    : `${myAnsweredCount}/${totalCount} Answered`}
+                    ? t("matchedBadge", {
+                        matched: matchedCount,
+                        total: totalCount,
+                      })
+                    : t("answeredBadge", {
+                        answered: myAnsweredCount,
+                        total: totalCount,
+                      })}
                 </Badge>
               }
               contentClassName="space-y-2 pt-1"
@@ -154,14 +164,14 @@ export function QuizSummarySection() {
                   <>
                     <div className="flex items-baseline justify-between">
                       <span className="text-lg font-bold tracking-tight text-primary-foreground">
-                        {matchPercentage}% Compatibility
+                        {t("compatibility", { percent: matchPercentage })}
                       </span>
                       <span className="text-[10px] text-primary-foreground/80">
                         {matchedCount === totalCount
-                          ? "Perfect sync! ✨"
+                          ? t("syncPerfect")
                           : matchedCount > 0
-                            ? "Great connection 🤍"
-                            : "Different minds 💬"}
+                            ? t("syncGreat")
+                            : t("syncDifferent")}
                       </span>
                     </div>
                     <div className="h-1.5 w-full overflow-hidden rounded-full bg-primary-foreground/20">
@@ -175,9 +185,11 @@ export function QuizSummarySection() {
                   <div className="flex items-center gap-2 text-primary-foreground/85">
                     <Lock className="size-4 shrink-0 text-primary-foreground/75" />
                     <span className="text-[11px] leading-tight">
-                      Waiting for {partnerName} to finish (
-                      {partnerAnsweredCount}/{totalCount} answered). Both
-                      answers will reveal once done!
+                      {t("waitingPartnerDesc", {
+                        name: partnerName,
+                        partnerCount: partnerAnsweredCount,
+                        total: totalCount,
+                      })}
                     </span>
                   </div>
                 )}
@@ -199,7 +211,7 @@ export function QuizSummarySection() {
                     variant={item.isMatched ? "soft" : "default"}
                     className="gap-2 p-3 [content-visibility:auto] [contain-intrinsic-size:auto_132px]"
                     icon={<HelpCircle className="size-3.5 text-primary" />}
-                    title={`Question ${idx + 1}`}
+                    title={t("questionTitle", { number: idx + 1 })}
                     topRightActions={
                       isAllBothAnswered ? (
                         <Badge
@@ -211,14 +223,14 @@ export function QuizSummarySection() {
                               : "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400"
                           )}
                         >
-                          {item.isMatched ? "Matched ✨" : "Different 💬"}
+                          {item.isMatched ? t("matched") : t("different")}
                         </Badge>
                       ) : (
                         <Badge
                           variant="outline"
                           className="border-muted-foreground/20 bg-muted/50 px-1.5 py-0 text-[10px] font-medium text-muted-foreground"
                         >
-                          Waiting for {partnerName} 🔒
+                          {t("waitingFor", { name: partnerName })}
                         </Badge>
                       )
                     }
@@ -246,12 +258,12 @@ export function QuizSummarySection() {
                     <div className="grid gap-1.5 rounded-lg border border-border/50 bg-muted/20 p-2 text-[11px]">
                       <div className="flex min-w-0 items-start gap-1.5">
                         <span className="shrink-0 font-medium text-primary">
-                          {myAvatar} You:
+                          {myAvatar} {t("you")}:
                         </span>
                         <span className="min-w-0 flex-1 break-words text-foreground/90">
                           {myChoice || (
                             <span className="text-muted-foreground italic">
-                              Not answered
+                              {t("notAnswered")}
                             </span>
                           )}
                         </span>
@@ -267,7 +279,7 @@ export function QuizSummarySection() {
                           </span>
                         ) : (
                           <span className="text-muted-foreground italic">
-                            Locked until {partnerName} finishes 🔒
+                            {t("lockedUntilPartner", { name: partnerName })}
                           </span>
                         )}
                       </div>
@@ -285,7 +297,7 @@ export function QuizSummarySection() {
         {sortedHistoryQuizzes.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-2 py-12 text-center text-muted-foreground">
             <History className="size-8 opacity-40" />
-            <p className="text-[11px]">No answered quizzes yet.</p>
+            <p className="text-[11px]">{t("historyEmpty")}</p>
           </div>
         ) : (
           <div className="flex flex-col gap-2.5">
@@ -302,10 +314,12 @@ export function QuizSummarySection() {
                   variant="outline"
                   className="gap-1.5 rounded-2xl p-3 transition-colors [content-visibility:auto] [contain-intrinsic-size:auto_132px]"
                   icon={<Sparkles className="size-4 text-violet-500" />}
-                  title={`${myAvatar}${partnerAvatar} Daily Quiz`}
+                  title={t("dailyQuizTitle", {
+                    avatars: `${myAvatar}${partnerAvatar}`,
+                  })}
                   topRightActions={
                     <span className="text-[10px] whitespace-nowrap text-primary/75">
-                      {formatQuizTime(entry.latestAnsweredAt)}
+                      {formatQuizTime(entry.latestAnsweredAt, i18n.language)}
                     </span>
                   }
                   contentClassName="space-y-1.5 pl-6"
@@ -326,7 +340,7 @@ export function QuizSummarySection() {
                       )}
                     >
                       <HelpCircle className="size-2.5 text-primary" />
-                      {entry.isMatched ? "Match ✨" : "Diff 💬"}
+                      {entry.isMatched ? t("matchShort") : t("diffShort")}
                     </Badge>
                   </div>
 
@@ -337,12 +351,12 @@ export function QuizSummarySection() {
                   <div className="flex flex-col gap-1 rounded-lg border border-border/50 bg-muted/20 p-2 pt-1.5 text-[11px]">
                     <div className="flex min-w-0 items-start gap-1.5">
                       <span className="flex shrink-0 items-center gap-1 font-medium text-primary">
-                        <span>{myAvatar}</span> You:
+                        <span>{myAvatar}</span> {t("you")}:
                       </span>
                       <span className="flex-1 leading-snug font-medium break-words text-foreground/90">
                         {myChoice || (
                           <span className="font-normal text-muted-foreground italic">
-                            Not answered yet
+                            {t("notAnsweredYet")}
                           </span>
                         )}
                       </span>
@@ -358,7 +372,7 @@ export function QuizSummarySection() {
                         </span>
                       ) : (
                         <span className="leading-snug font-normal text-muted-foreground italic">
-                          Locked until both answer 🔒
+                          {t("lockedUntilBoth")}
                         </span>
                       )}
                     </div>

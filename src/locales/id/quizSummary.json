@@ -1,0 +1,29 @@
+{
+  "you": "Kamu",
+  "partner": "Pasangan",
+  "tabs": {
+    "today": "Hari ini",
+    "history": "Riwayat"
+  },
+  "todayEmpty": "Belum ada quiz harian untuk hari ini.",
+  "todayResults": "Hasil Hari Ini",
+  "matchedBadge": "{{matched}}/{{total}} Cocok",
+  "answeredBadge": "{{answered}}/{{total}} Terjawab",
+  "compatibility": "{{percent}}% Kecocokan",
+  "syncPerfect": "Kompak banget! ✨",
+  "syncGreat": "Koneksi mantap 🤍",
+  "syncDifferent": "Beda pikiran 💬",
+  "waitingPartnerDesc": "Menunggu {{name}} selesai ({{partnerCount}}/{{total}} terjawab). Jawaban kalian bakal terbuka setelah selesai!",
+  "questionTitle": "Pertanyaan {{number}}",
+  "matched": "Cocok ✨",
+  "different": "Beda 💬",
+  "waitingFor": "Menunggu {{name}} 🔒",
+  "notAnswered": "Belum dijawab",
+  "lockedUntilPartner": "Terkunci sampai {{name}} selesai 🔒",
+  "historyEmpty": "Belum ada quiz yang dijawab.",
+  "dailyQuizTitle": "{{avatars}} Quiz Harian",
+  "matchShort": "Cocok ✨",
+  "diffShort": "Beda 💬",
+  "notAnsweredYet": "Belum dijawab",
+  "lockedUntilBoth": "Terkunci sampai berdua jawab 🔒"
+}

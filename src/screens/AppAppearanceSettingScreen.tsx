@@ -1,5 +1,6 @@
 import type { MouseEvent } from "react"
 import { Check, Palette, SunMoon } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { CustomItem } from "@/components/CustomItem"
 import { ThemeSection } from "@/components/setting"
 import { useTheme } from "@/components/theme-provider"
@@ -8,6 +9,7 @@ import { cn } from "@/lib/utils"
 import type { AppThemeOption } from "@/types/theme"
 
 export function AppAppearanceSettingScreen() {
+  const { t } = useTranslation("appAppearanceSetting")
   const { theme, appTheme, setAppTheme } = useTheme()
 
   const isDarkMode =
@@ -37,7 +39,7 @@ export function AppAppearanceSettingScreen() {
     <div className="mx-auto flex w-full max-w-md flex-col gap-4 px-4 pt-3 pb-20 sm:max-w-2xl">
       <CustomItem
         icon={<SunMoon className="size-3.5 text-primary" />}
-        title="Color Mode"
+        title={t("colorModeTitle")}
         contentClassName="flex flex-col gap-0.5"
       >
         <ThemeSection />
@@ -46,8 +48,8 @@ export function AppAppearanceSettingScreen() {
       <CustomItem
         variant="soft"
         icon={<Palette className="size-3.5 text-primary" />}
-        title="Themes"
-        description="Choose a color palette and typography style for Fiora."
+        title={t("themesTitle")}
+        description={t("themesDescription")}
         contentClassName="flex flex-col gap-2.5 pt-1"
       >
         {APP_THEMES.map((item) => {
@@ -104,7 +106,7 @@ export function AppAppearanceSettingScreen() {
                     </span>
                     {isSelected && (
                       <span className="inline-flex items-center rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-medium text-primary">
-                        Active
+                        {t("active")}
                       </span>
                     )}
                   </div>

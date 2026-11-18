@@ -1,6 +1,8 @@
 import * as React from "react"
 import { format, getDaysInMonth } from "date-fns"
 import { Calendar as CalendarIcon } from "lucide-react"
+import { useTranslation } from "react-i18next"
+import { getDateFnsLocale } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 import { PickerDrawer } from "./PickerDrawer"
 import { WheelPicker, type WheelOption } from "./WheelPicker"
@@ -76,18 +78,20 @@ function clampDate(
 
 function formatTriggerValue(
   date: Date,
-  variant: CustomDatePickerVariant
+  variant: CustomDatePickerVariant,
+  language?: string
 ): string {
+  const locale = getDateFnsLocale(language)
   switch (variant) {
     case "month-year":
-      return format(date, "MMM yyyy")
+      return format(date, "MMM yyyy", { locale })
     case "year":
-      return format(date, "yyyy")
+      return format(date, "yyyy", { locale })
     case "month":
-      return format(date, "MMMM")
+      return format(date, "MMMM", { locale })
     case "default":
     default:
-      return format(date, "MMM d, yyyy")
+      return format(date, "MMM d, yyyy", { locale })
   }
 }
 
@@ -98,11 +102,11 @@ export function CustomDatePicker({
   minDate: minDateProp,
   maxDate: maxDateProp,
   monthFormat = "short",
-  placeholder = "Select date",
-  title = "Select Date",
+  placeholder: placeholderProp,
+  title: titleProp,
   description,
-  confirmLabel = "Done",
-  successLabel = "Saved!",
+  confirmLabel: confirmLabelProp,
+  successLabel: successLabelProp,
   showTodayButton = false,
   disabled = false,
   className,
@@ -110,6 +114,12 @@ export function CustomDatePicker({
   open: controlledOpen,
   onOpenChange,
 }: CustomDatePickerProps) {
+  const { t, i18n } = useTranslation("common")
+  const placeholder = placeholderProp ?? t("date.selectDate")
+  const title = titleProp ?? t("date.selectDate")
+  const confirmLabel = confirmLabelProp ?? t("actions.done")
+  const successLabel = successLabelProp ?? t("status.saved")
+  const locale = getDateFnsLocale(i18n.language)
   const [uncontrolledOpen, setUncontrolledOpen] = React.useState(false)
   const isOpen = controlledOpen ?? uncontrolledOpen
 
@@ -180,12 +190,12 @@ export function CustomDatePicker({
         if (draftYear === maxY && m > maxDate.getMonth()) isDisabled = true
       }
       return {
-        label: format(new Date(2000, m, 1), pattern),
+        label: format(new Date(2000, m, 1), pattern, { locale }),
         value: m,
         disabled: isDisabled,
       }
     })
-  }, [monthFormat, minDate, maxDate, draftYear, variant])
+  }, [monthFormat, minDate, maxDate, draftYear, variant, locale])
 
   const dayOptions = React.useMemo<WheelOption<number>[]>(() => {
     const totalDays = getDaysInMonth(new Date(draftYear, draftMonth, 1))
@@ -281,7 +291,7 @@ export function CustomDatePicker({
     >
       <CalendarIcon className="size-3.5 shrink-0 text-muted-foreground" />
       <span className="truncate">
-        {value ? formatTriggerValue(value, variant) : placeholder}
+        {value ? formatTriggerValue(value, variant, i18n.language) : placeholder}
       </span>
     </button>
   )
@@ -299,7 +309,7 @@ export function CustomDatePicker({
       secondaryAction={
         showTodayButton
           ? {
-              label: "Today",
+              label: t("date.today"),
               onClick: () => {
                 const now = new Date()
                 setDraftDate(

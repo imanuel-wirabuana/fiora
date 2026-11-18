@@ -1,11 +1,14 @@
 import { differenceInCalendarDays, format, parseISO } from "date-fns"
 import { Calendar as CalendarIcon } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { CustomDatePicker } from "@/components/pickers"
 import { Button } from "@/components/ui/button"
 import { useRelationship } from "@/hooks/useRelationship"
+import { getDateFnsLocale } from "@/lib/i18n"
 import { SettingRow } from "./SettingRow"
 
 export function AnniversarySection() {
+  const { t, i18n } = useTranslation("setting")
   const {
     relationship,
     anniversary,
@@ -33,15 +36,15 @@ export function AnniversarySection() {
 
   const description =
     daysTogether === null
-      ? "Set when your story began."
+      ? t("anniversary.setStory")
       : daysTogether === 0
-        ? "Today is Day 1!"
-        : `${daysTogether} days together`
+        ? t("anniversary.dayOne")
+        : t("anniversary.daysTogether", { count: daysTogether })
 
   return (
     <SettingRow
       icon={<CalendarIcon className="size-3.5" />}
-      title="Anniversary"
+      title={t("anniversary.title")}
       description={description}
       action={
         <CustomDatePicker
@@ -49,8 +52,8 @@ export function AnniversarySection() {
           value={selectedDate}
           onChange={handleDateChange}
           maxDate={new Date()}
-          title="Anniversary Date"
-          description="When did your story begin?"
+          title={t("anniversary.drawerTitle")}
+          description={t("anniversary.drawerDescription")}
           trigger={
             <Button
               type="button"
@@ -58,7 +61,11 @@ export function AnniversarySection() {
               size="sm"
               className="h-7 rounded-xl px-2.5 text-xs font-medium"
             >
-              {selectedDate ? format(selectedDate, "MMM d, yyyy") : "Set date"}
+              {selectedDate
+                ? format(selectedDate, "MMM d, yyyy", {
+                    locale: getDateFnsLocale(i18n.language),
+                  })
+                : t("anniversary.setDate")}
             </Button>
           }
         />

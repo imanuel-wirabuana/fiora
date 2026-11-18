@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 import {
   ChatComposer,
   ChatHeader,
@@ -18,6 +19,7 @@ import type {
 } from "@/types/activity"
 
 export function ChatScreen() {
+  const { t } = useTranslation("chat")
   const { user } = useAuth()
   const { currentMember } = useRelationship()
   const { partnerMember, partnerName } = usePartnerPresence()
@@ -62,7 +64,7 @@ export function ChatScreen() {
     return <ChatScreenSkeleton />
   }
 
-  const currentUserName = currentMember?.content?.name || "You"
+  const currentUserName = currentMember?.content?.name || t("you")
   const myZodiac = parseZodiacFromBirthDate(currentMember?.content?.birth_date)
   const partnerZodiac = parseZodiacFromBirthDate(
     partnerMember?.content?.birth_date

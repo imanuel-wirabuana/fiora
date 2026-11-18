@@ -1,0 +1,96 @@
+{
+  "sections": {
+    "self": "Self",
+    "relationship": "Relationship",
+    "dangerZone": "Danger Zone",
+    "account": "Account"
+  },
+  "profile": {
+    "title": "Profile",
+    "description": "Avatar, display name, and birth date.",
+    "setProfile": "Set profile"
+  },
+  "theme": {
+    "title": "Dark Mode",
+    "description": "Toggle dark and light appearance.",
+    "ariaLabel": "Toggle dark mode"
+  },
+  "language": {
+    "title": "Language",
+    "description": "Switch app language (ID / EN).",
+    "activeId": "Bahasa Indonesia",
+    "activeEn": "English",
+    "ariaLabel": "Switch app language"
+  },
+  "notification": {
+    "title": "Phone Notifications",
+    "descriptionDefault": "Receive alerts on this phone even when Fiora is closed.",
+    "descriptionIosInstall": "Add Fiora to your iPhone Home Screen (Share → Add to Home Screen) to enable push notifications.",
+    "descriptionUnsupported": "Push notifications are not supported in this browser.",
+    "descriptionBlocked": "Notifications are blocked. Enable them in your browser or phone settings.",
+    "descriptionActive": "Active on this device. You will receive partner alerts.",
+    "ariaLabel": "Toggle phone push notifications"
+  },
+  "moodReminder": {
+    "title": "Mood Reminder Interval",
+    "description": "Get periodic nudges to log how you feel."
+  },
+  "appAppearance": {
+    "title": "App Appearance",
+    "description": "Theme colors, accents, and visual styling."
+  },
+  "partnerAlias": {
+    "title": "Partner Alias",
+    "waitingDescription": "Set a special nickname for your partner once they join.",
+    "waitingBadge": "Waiting Partner",
+    "description": "Nickname for {{name}}.",
+    "yourPartner": "your partner",
+    "drawerDescription": "Give {{name}} a nickname visible to both of you.",
+    "setAlias": "Set alias",
+    "placeholder": "e.g. My Honey, Babe"
+  },
+  "anniversary": {
+    "title": "Anniversary",
+    "setStory": "Set when your story began.",
+    "dayOne": "Today is Day 1!",
+    "daysTogether": "{{count}} days together",
+    "drawerTitle": "Anniversary Date",
+    "drawerDescription": "When did your story begin?",
+    "setDate": "Set date"
+  },
+  "locationSharing": {
+    "title": "Location Sharing",
+    "description": "Share real-time location with your partner on the home screen.",
+    "ariaLabel": "Toggle location sharing"
+  },
+  "quiz": {
+    "title": "Daily Quiz",
+    "description": "Questions per day on home screen.",
+    "option_one": "{{count}} question",
+    "option_other": "{{count}} questions",
+    "placeholder": "Questions"
+  },
+  "mood": {
+    "title": "Mood",
+    "description": "Customize emojis and emotions for you and your partner."
+  },
+  "nudge": {
+    "title": "Nudge",
+    "description": "Manage quick-tap reactions sent across to your partner."
+  },
+  "importantDates": {
+    "title": "Important Dates",
+    "description": "Special milestones, anniversaries, and couple reminders."
+  },
+  "danger": {
+    "takeBreakTitle": "Take a Break",
+    "takeBreakDescription": "Temporarily pause shared prompts and notifications.",
+    "endRelationshipTitle": "End Relationship",
+    "endRelationshipDescription": "Permanently disconnect from your partner and unlink data."
+  },
+  "account": {
+    "signedInAs": "Signed in as {{email}}",
+    "signedIn": "Signed in",
+    "signOut": "Sign Out"
+  }
+}

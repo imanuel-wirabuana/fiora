@@ -1,5 +1,6 @@
 import * as React from "react"
 import { Check } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { DrawerScopeContext } from "@/components/AnimationScopeContext"
 import {
   Drawer,
@@ -36,12 +37,15 @@ export function FormDrawer({
   title,
   description,
   onSubmit,
-  submitLabel = "Save",
-  successLabel = "Saved!",
+  submitLabel: submitLabelProp,
+  successLabel: successLabelProp,
   isPending = false,
   submitDisabled = false,
   children,
 }: FormDrawerProps) {
+  const { t } = useTranslation("common")
+  const submitLabel = submitLabelProp ?? t("actions.save")
+  const successLabel = successLabelProp ?? t("status.saved")
   const [uncontrolledOpen, setUncontrolledOpen] = React.useState(false)
   const [isSuccess, setIsSuccess] = React.useState(false)
   const timerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)

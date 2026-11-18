@@ -1,0 +1,28 @@
+{
+  "sectionTitle": "Profil",
+  "avatar": {
+    "title": "Avatar",
+    "description": "Pilih emoji yang menggambarkan dirimu.",
+    "drawerTitle": "Ubah Avatar",
+    "drawerDescription": "Pilih ikon atau masukkan emoji pilihanmu.",
+    "change": "Ubah"
+  },
+  "name": {
+    "title": "Nama",
+    "description": "Nama tampilan yang dilihat pasanganmu.",
+    "drawerTitle": "Ubah Nama",
+    "drawerDescription": "Perbarui nama tampilan atau panggilanmu.",
+    "setName": "Atur nama",
+    "placeholder": "Nama atau panggilan kamu"
+  },
+  "birthDate": {
+    "title": "Tanggal Lahir",
+    "birthdayToday": "Ulang tahun hari ini!",
+    "birthdayTomorrow": "Ulang tahun besok",
+    "birthdayInDays": "Ulang tahun {{count}} hari lagi",
+    "setBirthday": "Atur tanggal lahir kamu.",
+    "drawerTitle": "Tanggal Lahir",
+    "drawerDescription": "Kapan ulang tahunmu?",
+    "setDate": "Atur tanggal"
+  }
+}

@@ -1,5 +1,6 @@
 import * as React from "react"
 import { Check } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { DrawerScopeContext } from "@/components/AnimationScopeContext"
 import {
   Drawer,
@@ -35,11 +36,14 @@ export function PickerDrawer({
   description,
   trigger,
   onConfirm,
-  confirmLabel = "Done",
-  successLabel = "Saved!",
+  confirmLabel: confirmLabelProp,
+  successLabel: successLabelProp,
   secondaryAction,
   children,
 }: PickerDrawerProps) {
+  const { t } = useTranslation("common")
+  const confirmLabel = confirmLabelProp ?? t("actions.done")
+  const successLabel = successLabelProp ?? t("status.saved")
   useDrawerAnimationPause(open)
   const [isSuccess, setIsSuccess] = React.useState(false)
   const timerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)

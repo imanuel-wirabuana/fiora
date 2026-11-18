@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { formatDistanceToNow } from "date-fns"
 import { Check, Pin, Plus, Send } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { useLocation } from "wouter"
 import { AnimatedEmoji } from "@/components/AnimatedEmoji"
 import { CustomItem } from "@/components/CustomItem"
@@ -11,6 +12,7 @@ import { Label } from "@/components/ui/label"
 import { useActivities } from "@/hooks/useActivities"
 import { useAuth } from "@/hooks/useAuth"
 import { useRelationship } from "@/hooks/useRelationship"
+import { getDateFnsLocale } from "@/lib/i18n"
 import { MAX_PINNED_NUDGES } from "@/lib/relationship"
 import { cn } from "@/lib/utils"
 import type { NudgeOption } from "@/types/relationship"
@@ -32,6 +34,7 @@ interface LocalSentNudge {
 }
 
 export function NudgeSection({ compact = false }: NudgeSectionProps) {
+  const { t, i18n } = useTranslation("home")
   const [, setLocation] = useLocation()
   const { nudgeOptions, partnerMember } = useRelationship()
   const { nudgeActivities, latestNudge, sendNudge } = useActivities()
@@ -49,7 +52,7 @@ export function NudgeSection({ compact = false }: NudgeSectionProps) {
   )
   const [now, setNow] = useState<number>(getNow)
 
-  const partnerName = partnerMember?.content?.name || "Partner"
+  const partnerName = partnerMember?.content?.name || t("nudge.partnerFallback")
 
   const pinnedNudges = useMemo(
     () =>
@@ -195,7 +198,7 @@ export function NudgeSection({ compact = false }: NudgeSectionProps) {
       <CustomItem
         variant="soft"
         icon={<Send className="size-3.5 text-primary" />}
-        title="Quick Nudge"
+        title={t("nudge.title")}
         contentHorizontalAlign={compact ? "center" : "start"}
         className={cn(
           "h-full",
@@ -207,6 +210,7 @@ export function NudgeSection({ compact = false }: NudgeSectionProps) {
             <span className="text-[10px] text-muted-foreground">
               {formatDistanceToNow(new Date(latestNudge.created_at), {
                 addSuffix: true,
+                locale: getDateFnsLocale(i18n.language),
               })}
             </span>
           ) : null
@@ -218,7 +222,7 @@ export function NudgeSection({ compact = false }: NudgeSectionProps) {
         bottomLeftInfo={
           !compact && !partnerMember ? (
             <p className="text-[10px] text-amber-600 dark:text-amber-400">
-              Connect with a partner first to send nudges.
+              {t("nudge.connectFirst")}
             </p>
           ) : null
         }
@@ -235,7 +239,9 @@ export function NudgeSection({ compact = false }: NudgeSectionProps) {
             />
             <div className="flex-1 truncate">
               <span className="font-medium text-foreground">
-                {isSentByMe ? "You sent: " : `${partnerName} sent: `}
+                {isSentByMe
+                  ? t("nudge.youSent")
+                  : t("nudge.partnerSent", { name: partnerName })}
               </span>
               <span className="text-muted-foreground">
                 "{latestNudge.content.label}"
@@ -271,7 +277,10 @@ export function NudgeSection({ compact = false }: NudgeSectionProps) {
                 onClick={() => handleSendNudge(nudge)}
                 title={
                   isOnCooldown
-                    ? `Wait ${cooldownSeconds}s before sending "${nudge.label}" again`
+                    ? t("nudge.waitCooldown", {
+                        seconds: cooldownSeconds,
+                        label: nudge.label,
+                      })
                     : nudge.label
                 }
                 aria-label={nudge.label}
@@ -297,7 +306,7 @@ export function NudgeSection({ compact = false }: NudgeSectionProps) {
                 )}
                 {!compact && (
                   <span className="flex-1 truncate text-left">
-                    {isJustSent ? "Sent!" : nudge.label}
+                    {isJustSent ? t("nudge.sent") : nudge.label}
                   </span>
                 )}
                 {isOnCooldown && (
@@ -321,8 +330,8 @@ export function NudgeSection({ compact = false }: NudgeSectionProps) {
               variant="outline"
               size="sm"
               onClick={() => setLocation("/setting/nudge")}
-              title="Pin nudges in settings"
-              aria-label="Pin nudges in settings"
+              title={t("nudge.pinInSettings")}
+              aria-label={t("nudge.pinInSettings")}
               className={cn(
                 "border-dashed font-normal text-muted-foreground transition hover:text-foreground active:scale-95",
                 compact
@@ -332,7 +341,9 @@ export function NudgeSection({ compact = false }: NudgeSectionProps) {
             >
               <Pin className="size-3.5 shrink-0" />
               {!compact && (
-                <span className="flex-1 truncate text-left">Pin nudge</span>
+                <span className="flex-1 truncate text-left">
+                  {t("nudge.pinNudge")}
+                </span>
               )}
             </Button>
           ))}
@@ -345,10 +356,12 @@ export function NudgeSection({ compact = false }: NudgeSectionProps) {
             onClick={() => setIsCustomOpen(true)}
             title={
               customCooldownSeconds > 0
-                ? `Wait ${customCooldownSeconds}s before sending another custom nudge`
-                : "Send custom nudge"
+                ? t("nudge.waitCustomCooldown", {
+                    seconds: customCooldownSeconds,
+                  })
+                : t("nudge.sendCustom")
             }
-            aria-label="Send custom nudge"
+            aria-label={t("nudge.sendCustom")}
             className={cn(
               "relative border-dashed font-normal text-muted-foreground transition hover:text-foreground active:scale-95",
               compact
@@ -360,7 +373,9 @@ export function NudgeSection({ compact = false }: NudgeSectionProps) {
           >
             <Plus className="size-4 shrink-0" />
             {!compact && (
-              <span className="flex-1 truncate text-left">Custom</span>
+              <span className="flex-1 truncate text-left">
+                {t("nudge.custom")}
+              </span>
             )}
             {customCooldownSeconds > 0 && (
               <span
@@ -385,14 +400,14 @@ export function NudgeSection({ compact = false }: NudgeSectionProps) {
             setCustomEmoji(DEFAULT_CUSTOM_NUDGE_EMOJI)
           }
         }}
-        title="Send Custom Nudge"
-        description={`Send a quick nudge to ${partnerName}.`}
+        title={t("nudge.drawerTitle")}
+        description={t("nudge.drawerDescription", { name: partnerName })}
         submitLabel={
           customCooldownSeconds > 0
-            ? `Wait ${customCooldownSeconds}s`
-            : "Send Nudge"
+            ? t("nudge.waitButton", { seconds: customCooldownSeconds })
+            : t("nudge.sendButton")
         }
-        successLabel="Sent!"
+        successLabel={t("nudge.sent")}
         isPending={isSendingCustom}
         submitDisabled={
           !partnerMember || customCooldownSeconds > 0 || !customLabel.trim()
@@ -403,7 +418,7 @@ export function NudgeSection({ compact = false }: NudgeSectionProps) {
           <div className="flex items-end gap-2.5">
             <div className="w-20 space-y-1.5">
               <Label htmlFor="custom-nudge-emoji" className="text-xs">
-                Icon
+                {t("nudge.iconLabel")}
               </Label>
               <div className="relative flex items-center">
                 <Input
@@ -419,13 +434,13 @@ export function NudgeSection({ compact = false }: NudgeSectionProps) {
 
             <div className="flex-1 space-y-1.5">
               <Label htmlFor="custom-nudge-label" className="text-xs">
-                Message
+                {t("nudge.messageLabel")}
               </Label>
               <Input
                 id="custom-nudge-label"
                 value={customLabel}
                 onChange={(e) => setCustomLabel(e.target.value)}
-                placeholder="Thinking of you..."
+                placeholder={t("nudge.messagePlaceholder")}
                 maxLength={48}
                 autoFocus
                 className="h-9 text-sm"

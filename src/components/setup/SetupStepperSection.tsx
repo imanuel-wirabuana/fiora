@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { useLocation } from "wouter"
 import { ArrowLeft, ArrowRight, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -13,6 +14,7 @@ import {
 } from "./setupSteps"
 
 export function SetupStepperSection() {
+  const { t } = useTranslation("setup")
   const [, setLocation] = useLocation()
   const { createRelationshipMutation, joinRelationshipMutation } =
     useRelationship()
@@ -113,14 +115,14 @@ export function SetupStepperSection() {
     }
 
     if (!wizardState.gender) {
-      setError("Please select your gender.")
+      setError(t("stepper.errors.selectGender"))
       setNavDirection("back")
       setActiveStepId("gender")
       return
     }
 
     if (!wizardState.name.trim()) {
-      setError("Please enter your name or nickname.")
+      setError(t("stepper.errors.enterName"))
       setNavDirection("back")
       setActiveStepId("profile")
       return
@@ -140,7 +142,7 @@ export function SetupStepperSection() {
         setLocation("/home")
       } else {
         if (wizardState.partnerCode.trim().length !== 5) {
-          setError("Please enter a valid 5-digit partner code.")
+          setError(t("stepper.errors.invalidPartnerCode"))
           return
         }
         await joinRelationshipMutation.mutateAsync({
@@ -155,7 +157,7 @@ export function SetupStepperSection() {
       if (err instanceof Error) {
         setError(err.message)
       } else {
-        setError("Failed to complete setup. Please try again.")
+        setError(t("stepper.errors.failed"))
       }
     }
   }
@@ -169,9 +171,12 @@ export function SetupStepperSection() {
         <div className="space-y-2">
           <div className="flex items-center justify-between text-xs font-medium text-primary-foreground/85">
             <span>
-              Step {currentIndex + 1} of {activeSteps.length}
+              {t("stepper.stepOf", {
+                current: currentIndex + 1,
+                total: activeSteps.length,
+              })}
             </span>
-            <span>{currentStep.title}</span>
+            <span>{t(currentStep.title as "steps.gender.title")}</span>
           </div>
           <Progress
             value={progressPercent}
@@ -189,10 +194,10 @@ export function SetupStepperSection() {
           )}
         >
           <h2 className="text-xl font-bold tracking-tight">
-            {currentStep.question}
+            {t(currentStep.question as "steps.gender.question")}
           </h2>
           <p className="text-xs leading-relaxed text-primary-foreground/80">
-            {currentStep.description}
+            {t(currentStep.description as "steps.gender.description")}
           </p>
         </div>
       </div>
@@ -243,7 +248,7 @@ export function SetupStepperSection() {
               className="h-11 flex-1 rounded-2xl text-xs"
             >
               <ArrowLeft className="mr-1 size-4" />
-              Back
+              {t("stepper.back")}
             </Button>
           )}
 
@@ -253,7 +258,7 @@ export function SetupStepperSection() {
               onClick={handleNext}
               className="h-11 flex-1 rounded-2xl bg-primary text-xs font-semibold text-primary-foreground hover:bg-primary/90"
             >
-              Next
+              {t("stepper.next")}
               <ArrowRight className="ml-1 size-4" />
             </Button>
           ) : (
@@ -268,7 +273,7 @@ export function SetupStepperSection() {
               ) : (
                 <>
                   <Check className="mr-1 size-4" />
-                  Finish Setup
+                  {t("stepper.finish")}
                 </>
               )}
             </Button>

@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { RotateCcw } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { AnimatedEmoji } from "@/components/AnimatedEmoji"
 import { Button } from "@/components/ui/button"
 import { Field, FieldLabel } from "@/components/ui/field"
@@ -18,6 +19,7 @@ interface NudgesStepProps {
 }
 
 export function NudgesStep({ nudges, onChangeNudges }: NudgesStepProps) {
+  const { t } = useTranslation("setup")
   const [activeNudgeIndex, setActiveNudgeIndex] = useState(0)
 
   const handleUpdateNudge = (index: number, updates: Partial<NudgeOption>) => {
@@ -44,7 +46,7 @@ export function NudgesStep({ nudges, onChangeNudges }: NudgesStepProps) {
           className="shrink-0 text-xs text-muted-foreground hover:text-foreground"
         >
           <RotateCcw className="mr-1 size-3.5" />
-          Reset
+          {t("nudgesStep.reset")}
         </Button>
       </div>
 
@@ -77,7 +79,7 @@ export function NudgesStep({ nudges, onChangeNudges }: NudgesStepProps) {
                   isSelected ? "font-semibold text-primary" : "text-foreground"
                 )}
               >
-                {nudge.label || `Nudge ${idx + 1}`}
+                {nudge.label || t("nudgesStep.slotFallback", { index: idx + 1 })}
               </span>
             </button>
           )
@@ -90,7 +92,7 @@ export function NudgesStep({ nudges, onChangeNudges }: NudgesStepProps) {
           {/* Emoji Input */}
           <Field className="col-span-1 gap-1">
             <FieldLabel className="text-[10px] font-medium text-muted-foreground">
-              Emoji
+              {t("nudgesStep.emoji")}
             </FieldLabel>
             <InputGroup className="h-10 rounded-2xl border border-input bg-background focus-within:border-primary">
               <InputGroupInput
@@ -100,7 +102,9 @@ export function NudgesStep({ nudges, onChangeNudges }: NudgesStepProps) {
                   handleUpdateNudge(activeNudgeIndex, { emoji: e.target.value })
                 }
                 className="text-center text-lg"
-                aria-label={`Nudge ${activeNudgeIndex + 1} emoji`}
+                aria-label={t("nudgesStep.emojiAria", {
+                  index: activeNudgeIndex + 1,
+                })}
               />
             </InputGroup>
           </Field>
@@ -108,14 +112,14 @@ export function NudgesStep({ nudges, onChangeNudges }: NudgesStepProps) {
           {/* Label Input */}
           <Field className="col-span-3 gap-1">
             <FieldLabel className="text-[10px] font-medium text-muted-foreground">
-              Message
+              {t("nudgesStep.message")}
             </FieldLabel>
             <InputGroup className="h-10 rounded-2xl border border-input bg-background focus-within:border-primary">
               <InputGroupAddon
                 align="inline-start"
                 className="pl-3 text-xs text-muted-foreground/50"
               >
-                Text
+                {t("nudgesStep.text")}
               </InputGroupAddon>
               <InputGroupInput
                 value={activeNudge.label}
@@ -124,7 +128,9 @@ export function NudgesStep({ nudges, onChangeNudges }: NudgesStepProps) {
                   handleUpdateNudge(activeNudgeIndex, { label: e.target.value })
                 }
                 className="text-xs font-medium"
-                aria-label={`Nudge ${activeNudgeIndex + 1} message`}
+                aria-label={t("nudgesStep.messageAria", {
+                  index: activeNudgeIndex + 1,
+                })}
               />
             </InputGroup>
           </Field>

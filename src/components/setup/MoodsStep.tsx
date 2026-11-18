@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { RotateCcw } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { AnimatedEmoji } from "@/components/AnimatedEmoji"
 import { Button } from "@/components/ui/button"
 import { Field, FieldLabel } from "@/components/ui/field"
@@ -18,6 +19,7 @@ interface MoodsStepProps {
 }
 
 export function MoodsStep({ moods, onChangeMoods }: MoodsStepProps) {
+  const { t } = useTranslation("setup")
   const [activeMoodIndex, setActiveMoodIndex] = useState(0)
 
   const handleUpdateMood = (index: number, updates: Partial<MoodOption>) => {
@@ -44,7 +46,7 @@ export function MoodsStep({ moods, onChangeMoods }: MoodsStepProps) {
           className="shrink-0 text-xs text-muted-foreground hover:text-foreground"
         >
           <RotateCcw className="mr-1 size-3.5" />
-          Reset
+          {t("moodsStep.reset")}
         </Button>
       </div>
 
@@ -78,7 +80,7 @@ export function MoodsStep({ moods, onChangeMoods }: MoodsStepProps) {
                     : "text-muted-foreground"
                 )}
               >
-                {mood.label || `Mood ${idx + 1}`}
+                {mood.label || t("moodsStep.slotFallback", { index: idx + 1 })}
               </span>
             </button>
           )
@@ -91,7 +93,7 @@ export function MoodsStep({ moods, onChangeMoods }: MoodsStepProps) {
           {/* Emoji Input */}
           <Field className="col-span-1 gap-1">
             <FieldLabel className="text-[10px] font-medium text-muted-foreground">
-              Emoji
+              {t("moodsStep.emoji")}
             </FieldLabel>
             <InputGroup className="h-10 rounded-2xl border border-input bg-background focus-within:border-primary">
               <InputGroupInput
@@ -101,7 +103,9 @@ export function MoodsStep({ moods, onChangeMoods }: MoodsStepProps) {
                   handleUpdateMood(activeMoodIndex, { emoji: e.target.value })
                 }
                 className="text-center text-lg"
-                aria-label={`Slot ${activeMoodIndex + 1} emoji`}
+                aria-label={t("moodsStep.emojiAria", {
+                  index: activeMoodIndex + 1,
+                })}
               />
             </InputGroup>
           </Field>
@@ -109,14 +113,14 @@ export function MoodsStep({ moods, onChangeMoods }: MoodsStepProps) {
           {/* Label Input */}
           <Field className="col-span-3 gap-1">
             <FieldLabel className="text-[10px] font-medium text-muted-foreground">
-              Mood Label
+              {t("moodsStep.moodLabel")}
             </FieldLabel>
             <InputGroup className="h-10 rounded-2xl border border-input bg-background focus-within:border-primary">
               <InputGroupAddon
                 align="inline-start"
                 className="pl-3 text-xs text-muted-foreground/50"
               >
-                Name
+                {t("moodsStep.name")}
               </InputGroupAddon>
               <InputGroupInput
                 value={activeMood.label}
@@ -125,7 +129,9 @@ export function MoodsStep({ moods, onChangeMoods }: MoodsStepProps) {
                   handleUpdateMood(activeMoodIndex, { label: e.target.value })
                 }
                 className="text-xs font-medium"
-                aria-label={`Slot ${activeMoodIndex + 1} label`}
+                aria-label={t("moodsStep.labelAria", {
+                  index: activeMoodIndex + 1,
+                })}
               />
             </InputGroup>
           </Field>

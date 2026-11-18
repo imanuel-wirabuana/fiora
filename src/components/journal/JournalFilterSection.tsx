@@ -1,4 +1,5 @@
 import { Plus, Search, X } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
@@ -21,6 +22,8 @@ export function JournalFilterSection({
   isCreating,
   setIsCreating,
 }: JournalFilterSectionProps) {
+  const { t } = useTranslation("journal")
+
   return (
     <div className="flex flex-col gap-3">
       {/* Search & New Entry Action */}
@@ -29,7 +32,7 @@ export function JournalFilterSection({
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
             type="text"
-            placeholder="Search journals..."
+            placeholder={t("filter.searchPlaceholder")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="h-9 pl-8 text-xs rounded-xl"
@@ -51,7 +54,7 @@ export function JournalFilterSection({
           className="h-9 gap-1.5 px-3 rounded-xl text-xs"
         >
           <Plus className="size-3.5" />
-          New Entry
+          {t("filter.newEntry")}
         </Button>
       </div>
 
@@ -63,9 +66,9 @@ export function JournalFilterSection({
             variant={privacyFilter === tab ? "default" : "outline"}
             size="xs"
             onClick={() => setPrivacyFilter(tab)}
-            className="capitalize rounded-full px-3 text-xs"
+            className="rounded-full px-3 text-xs"
           >
-            {tab}
+            {t(`filter.tabs.${tab}`)}
           </Button>
         ))}
       </div>

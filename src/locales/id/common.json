@@ -1,0 +1,79 @@
+{
+  "actions": {
+    "save": "Simpan",
+    "cancel": "Batal",
+    "delete": "Hapus",
+    "close": "Tutup",
+    "back": "Kembali",
+    "continue": "Lanjutkan",
+    "confirm": "Konfirmasi",
+    "edit": "Ubah",
+    "add": "Tambah",
+    "done": "Selesai",
+    "retry": "Coba lagi",
+    "send": "Kirim"
+  },
+  "status": {
+    "comingSoon": "Segera hadir",
+    "loading": "Tunggu sebentar, ya...",
+    "saving": "Menyimpan...",
+    "saved": "Berhasil disimpan",
+    "error": "Ada yang salah. Coba lagi, ya."
+  },
+  "date": {
+    "today": "Hari ini",
+    "selectDate": "Pilih tanggal"
+  },
+  "nav": {
+    "home": "Beranda",
+    "insight": "Insight",
+    "chat": "Chat",
+    "space": "Ruang",
+    "bottomNavigation": "Navigasi Bawah",
+    "trackMood": "Catat Mood",
+    "openMoodTracker": "Buka pencatat mood",
+    "loggingMood": "Sedang mencatat Mood"
+  },
+  "routes": {
+    "journal": "Jurnal",
+    "settings": "Pengaturan",
+    "profile": "Profil",
+    "moodOptions": "Pilihan Mood",
+    "nudges": "Nudge",
+    "importantDates": "Tanggal Penting",
+    "appAppearance": "Tampilan Aplikasi",
+    "notification": "Notifikasi",
+    "quiz": "Quiz Harian"
+  },
+  "moodDrawer": {
+    "title": "Check-in Mood Cepat",
+    "description": "Kasih tahu pasanganmu gimana perasaanmu sekarang",
+    "notePlaceholder": "Tambah catatan manis atau isi pikiranmu... (opsional)",
+    "shared": "Terkirim ke pasangan!",
+    "sharing": "Mengirim...",
+    "send": "Kirim ke Pasangan",
+    "pickerAriaLabel": "Pemilih mood"
+  },
+  "moodCategory": {
+    "very-good": "Sangat Baik",
+    "good": "Baik",
+    "neutral": "Biasa Aja",
+    "bad": "Kurang Baik",
+    "very-bad": "Buruk"
+  },
+  "splash": {
+    "subtitle": "Mood tracker buat pasangan",
+    "loading": "Memuat ruang kalian..."
+  },
+  "pwa": {
+    "closeAria": "Tutup prompt instalasi",
+    "title": "Install Aplikasi Fiora",
+    "description": "Pasang di layar utama biar catat mood dan dapat notifikasi pasangan makin cepat.",
+    "iosTitle": "Cara pasang di Safari iOS:",
+    "iosStep1": "Ketuk tombol <0>Share</0> di toolbar Safari",
+    "iosStep2": "Gulir lalu ketuk <0>Add to Home Screen</0>",
+    "gotIt": "Mengerti",
+    "later": "Nanti saja",
+    "install": "Install"
+  }
+}

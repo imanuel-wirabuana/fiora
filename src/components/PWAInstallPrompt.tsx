@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { Trans, useTranslation } from "react-i18next"
 import { Download, Share, X, PlusSquare } from "lucide-react"
 import { usePWAInstall } from "@/hooks/usePWAInstall"
 import { Button } from "@/components/ui/button"
@@ -6,6 +7,7 @@ import { Button } from "@/components/ui/button"
 const DISMISSED_KEY = "fiora_pwa_prompt_dismissed"
 
 export function PWAInstallPrompt() {
+  const { t } = useTranslation("common")
   const { isStandalone, isIOS, canInstall, install } = usePWAInstall()
   // Only check sessionStorage so user is prompted again in new sessions,
   // or localStorage if you want it once. We'll use sessionStorage so it's not overly intrusive.
@@ -49,7 +51,7 @@ export function PWAInstallPrompt() {
           type="button"
           onClick={handleDismiss}
           className="absolute top-3 right-3 text-muted-foreground/80 hover:text-foreground"
-          aria-label="Close install prompt"
+          aria-label={t("pwa.closeAria")}
         >
           <X className="size-4" />
         </button>
@@ -62,23 +64,37 @@ export function PWAInstallPrompt() {
           />
           <div className="flex flex-col">
             <span className="font-semibold text-sm text-foreground">
-              Install Fiora App
+              {t("pwa.title")}
             </span>
             <span className="text-xs text-muted-foreground leading-snug">
-              Install to your home screen for instant mood tracking & couple alerts.
+              {t("pwa.description")}
             </span>
           </div>
         </div>
 
         {showIOSInstructions ? (
           <div className="rounded-xl bg-card/70 p-3 text-xs text-foreground/90 space-y-2 border border-border">
-            <p className="font-medium text-primary">To install on iOS Safari:</p>
+            <p className="font-medium text-primary">{t("pwa.iosTitle")}</p>
             <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
               <li className="flex items-center gap-1.5">
-                Tap the <Share className="size-3.5 text-primary inline" /> <strong>Share</strong> button in Safari toolbar
+                <Share className="size-3.5 text-primary inline shrink-0" />
+                <span>
+                  <Trans
+                    i18nKey="pwa.iosStep1"
+                    ns="common"
+                    components={[<strong key="0" />]}
+                  />
+                </span>
               </li>
               <li className="flex items-center gap-1.5">
-                Scroll and tap <PlusSquare className="size-3.5 text-primary inline" /> <strong>Add to Home Screen</strong>
+                <PlusSquare className="size-3.5 text-primary inline shrink-0" />
+                <span>
+                  <Trans
+                    i18nKey="pwa.iosStep2"
+                    ns="common"
+                    components={[<strong key="0" />]}
+                  />
+                </span>
               </li>
             </ol>
             <Button
@@ -87,7 +103,7 @@ export function PWAInstallPrompt() {
               className="w-full mt-2 text-xs h-7"
               onClick={() => setShowIOSInstructions(false)}
             >
-              Got it
+              {t("pwa.gotIt")}
             </Button>
           </div>
         ) : (
@@ -98,7 +114,7 @@ export function PWAInstallPrompt() {
               onClick={handleDismiss}
               className="flex-1 text-xs h-8 border-border hover:bg-accent"
             >
-              Maybe Later
+              {t("pwa.later")}
             </Button>
             <Button
               size="sm"
@@ -106,7 +122,7 @@ export function PWAInstallPrompt() {
               className="flex-1 text-xs h-8 gap-1.5 bg-primary text-primary-foreground shadow-xs hover:bg-primary/90"
             >
               <Download className="size-3.5" />
-              Install
+              {t("pwa.install")}
             </Button>
           </div>
         )}

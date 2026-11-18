@@ -1,0 +1,22 @@
+{
+  "you": "Kamu",
+  "partner": "Pasangan",
+  "backAria": "Kembali ke jurnal",
+  "headerTitle": "Jurnal",
+  "saving": "Menyimpan",
+  "saved": "Tersimpan",
+  "makePrivate": "Jadikan Pribadi",
+  "share": "Bagikan",
+  "deleteAria": "Hapus jurnal",
+  "notFound": "Catatan jurnal tidak ditemukan.",
+  "backToJournal": "Kembali ke Jurnal",
+  "sharedBadge": "Dibagikan",
+  "privateBadge": "Pribadi",
+  "titlePlaceholder": "Judul",
+  "titleAria": "Judul jurnal",
+  "bodyPlaceholder": "Tulis isi pikiranmu...",
+  "bodyAria": "Isi jurnal",
+  "deleteConfirmTitle": "Hapus catatan jurnal ini?",
+  "deleteConfirmDesc": "Yakin mau hapus \"{{title}}\" secara permanen?",
+  "deleted": "Terhapus!"
+}

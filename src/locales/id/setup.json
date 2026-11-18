@@ -1,0 +1,102 @@
+{
+  "heroSubtitle": "Yuk, atur ruang hubungan kalian",
+  "stepper": {
+    "stepOf": "Langkah {{current}} dari {{total}}",
+    "back": "Kembali",
+    "next": "Lanjut",
+    "finish": "Selesai Atur",
+    "errors": {
+      "selectGender": "Pilih jenis kelamin kamu dulu, ya.",
+      "enterName": "Masukkan nama atau panggilan kamu, ya.",
+      "invalidPartnerCode": "Masukkan 5 digit kode pasangan yang valid.",
+      "failed": "Gagal menyelesaikan pengaturan. Coba lagi, ya."
+    }
+  },
+  "steps": {
+    "gender": {
+      "title": "Jenis Kelamin",
+      "question": "Kamu siapa?",
+      "description": "Pilih jenis kelamin kamu biar pengalamanmu lebih personal",
+      "validate": "Pilih jenis kelamin kamu dulu untuk melanjutkan."
+    },
+    "profile": {
+      "title": "Profil",
+      "question": "Profil Kamu",
+      "description": "Pilih avatar dan atur nama yang bakal dilihat pasanganmu",
+      "validate": "Masukkan nama atau panggilan kamu, ya."
+    },
+    "connection": {
+      "title": "Koneksi",
+      "question": "Terhubung dengan Pasangan",
+      "description": "Gabung ke hubungan pasanganmu atau buat ruang baru",
+      "validate": "Masukkan 5 digit kode pasangan yang valid."
+    },
+    "anniversary": {
+      "title": "Tanggal Jadian",
+      "question": "Tanggal Jadian (Opsional)",
+      "description": "Kapan cerita kalian dimulai? Bisa diubah kapan aja nanti."
+    },
+    "moods": {
+      "title": "Mood",
+      "question": "Atur Mood (Opsional)",
+      "description": "Ketuk tombol mood untuk ubah emoji dan labelnya"
+    },
+    "nudges": {
+      "title": "Nudge",
+      "question": "Nudge Cepat (Opsional)",
+      "description": "Ketuk pill nudge untuk ubah emoji dan pesannya"
+    },
+    "inviteCode": {
+      "title": "Kode Undangan",
+      "question": "Ruang Kalian Sudah Siap!",
+      "description": "Bagikan 5 digit kode undangan ini ke pasanganmu untuk terhubung"
+    }
+  },
+  "genderStep": {
+    "male": "Laki-laki",
+    "female": "Perempuan"
+  },
+  "profileStep": {
+    "selectAvatar": "Pilih Avatar",
+    "nameLabel": "Nama / Panggilan Kamu",
+    "namePlaceholder": "contoh: Alex atau Sayang"
+  },
+  "connectionStep": {
+    "joinTab": "Gabung Pasangan",
+    "createTab": "Buat Hubungan",
+    "enterCodeLabel": "Masukkan 5 Digit Kode Pasangan",
+    "joinHelp": "Masukkan 5 digit kode yang dibuat di HP pasanganmu untuk langsung terhubung.",
+    "createTitle": "Mulai Hubungan Baru",
+    "createDescription": "Kamu bisa atur tanggal jadian, mood, dan nudge di langkah berikutnya. Kode undangan 5 digit bakal siap di langkah terakhir."
+  },
+  "anniversaryStep": {
+    "clear": "Hapus",
+    "specialDate": "Tanggal Spesial",
+    "placeholder": "Pilih tanggal jadian"
+  },
+  "moodsStep": {
+    "reset": "Reset",
+    "emoji": "Emoji",
+    "moodLabel": "Label Mood",
+    "name": "Nama",
+    "slotFallback": "Mood {{index}}",
+    "emojiAria": "Emoji slot {{index}}",
+    "labelAria": "Label slot {{index}}"
+  },
+  "nudgesStep": {
+    "reset": "Reset",
+    "emoji": "Emoji",
+    "message": "Pesan",
+    "text": "Teks",
+    "slotFallback": "Nudge {{index}}",
+    "emojiAria": "Emoji nudge {{index}}",
+    "messageAria": "Pesan nudge {{index}}"
+  },
+  "shareCodeStep": {
+    "title": "5 Digit Kode Undangan Kamu",
+    "copied": "Tersalin!",
+    "copyCode": "Salin Kode",
+    "regenerate": "Buat Ulang",
+    "hint": "💡 Pasanganmu tinggal pilih \"Gabung Pasangan\" saat setup dan masukkan 5 digit kode ini. Kamu juga bisa lihat kode ini kapan saja di Pengaturan."
+  }
+}

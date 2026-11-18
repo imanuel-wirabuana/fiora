@@ -5,15 +5,18 @@ import {
   parseISO,
 } from "date-fns"
 import { MapPin, UserPlus } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { useLocation } from "wouter"
 import { useTabPaneActive } from "@/components/AnimationScopeContext"
 import { CustomItem } from "@/components/CustomItem"
 import { OdometerText } from "@/components/OdometerText"
 import { usePartnerPresence } from "@/hooks/usePartnerPresence"
+import { getDateFnsLocale } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 import { useIsAnimationsPaused } from "@/stores/animationStore"
 
 export function PartnerPresenceSection() {
+  const { t, i18n } = useTranslation("home")
   const [, setLocation] = useLocation()
   const {
     isOnline,
@@ -51,33 +54,40 @@ export function PartnerPresenceSection() {
             <UserPlus className="size-4" />
           </div>
         }
-        title="Waiting for partner"
-        description="Share your invite code in Settings to connect"
+        title={t("presence.waitingPartner")}
+        description={t("presence.shareInviteCode")}
         descriptionClassName="text-[11px]"
       />
     )
   }
 
+  const locale = getDateFnsLocale(i18n.language)
   const partnerAvatar = partnerMember.content?.avatar || "🤍"
-  const statusLabel = isOnline ? "Online" : "Offline"
+  const statusLabel = isOnline ? t("presence.online") : t("presence.offline")
 
   const lastSeenText = lastSeenAt
-    ? `Last seen ${formatDistanceToNow(new Date(lastSeenAt), { addSuffix: true })}`
-    : "Not seen yet"
+    ? t("presence.lastSeen", {
+        time: formatDistanceToNow(new Date(lastSeenAt), {
+          addSuffix: true,
+          locale,
+        }),
+      })
+    : t("presence.notSeenYet")
 
   const activityText = currentActivity
     ? isOnline
       ? currentActivity
-      : `Last active: ${currentActivity}`
+      : t("presence.lastActive", { activity: currentActivity })
     : undefined
 
   const locationLabel = partnerLocation
-    ? partnerLocation.placeName?.trim() || "Location shared"
+    ? partnerLocation.placeName?.trim() || t("presence.locationShared")
     : null
 
   const locationUpdatedText = partnerLocation?.updated_at
     ? formatDistanceToNow(new Date(partnerLocation.updated_at), {
         addSuffix: true,
+        locale,
       })
     : null
 
@@ -132,7 +142,7 @@ export function PartnerPresenceSection() {
         isOnline ? (
           <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-emerald-400/20 px-2 py-0.5 text-[11px] font-medium text-emerald-100 ring-1 ring-emerald-300/30">
             <span className="size-1.5 rounded-full bg-emerald-300" />
-            Online
+            {t("presence.online")}
           </span>
         ) : (
           <span className="shrink-0 text-[11px] font-medium text-primary-foreground/80">
@@ -158,7 +168,7 @@ export function PartnerPresenceSection() {
       bottomRightActions={
         daysTogether !== null ? (
           <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary-foreground/15 px-2 py-0.5 text-[10px] font-medium text-primary-foreground ring-1 ring-primary-foreground/20">
-            {daysTogether} {daysTogether === 1 ? "day" : "days"} together
+            {t("presence.daysTogether", { count: daysTogether })}
           </span>
         ) : undefined
       }

@@ -1,0 +1,32 @@
+{
+  "filter": {
+    "searchPlaceholder": "Cari jurnal...",
+    "newEntry": "Tulis Baru",
+    "tabs": {
+      "all": "Semua",
+      "private": "Pribadi",
+      "shared": "Dibagikan"
+    }
+  },
+  "form": {
+    "title": "Jurnal Baru",
+    "description": "Kasih judul dulu buat mulai menulis.",
+    "submit": "Buat",
+    "success": "Dibuat!",
+    "titleLabel": "Judul",
+    "titlePlaceholder": "contoh: Liburan kita ke pantai"
+  },
+  "list": {
+    "you": "Kamu",
+    "partner": "Pasangan",
+    "emptySearch": "Belum ada jurnal yang cocok dengan pencarianmu.",
+    "emptyFiltered": "Belum ada jurnal {{filter}}.",
+    "emptyAll": "Belum ada catatan jurnal.",
+    "makePrivate": "Jadikan pribadi",
+    "shareWithPartner": "Bagikan ke pasangan",
+    "deleteTitle": "Hapus jurnal",
+    "deleteConfirmTitle": "Hapus catatan jurnal ini?",
+    "deleteConfirmDesc": "Yakin mau hapus \"{{title}}\" secara permanen?",
+    "deleted": "Terhapus!"
+  }
+}

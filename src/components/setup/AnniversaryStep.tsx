@@ -1,5 +1,6 @@
 import { format, parseISO } from "date-fns"
 import { Calendar as CalendarIcon, X } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Field, FieldLabel } from "@/components/ui/field"
@@ -8,6 +9,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { getDateFnsLocale } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 
 interface AnniversaryStepProps {
@@ -19,6 +21,7 @@ export function AnniversaryStep({
   anniversary,
   onChangeAnniversary,
 }: AnniversaryStepProps) {
+  const { t, i18n } = useTranslation("setup")
   const selectedDate = anniversary ? parseISO(anniversary) : undefined
 
   return (
@@ -33,7 +36,7 @@ export function AnniversaryStep({
             className="text-xs text-muted-foreground hover:text-foreground"
           >
             <X className="mr-1 size-3.5" />
-            Clear
+            {t("anniversaryStep.clear")}
           </Button>
         </div>
       )}
@@ -41,7 +44,7 @@ export function AnniversaryStep({
       <div className="space-y-3">
         <Field className="gap-1.5">
           <FieldLabel className="text-xs font-medium text-muted-foreground">
-            Special Date
+            {t("anniversaryStep.specialDate")}
           </FieldLabel>
 
           <Popover>
@@ -59,8 +62,10 @@ export function AnniversaryStep({
               <CalendarIcon className="size-4 shrink-0 text-muted-foreground/80" />
               <span className="truncate">
                 {selectedDate
-                  ? format(selectedDate, "PPP")
-                  : "Pick an anniversary date"}
+                  ? format(selectedDate, "PPP", {
+                      locale: getDateFnsLocale(i18n.language),
+                    })
+                  : t("anniversaryStep.placeholder")}
               </span>
             </PopoverTrigger>
             <PopoverContent

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef } from "react"
 import { useLocation } from "wouter"
 import L from "leaflet"
 import { MapPin } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { CustomItem } from "@/components/CustomItem"
 import { CustomSkeleton } from "@/components/CustomSkeleton"
 import { useLocationSharing } from "@/hooks/useLocationSharing"
@@ -9,6 +10,7 @@ import { useRelationship } from "@/hooks/useRelationship"
 import { createMapTileLayer, getGenderMarkerBg } from "@/lib/map"
 
 export function LocationSharingSection() {
+  const { t } = useTranslation("home")
   const {
     locationSharing,
     myLocation,
@@ -41,7 +43,7 @@ export function LocationSharingSection() {
   const myAvatar = currentMember?.content?.avatar || "💙"
   const myGender = currentMember?.content?.gender
   const partnerAvatar = partnerMember?.content?.avatar || "🤍"
-  const partnerName = partnerMember?.content?.name || "Partner"
+  const partnerName = partnerMember?.content?.name || t("location.partner")
   const partnerGender = partnerMember?.content?.gender
 
   // Initialize Read-Only Leaflet Map
@@ -113,7 +115,7 @@ export function LocationSharingSection() {
               ${myAvatar}
             </div>
             <div class="mt-0.5 rounded bg-background/90 px-1 py-0.2 text-[9px] font-semibold text-foreground shadow-xs border border-border/60">
-              You
+              ${t("location.you")}
             </div>
           </div>
         `,
@@ -172,6 +174,7 @@ export function LocationSharingSection() {
     partnerName,
     partnerGender,
     fitMapToPoints,
+    t,
   ])
 
   // Strictly return null if location sharing is not enabled in commitment settings
@@ -195,13 +198,13 @@ export function LocationSharingSection() {
         }
       }}
       icon={<MapPin className="size-3.5 text-primary" />}
-      title="Location"
+      title={t("location.title")}
       className="h-full cursor-pointer gap-0 p-1 transition hover:border-primary/40 active:scale-[0.99]"
       headerClassName="px-2.5 py-2"
       topRightActions={
         formattedDistance ? (
           <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap text-primary">
-            {formattedDistance} apart
+            {t("location.apart", { distance: formattedDistance })}
           </span>
         ) : null
       }
@@ -221,7 +224,7 @@ export function LocationSharingSection() {
           ) : (
             <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-1.5 bg-background/90 p-4 text-center text-xs text-muted-foreground">
               <MapPin className="size-5 opacity-40" />
-              <span>Tap to open location sharing</span>
+              <span>{t("location.tapToOpen")}</span>
             </div>
           )
         )}

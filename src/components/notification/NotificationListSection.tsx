@@ -16,6 +16,7 @@ import {
   X,
 } from "lucide-react"
 import { useLocation } from "wouter"
+import { useTranslation } from "react-i18next"
 import { CustomItem } from "@/components/CustomItem"
 import { FormDrawer } from "@/components/FormDrawer"
 import { Button } from "@/components/ui/button"
@@ -25,6 +26,7 @@ import { useInfiniteScroll } from "@/hooks/useInfiniteScroll"
 import { useNotifications } from "@/hooks/useNotifications"
 import { usePushNotifications } from "@/hooks/usePushNotifications"
 import { useRelationship } from "@/hooks/useRelationship"
+import { getDateFnsLocale } from "@/lib/i18n"
 import type {
   NotificationCategory,
   NotificationRecord,
@@ -38,15 +40,6 @@ const PRIMARY_NOTIFICATION_TYPES = new Set<string>([
   "chat",
   "quiz",
 ])
-
-const FILTER_OPTIONS: { value: NotificationFilter; label: string }[] = [
-  { value: "all", label: "All" },
-  { value: "mood", label: "Mood" },
-  { value: "nudge", label: "Nudge" },
-  { value: "chat", label: "Chat" },
-  { value: "quiz", label: "Quiz" },
-  { value: "other", label: "Other" },
-]
 
 function getNotificationCategory(type?: string | null): NotificationCategory {
   if (type && PRIMARY_NOTIFICATION_TYPES.has(type)) {
@@ -70,18 +63,20 @@ function getTypeIcon(type?: string | null) {
   }
 }
 
-function formatNotificationTime(dateStr?: string | null) {
+function formatNotificationTime(dateStr?: string | null, language?: string) {
   if (!dateStr) return ""
   const date = new Date(dateStr)
   if (isNaN(date.getTime())) return ""
-  const exactTime = format(date, "h:mm a")
+  const locale = getDateFnsLocale(language)
+  const exactTime = format(date, "h:mm a", { locale })
   if (isToday(date)) {
-    return `${exactTime} · ${formatDistanceToNow(date, { addSuffix: true })}`
+    return `${exactTime} · ${formatDistanceToNow(date, { addSuffix: true, locale })}`
   }
-  return `${format(date, "MMM d")} · ${exactTime}`
+  return `${format(date, "MMM d", { locale })} · ${exactTime}`
 }
 
 export function NotificationListSection() {
+  const { t, i18n } = useTranslation("notification")
   const [, navigate] = useLocation()
   const [filter, setFilter] = useState<NotificationFilter>("all")
   const [clearDrawerOpen, setClearDrawerOpen] = useState(false)
@@ -116,8 +111,20 @@ export function NotificationListSection() {
   } = usePushNotifications()
   const { partnerMember } = useRelationship()
 
-  const partnerName = partnerMember?.content?.name || "Partner"
+  const partnerName = partnerMember?.content?.name || t("partner")
   const partnerAvatar = partnerMember?.content?.avatar || "🤍"
+
+  const filterOptions = useMemo<{ value: NotificationFilter; label: string }[]>(
+    () => [
+      { value: "all", label: t("filters.all") },
+      { value: "mood", label: t("filters.mood") },
+      { value: "nudge", label: t("filters.nudge") },
+      { value: "chat", label: t("filters.chat") },
+      { value: "quiz", label: t("filters.quiz") },
+      { value: "other", label: t("filters.other") },
+    ],
+    [t]
+  )
 
   // Capture unread IDs for this visit before auto-marking all as read
   useEffect(() => {
@@ -168,11 +175,11 @@ export function NotificationListSection() {
     }
 
     return [
-      { label: "Today", items: todayItems },
-      { label: "Yesterday", items: yesterdayItems },
-      { label: "Earlier", items: earlierItems },
+      { label: t("groups.today"), items: todayItems },
+      { label: t("groups.yesterday"), items: yesterdayItems },
+      { label: t("groups.earlier"), items: earlierItems },
     ].filter((group) => group.items.length > 0)
-  }, [filteredNotifications])
+  }, [filteredNotifications, t])
 
   const showEnablePrompt =
     isSupported &&
@@ -213,8 +220,8 @@ export function NotificationListSection() {
         <CustomItem
           className="rounded-2xl border-primary/20 bg-primary/5 p-3"
           icon={<BellRing className="size-4 text-primary" />}
-          title="Get alerts when the app is closed"
-          description="Enable phone notifications so you never miss a nudge or mood update."
+          title={t("enablePrompt.title")}
+          description={t("enablePrompt.description")}
           topRightActions={
             <Button
               size="sm"
@@ -226,7 +233,11 @@ export function NotificationListSection() {
                 })
               }}
             >
-              {isPending ? <Spinner className="size-3" /> : "Enable"}
+              {isPending ? (
+                <Spinner className="size-3" />
+              ) : (
+                t("enablePrompt.button")
+              )}
             </Button>
           }
         />
@@ -236,7 +247,7 @@ export function NotificationListSection() {
       {notifications.length > 0 && (
         <div className="flex items-center justify-between gap-2">
           <div className="scrollbar-none flex items-center gap-1.5 overflow-x-auto">
-            {FILTER_OPTIONS.map((option) => (
+            {filterOptions.map((option) => (
               <Button
                 key={option.value}
                 type="button"
@@ -263,7 +274,7 @@ export function NotificationListSection() {
             ) : (
               <Trash2 className="size-3" />
             )}
-            Clear
+            {t("clear")}
           </Button>
         </div>
       )}
@@ -274,8 +285,10 @@ export function NotificationListSection() {
           <Bell className="size-8 opacity-40" />
           <p className="text-[11px]">
             {filter === "all"
-              ? `No updates from ${partnerName} yet.`
-              : `No ${filter} notifications yet.`}
+              ? t("emptyAll", { name: partnerName })
+              : t("emptyFiltered", {
+                  filter: t(`filters.${filter}`).toLowerCase(),
+                })}
           </p>
         </div>
       ) : (
@@ -326,21 +339,24 @@ export function NotificationListSection() {
                             : "gap-1.5 rounded-2xl p-3 transition-colors hover:bg-muted/30"
                         }
                         icon={getTypeIcon(content.type)}
-                        title={`${partnerAvatar} ${content.title || "Notification"}`}
+                        title={`${partnerAvatar} ${content.title || t("notificationFallback")}`}
                         description={content.body || undefined}
                         topRightActions={
                           <div className="flex items-center gap-1.5">
                             {isJustRead && (
                               <span className="rounded-full bg-primary/15 px-1.5 py-0.5 text-[9px] font-semibold text-primary">
-                                New
+                                {t("newBadge")}
                               </span>
                             )}
                             <span className="text-[10px] whitespace-nowrap text-muted-foreground">
-                              {formatNotificationTime(item.created_at)}
+                              {formatNotificationTime(
+                                item.created_at,
+                                i18n.language
+                              )}
                             </span>
                             <button
                               type="button"
-                              aria-label="Dismiss notification"
+                              aria-label={t("dismissAria")}
                               onClick={(e) => {
                                 e.stopPropagation()
                                 void deleteNotification(item.id)
@@ -373,10 +389,10 @@ export function NotificationListSection() {
       <FormDrawer
         open={clearDrawerOpen}
         onOpenChange={setClearDrawerOpen}
-        title="Clear all notifications?"
-        description="This will permanently remove all notifications from your feed."
-        submitLabel="Clear All"
-        successLabel="Cleared!"
+        title={t("clearDrawer.title")}
+        description={t("clearDrawer.description")}
+        submitLabel={t("clearDrawer.submit")}
+        successLabel={t("clearDrawer.success")}
         isPending={isClearing}
         onSubmit={async () => {
           await clearAllNotifications()

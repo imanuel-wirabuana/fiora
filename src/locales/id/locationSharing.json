@@ -1,0 +1,17 @@
+{
+  "you": "Kamu",
+  "partner": "Pasangan",
+  "backTitle": "Kembali ke beranda",
+  "headerTitle": "Peta Kalian",
+  "refreshTitle": "Perbarui lokasi",
+  "collapseAria": "Ciutkan lokasi",
+  "expandAria": "Buka lokasi",
+  "locations": "Lokasi",
+  "fitBoth": "Lihat berdua",
+  "fitBothTitle": "Tampilkan keduanya",
+  "todayAt": "Hari ini pukul {{time}}",
+  "locating": "Mencari lokasi...",
+  "notSharedYet": "Belum dibagikan",
+  "waitingUpdate": "Menunggu pembaruan...",
+  "noPartner": "Belum ada pasangan"
+}

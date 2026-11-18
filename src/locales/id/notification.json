@@ -1,0 +1,33 @@
+{
+  "partner": "Pasangan",
+  "notificationFallback": "Notifikasi",
+  "newBadge": "Baru",
+  "filters": {
+    "all": "Semua",
+    "mood": "Mood",
+    "nudge": "Nudge",
+    "chat": "Chat",
+    "quiz": "Quiz",
+    "other": "Lainnya"
+  },
+  "groups": {
+    "today": "Hari ini",
+    "yesterday": "Kemarin",
+    "earlier": "Sebelumnya"
+  },
+  "enablePrompt": {
+    "title": "Terima info meski aplikasi ditutup",
+    "description": "Aktifkan notifikasi HP biar nggak ketinggalan nudge atau update mood.",
+    "button": "Aktifkan"
+  },
+  "clear": "Bersihkan",
+  "emptyAll": "Belum ada update dari {{name}}.",
+  "emptyFiltered": "Belum ada notifikasi {{filter}}.",
+  "dismissAria": "Tutup notifikasi",
+  "clearDrawer": {
+    "title": "Hapus semua notifikasi?",
+    "description": "Semua riwayat notifikasi bakal dihapus permanen.",
+    "submit": "Hapus Semua",
+    "success": "Bersih!"
+  }
+}

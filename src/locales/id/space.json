@@ -1,0 +1,37 @@
+{
+  "soon": "Segera",
+  "tools": {
+    "journal": {
+      "title": "Jurnal",
+      "description": "Tulis catatan pribadi atau bagikan pikiranmu ke pasangan"
+    },
+    "itinerary": {
+      "title": "Itinerary",
+      "description": "Rencanakan liburan, kencan, dan perjalanan bareng"
+    },
+    "todo-list": {
+      "title": "Todo List",
+      "description": "Catat tugas bareng, target, dan bucket list kalian"
+    },
+    "reminder": {
+      "title": "Pengingat",
+      "description": "Pengingat lembut untuk momen-momen penting"
+    },
+    "gallery": {
+      "title": "Galeri",
+      "description": "Simpan dan lihat lagi foto-foto favorit kalian"
+    },
+    "financial": {
+      "title": "Keuangan",
+      "description": "Anggaran bersama & bagi pengeluaran"
+    },
+    "period-cycle": {
+      "title": "Siklus Haid",
+      "description": "Pantau siklus dan perhatian ekstra"
+    },
+    "setting": {
+      "title": "Pengaturan",
+      "description": "Kelola profil, hubungan, mood, dan preferensi aplikasi"
+    }
+  }
+}

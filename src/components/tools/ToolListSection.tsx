@@ -1,4 +1,5 @@
 import { Link } from "wouter"
+import { useTranslation } from "react-i18next"
 import {
   BellRing,
   BookOpen,
@@ -122,6 +123,8 @@ interface ToolListSectionProps {
 }
 
 export function ToolListSection({ tools = SPACE_TOOLS }: ToolListSectionProps) {
+  const { t } = useTranslation("space")
+
   return (
     <div className="grid grid-flow-dense auto-rows-[108px] grid-cols-3 gap-2.5">
       {tools.map((tool) => {
@@ -146,8 +149,10 @@ export function ToolListSection({ tools = SPACE_TOOLS }: ToolListSectionProps) {
                 )}
               />
             }
-            title={tool.title}
-            description={tool.description}
+            title={t(`tools.${tool.id}.title`, { defaultValue: tool.title })}
+            description={t(`tools.${tool.id}.description`, {
+              defaultValue: tool.description,
+            })}
             descriptionClassName={cn(
               "text-[11px] leading-snug",
               isCompact
@@ -166,7 +171,7 @@ export function ToolListSection({ tools = SPACE_TOOLS }: ToolListSectionProps) {
                       : "bg-muted/70 text-muted-foreground"
                   )}
                 >
-                  Soon
+                  {t("soon")}
                 </span>
               ) : (
                 <ChevronRight

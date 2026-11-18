@@ -1,5 +1,6 @@
 import { memo, useMemo, useState } from "react"
 import { format, isToday, isYesterday } from "date-fns"
+import { useTranslation } from "react-i18next"
 import { AnimatedEmoji } from "@/components/AnimatedEmoji"
 import { CustomItem } from "@/components/CustomItem"
 import { CustomTabs, type CustomTabItem } from "@/components/CustomTabs"
@@ -9,6 +10,7 @@ import { useInfiniteTimelineActivities } from "@/hooks/useActivities"
 import { useAuth } from "@/hooks/useAuth"
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll"
 import { useRelationship } from "@/hooks/useRelationship"
+import { getDateFnsLocale } from "@/lib/i18n"
 import { getGenderAvatarCircleClass } from "@/lib/relationship"
 import { cn } from "@/lib/utils"
 import type {
@@ -19,12 +21,6 @@ import type {
 import type { Gender } from "@/types/relationship"
 
 type TimelineFilter = "all" | "mood" | "nudge"
-
-const FILTER_OPTIONS: CustomTabItem<TimelineFilter>[] = [
-  { value: "all", label: "All" },
-  { value: "mood", label: "Mood" },
-  { value: "nudge", label: "Nudge" },
-]
 
 interface InsightTimelineSectionProps {
   startDate?: Date
@@ -44,6 +40,7 @@ const TimelineActivityRow = memo(function TimelineActivityRow({
   authorGender?: Gender | null
   isMine: boolean
 }) {
+  const { t, i18n } = useTranslation("insight")
   const isMood = activity.type === "mood"
   const content = activity.content as
     | MoodActivityContent
@@ -54,15 +51,16 @@ const TimelineActivityRow = memo(function TimelineActivityRow({
 
   const note = isMood ? (content as MoodActivityContent).note : undefined
   const date = new Date(activity.created_at)
+  const locale = getDateFnsLocale(i18n.language)
   const timeText =
     isToday(date) || isYesterday(date)
-      ? format(date, "h:mm a")
-      : format(date, "MMM d, h:mm a")
+      ? format(date, "h:mm a", { locale })
+      : format(date, "MMM d, h:mm a", { locale })
 
   return (
     <CustomItem
       variant={isMood ? "default" : "soft"}
-      title={isMine ? "You" : authorName}
+      title={isMine ? t("you") : authorName}
       icon={
         <div
           className={cn(
@@ -119,6 +117,7 @@ export function InsightTimelineSection({
   startDate,
   endDate,
 }: InsightTimelineSectionProps) {
+  const { t } = useTranslation("insight")
   const { user } = useAuth()
   const { currentMember, partnerMember } = useRelationship()
   const {
@@ -131,6 +130,15 @@ export function InsightTimelineSection({
 
   const [typeFilter, setTypeFilter] = useState<TimelineFilter>("all")
 
+  const filterOptions = useMemo<CustomTabItem<TimelineFilter>[]>(
+    () => [
+      { value: "all", label: t("timeline.filters.all") },
+      { value: "mood", label: t("timeline.filters.mood") },
+      { value: "nudge", label: t("timeline.filters.nudge") },
+    ],
+    [t]
+  )
+
   const sentinelRef = useInfiniteScroll({
     hasNextPage,
     isFetchingNextPage,
@@ -139,7 +147,7 @@ export function InsightTimelineSection({
 
   const myAvatar = currentMember?.content?.avatar || "💙"
   const myGender = currentMember?.content?.gender
-  const partnerName = partnerMember?.content?.name || "Partner"
+  const partnerName = partnerMember?.content?.name || t("partner")
   const partnerAvatar = partnerMember?.content?.avatar || "🤍"
   const partnerGender = partnerMember?.content?.gender
   const currentUserId = user?.id
@@ -171,22 +179,22 @@ export function InsightTimelineSection({
     }
 
     return [
-      { label: "Today", items: today },
-      { label: "Yesterday", items: yesterday },
-      { label: "Earlier", items: earlier },
+      { label: t("timeline.groups.today"), items: today },
+      { label: t("timeline.groups.yesterday"), items: yesterday },
+      { label: t("timeline.groups.earlier"), items: earlier },
     ].filter((group) => group.items.length > 0)
-  }, [filteredActivities])
+  }, [filteredActivities, t])
 
   return (
     <div className="flex flex-col gap-2.5">
       <div className="flex items-center justify-between gap-3">
         <span className="shrink-0 text-xs font-semibold text-muted-foreground">
-          Timeline
+          {t("timeline.title")}
         </span>
 
         <CustomTabs
           size="sm"
-          items={FILTER_OPTIONS}
+          items={filterOptions}
           value={typeFilter}
           onValueChange={setTypeFilter}
           className="max-w-42"
@@ -199,7 +207,7 @@ export function InsightTimelineSection({
         </div>
       ) : grouped.length === 0 ? (
         <div className="flex h-28 items-center justify-center rounded-2xl border border-dashed border-border/60 text-xs text-muted-foreground">
-          No mood or nudge activity in this range.
+          {t("timeline.empty")}
         </div>
       ) : (
         <div className="flex flex-col gap-2.5">

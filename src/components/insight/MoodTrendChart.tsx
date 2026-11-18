@@ -1,5 +1,6 @@
 import { memo, useMemo } from "react"
 import { Smile } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts"
 import { CustomItem } from "@/components/CustomItem"
 import { CustomSkeleton } from "@/components/CustomSkeleton"
@@ -30,6 +31,7 @@ export const MoodTrendChart = memo(function MoodTrendChart({
   partnerGender,
   isLoading = false,
 }: MoodTrendChartProps) {
+  const { t } = useTranslation("insight")
   const hasAnyMood = data.some((d) => d.me !== null || d.partner !== null)
 
   const chartConfig = useMemo(
@@ -50,8 +52,8 @@ export const MoodTrendChart = memo(function MoodTrendChart({
   return (
     <CustomItem
       variant="default"
-      title="Mood Trend"
-      description="Score 0.0 – 1.0"
+      title={t("moodTrend.title")}
+      description={t("moodTrend.description")}
       icon={<Smile className="size-4 text-primary" />}
       className="rounded-2xl p-3"
       contentClassName="w-full"
@@ -60,7 +62,7 @@ export const MoodTrendChart = memo(function MoodTrendChart({
         <CustomSkeleton className="h-36 w-full rounded-xl" />
       ) : !hasAnyMood ? (
         <div className="flex h-36 w-full items-center justify-center rounded-xl border border-dashed border-border/60 px-2 text-center text-[11px] text-muted-foreground">
-          No mood logs in this range.
+          {t("moodTrend.empty")}
         </div>
       ) : (
         <ChartContainer config={chartConfig} className="h-36 w-full">

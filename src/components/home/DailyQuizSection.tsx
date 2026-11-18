@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 import { useLocation } from "wouter"
 import {
   ArrowRight,
@@ -19,6 +20,7 @@ import { useRelationship } from "@/hooks/useRelationship"
 import { cn } from "@/lib/utils"
 
 export function DailyQuizSection() {
+  const { t } = useTranslation("home")
   const [, setLocation] = useLocation()
   const {
     todayQuizzes,
@@ -40,7 +42,7 @@ export function DailyQuizSection() {
     option: string
   } | null>(null)
 
-  const partnerName = partnerMember?.content?.name || "Partner"
+  const partnerName = partnerMember?.content?.name || t("quiz.partnerFallback")
   const myAvatar = currentMember?.content?.avatar || "💙"
 
   if (!hasRelationship) {
@@ -52,7 +54,7 @@ export function DailyQuizSection() {
       <CustomItem
         variant="outline"
         icon={<Sparkles className="size-3.5" />}
-        title="Daily Quiz"
+        title={t("quiz.title")}
         className="p-3"
         contentClassName="gap-2.5 py-1"
       >
@@ -70,39 +72,37 @@ export function DailyQuizSection() {
       <CustomItem
         variant="outline"
         icon={<Sparkles className="size-3.5" />}
-        title="Daily Quiz"
+        title={t("quiz.title")}
         topRightActions={
           <Badge
             variant="secondary"
             className="bg-primary/10 px-1.5 py-0 text-[10px] text-primary"
           >
-            All Caught Up
+            {t("quiz.allCaughtUp")}
           </Badge>
         }
-        description="You and your partner have completed all available quizzes!"
+        description={t("quiz.allCaughtUpDesc")}
         descriptionClassName="text-[11px]"
         className="gap-1.5 p-3"
       />
     )
   }
 
-  const nextQuizTimeLabel = `${hoursUntilNextQuiz} ${
-    hoursUntilNextQuiz === 1 ? "hour" : "hours"
-  }`
+  const nextQuizTimeLabel = t("quiz.hour", { count: hoursUntilNextQuiz })
 
   if (isAllMyAnswered) {
     return (
       <CustomItem
         variant="outline"
         icon={<Sparkles className="size-3.5" />}
-        title="Daily Quiz"
+        title={t("quiz.title")}
         topRightActions={
           <Badge
             variant="secondary"
             className="gap-1 bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary"
           >
             <Clock className="size-3 shrink-0" />
-            <span>New quiz in {nextQuizTimeLabel}</span>
+            <span>{t("quiz.newQuizIn", { time: nextQuizTimeLabel })}</span>
           </Badge>
         }
         className="p-3"
@@ -113,16 +113,21 @@ export function DailyQuizSection() {
             <>
               <Sparkles className="mt-0.5 size-3.5 shrink-0 text-primary" />
               <span>
-                You and {partnerName} finished all {totalCount} questions! Your
-                quiz summary is ready.
+                {t("quiz.bothFinished", {
+                  name: partnerName,
+                  total: totalCount,
+                })}
               </span>
             </>
           ) : (
             <>
               <Lock className="mt-0.5 size-3.5 shrink-0 text-primary/70" />
               <span>
-                All {totalCount} answered! Waiting for {partnerName} (
-                {partnerAnsweredCount}/{totalCount}) to unlock full results.
+                {t("quiz.waitingPartner", {
+                  total: totalCount,
+                  name: partnerName,
+                  partnerCount: partnerAnsweredCount,
+                })}
               </span>
             </>
           )}
@@ -135,7 +140,7 @@ export function DailyQuizSection() {
           onClick={() => setLocation("/quiz-summary")}
           className="h-8 w-full gap-1.5 text-xs font-semibold"
         >
-          <span>View Quiz Summary</span>
+          <span>{t("quiz.viewSummary")}</span>
           <ArrowRight className="size-3.5" />
         </Button>
       </CustomItem>
@@ -180,7 +185,7 @@ export function DailyQuizSection() {
     <CustomItem
       variant="outline"
       icon={<Sparkles className="size-3.5" />}
-      title="Daily Quiz"
+      title={t("quiz.title")}
       topRightActions={
         totalCount > 1 ? (
           <span className="shrink-0 rounded-md bg-primary/10 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-primary">
@@ -196,13 +201,18 @@ export function DailyQuizSection() {
           <>
             <CheckCircle2 className="size-3.5 shrink-0 text-primary" />
             <span className="truncate font-medium">
-              Saved! ({myAnsweredCount}/{totalCount} answered)
+              {t("quiz.savedProgress", {
+                answered: myAnsweredCount,
+                total: totalCount,
+              })}
             </span>
           </>
         ) : (
           <span className="truncate text-primary/80">
-            {myAnsweredCount}/{totalCount} answered · Complete all to see
-            results
+            {t("quiz.progressPrompt", {
+              answered: myAnsweredCount,
+              total: totalCount,
+            })}
           </span>
         )
       }
@@ -216,7 +226,7 @@ export function DailyQuizSection() {
               disabled={safeIndex === 0}
               onClick={() => setCurrentIndex((prev) => Math.max(0, prev - 1))}
               className="size-5 rounded-md text-primary hover:bg-primary/10 hover:text-primary"
-              title="Previous quiz"
+              title={t("quiz.prevQuiz")}
             >
               <ChevronLeft className="size-3.5" />
             </Button>
@@ -229,7 +239,7 @@ export function DailyQuizSection() {
                 setCurrentIndex((prev) => Math.min(totalCount - 1, prev + 1))
               }
               className="size-5 rounded-md text-primary hover:bg-primary/10 hover:text-primary"
-              title="Next quiz"
+              title={t("quiz.nextQuiz")}
             >
               <ChevronRight className="size-3.5" />
             </Button>
@@ -296,7 +306,7 @@ export function DailyQuizSection() {
               {isMyChoice && (
                 <div className="mt-0.5 ml-1 flex shrink-0 items-center">
                   <span
-                    title="You chose this"
+                    title={t("quiz.youChoseThis")}
                     className="py-0.2 flex shrink-0 items-center gap-0.5 rounded-full bg-primary/20 px-1.5 text-[9px] font-medium text-primary"
                   >
                     <AnimatedEmoji
@@ -305,7 +315,7 @@ export function DailyQuizSection() {
                       replayOnTap={false}
                       fallbackClassName="text-[9px]"
                     />{" "}
-                    You
+                    {t("quiz.you")}
                   </span>
                 </div>
               )}

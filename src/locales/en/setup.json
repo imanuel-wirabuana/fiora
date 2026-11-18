@@ -1,0 +1,102 @@
+{
+  "heroSubtitle": "Let's set up your relationship",
+  "stepper": {
+    "stepOf": "Step {{current}} of {{total}}",
+    "back": "Back",
+    "next": "Next",
+    "finish": "Finish Setup",
+    "errors": {
+      "selectGender": "Please select your gender.",
+      "enterName": "Please enter your name or nickname.",
+      "invalidPartnerCode": "Please enter a valid 5-digit partner code.",
+      "failed": "Failed to complete setup. Please try again."
+    }
+  },
+  "steps": {
+    "gender": {
+      "title": "Gender",
+      "question": "Who are you?",
+      "description": "Select your gender so we can personalize the experience",
+      "validate": "Please select your gender to continue."
+    },
+    "profile": {
+      "title": "Profile",
+      "question": "Your Profile",
+      "description": "Choose an avatar icon and set the name your partner sees",
+      "validate": "Please enter your name or nickname."
+    },
+    "connection": {
+      "title": "Connection",
+      "question": "Connect with Partner",
+      "description": "Join your partner's existing relationship or create a brand new one",
+      "validate": "Please enter a valid 5-digit partner code."
+    },
+    "anniversary": {
+      "title": "Anniversary",
+      "question": "Anniversary Date (Optional)",
+      "description": "When did your story begin? You can change this anytime later."
+    },
+    "moods": {
+      "title": "Moods",
+      "question": "Customize Moods (Optional)",
+      "description": "Tap a mood button to edit its emoji and label"
+    },
+    "nudges": {
+      "title": "Nudges",
+      "question": "Quick Nudges (Optional)",
+      "description": "Tap a nudge pill to edit its emoji and message"
+    },
+    "inviteCode": {
+      "title": "Invite Code",
+      "question": "Your Relationship is Ready!",
+      "description": "Share your 5-digit invite code with your partner to connect your spaces"
+    }
+  },
+  "genderStep": {
+    "male": "Male",
+    "female": "Female"
+  },
+  "profileStep": {
+    "selectAvatar": "Select Avatar",
+    "nameLabel": "Your Name / Nickname",
+    "namePlaceholder": "e.g. Alex or Honey"
+  },
+  "connectionStep": {
+    "joinTab": "Join Partner",
+    "createTab": "Create Relationship",
+    "enterCodeLabel": "Enter Partner's 5-Digit Code",
+    "joinHelp": "Enter the 5-digit code generated on your partner's phone to link together immediately.",
+    "createTitle": "Start a New Relationship",
+    "createDescription": "You'll be able to customize your anniversary, moods, and nudges next. Your 5-digit invite code will be ready on the final step!"
+  },
+  "anniversaryStep": {
+    "clear": "Clear",
+    "specialDate": "Special Date",
+    "placeholder": "Pick an anniversary date"
+  },
+  "moodsStep": {
+    "reset": "Reset",
+    "emoji": "Emoji",
+    "moodLabel": "Mood Label",
+    "name": "Name",
+    "slotFallback": "Mood {{index}}",
+    "emojiAria": "Slot {{index}} emoji",
+    "labelAria": "Slot {{index}} label"
+  },
+  "nudgesStep": {
+    "reset": "Reset",
+    "emoji": "Emoji",
+    "message": "Message",
+    "text": "Text",
+    "slotFallback": "Nudge {{index}}",
+    "emojiAria": "Nudge {{index}} emoji",
+    "messageAria": "Nudge {{index}} message"
+  },
+  "shareCodeStep": {
+    "title": "Your 5-Digit Invite Code",
+    "copied": "Copied!",
+    "copyCode": "Copy Code",
+    "regenerate": "Regenerate",
+    "hint": "💡 Your partner simply needs to choose \"Join Partner\" during setup and enter this 5-digit code. You can also view this code anytime in Settings."
+  }
+}

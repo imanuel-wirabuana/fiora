@@ -1,0 +1,96 @@
+{
+  "sections": {
+    "self": "Kamu",
+    "relationship": "Hubungan",
+    "dangerZone": "Zona Berbahaya",
+    "account": "Akun"
+  },
+  "profile": {
+    "title": "Profil",
+    "description": "Avatar, nama tampilan, dan tanggal lahir.",
+    "setProfile": "Atur profil"
+  },
+  "theme": {
+    "title": "Dark Mode",
+    "description": "Ubah tampilan gelap atau terang.",
+    "ariaLabel": "Ubah dark mode"
+  },
+  "language": {
+    "title": "Bahasa",
+    "description": "Pilih bahasa aplikasi (ID / EN).",
+    "activeId": "Bahasa Indonesia",
+    "activeEn": "English",
+    "ariaLabel": "Ganti bahasa aplikasi"
+  },
+  "notification": {
+    "title": "Notifikasi HP",
+    "descriptionDefault": "Terima info di HP kamu meskipun Fiora sedang ditutup.",
+    "descriptionIosInstall": "Tambahkan Fiora ke Layar Utama iPhone (Share → Add to Home Screen) untuk aktifkan notifikasi.",
+    "descriptionUnsupported": "Push notification belum didukung di browser ini.",
+    "descriptionBlocked": "Notifikasi diblokir. Aktifkan lewat pengaturan browser atau HP kamu.",
+    "descriptionActive": "Aktif di perangkat ini. Kamu bakal dapat info dari pasangan.",
+    "ariaLabel": "Aktifkan atau matikan push notification HP"
+  },
+  "moodReminder": {
+    "title": "Pengingat Mood",
+    "description": "Dapat pengingat berkala buat catat perasaanmu."
+  },
+  "appAppearance": {
+    "title": "Tampilan Aplikasi",
+    "description": "Warna tema, aksen, dan gaya visual."
+  },
+  "partnerAlias": {
+    "title": "Panggilan Pasangan",
+    "waitingDescription": "Buat panggilan spesial buat pasanganmu setelah dia bergabung.",
+    "waitingBadge": "Menunggu Pasangan",
+    "description": "Panggilan untuk {{name}}.",
+    "yourPartner": "pasanganmu",
+    "drawerDescription": "Beri {{name}} panggilan spesial yang bisa dilihat kalian berdua.",
+    "setAlias": "Atur panggilan",
+    "placeholder": "contoh: Sayang, Beb, Honey"
+  },
+  "anniversary": {
+    "title": "Tanggal Jadian",
+    "setStory": "Atur kapan cerita kalian dimulai.",
+    "dayOne": "Hari ini Hari ke-1!",
+    "daysTogether": "{{count}} hari bersama",
+    "drawerTitle": "Tanggal Jadian",
+    "drawerDescription": "Kapan cerita kalian dimulai?",
+    "setDate": "Atur tanggal"
+  },
+  "locationSharing": {
+    "title": "Berbagi Lokasi",
+    "description": "Bagikan lokasi real-time ke pasanganmu di halaman beranda.",
+    "ariaLabel": "Aktifkan atau matikan berbagi lokasi"
+  },
+  "quiz": {
+    "title": "Quiz Harian",
+    "description": "Jumlah pertanyaan per hari di halaman beranda.",
+    "option_one": "{{count}} pertanyaan",
+    "option_other": "{{count}} pertanyaan",
+    "placeholder": "Pertanyaan"
+  },
+  "mood": {
+    "title": "Mood",
+    "description": "Atur emoji dan emosi untuk kamu dan pasanganmu."
+  },
+  "nudge": {
+    "title": "Nudge",
+    "description": "Kelola reaksi cepat yang bisa dikirim ke pasanganmu."
+  },
+  "importantDates": {
+    "title": "Tanggal Penting",
+    "description": "Momen spesial, anniversary, dan pengingat kalian."
+  },
+  "danger": {
+    "takeBreakTitle": "Istirahat Sejenak",
+    "takeBreakDescription": "Jeda sementara prompt dan notifikasi bersama.",
+    "endRelationshipTitle": "Akhiri Hubungan",
+    "endRelationshipDescription": "Putuskan koneksi dengan pasangan dan hapus tautan data secara permanen."
+  },
+  "account": {
+    "signedInAs": "Masuk sebagai {{email}}",
+    "signedIn": "Sudah masuk",
+    "signOut": "Keluar"
+  }
+}

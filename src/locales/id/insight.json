@@ -1,0 +1,58 @@
+{
+  "you": "Kamu",
+  "partner": "Pasangan",
+  "datePicker": {
+    "title": "Filter Tanggal",
+    "description": "Pilih hari, minggu, bulan, rentang tanggal, atau semua waktu.",
+    "apply": "Terapkan",
+    "applied": "Diterapkan!",
+    "allTime": "Semua waktu",
+    "modes": {
+      "daily": "Harian",
+      "weekly": "Mingguan",
+      "monthly": "Bulanan",
+      "range": "Rentang",
+      "all": "Semua"
+    },
+    "from": "Dari",
+    "to": "Sampai",
+    "weekLabel": "Minggu:",
+    "allDescription": "Menampilkan semua catatan mood, nudge, dan quiz."
+  },
+  "kpi": {
+    "avgMood": "Rata-rata Mood",
+    "moodLogs_one": "{{count}} catatan",
+    "moodLogs_other": "{{count}} catatan",
+    "nudges": "Nudge",
+    "nudgeBreakdown": "{{sent}}k · {{received}}t",
+    "quizSync": "Quiz Match",
+    "quizMatch": "{{matched}}/{{total}} cocok"
+  },
+  "moodTrend": {
+    "title": "Tren Mood",
+    "description": "Skor 0.0 – 1.0",
+    "empty": "Belum ada catatan mood di rentang ini."
+  },
+  "nudgeChart": {
+    "title": "Nudge",
+    "sent": "Terkirim",
+    "received": "Diterima",
+    "top": "Teratas: {{emoji}} {{label}}",
+    "subtitle": "Kirim vs. terima",
+    "empty": "Belum ada nudge di rentang ini."
+  },
+  "timeline": {
+    "title": "Timeline",
+    "filters": {
+      "all": "Semua",
+      "mood": "Mood",
+      "nudge": "Nudge"
+    },
+    "groups": {
+      "today": "Hari ini",
+      "yesterday": "Kemarin",
+      "earlier": "Sebelumnya"
+    },
+    "empty": "Belum ada aktivitas mood atau nudge di rentang ini."
+  }
+}

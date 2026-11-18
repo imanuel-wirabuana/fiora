@@ -12,6 +12,7 @@ import {
   startOfMonth,
   startOfWeek,
 } from "date-fns"
+import i18n, { getDateFnsLocale } from "@/lib/i18n"
 import type { InsightDateFilter, InsightDateMode } from "@/types/insight"
 
 export interface ResolvedInsightBounds {
@@ -29,6 +30,7 @@ export function resolveInsightDateBounds(
   filter: InsightDateFilter
 ): ResolvedInsightBounds {
   const maxEnd = endOfDay(new Date())
+  const locale = getDateFnsLocale()
 
   switch (filter.mode) {
     case "daily": {
@@ -38,7 +40,7 @@ export function resolveInsightDateBounds(
       return {
         startDate,
         endDate,
-        label: format(target, "MMM d, yyyy"),
+        label: format(target, "MMM d, yyyy", { locale }),
         queryKey: `daily-${format(startDate, "yyyy-MM-dd")}`,
       }
     }
@@ -52,7 +54,7 @@ export function resolveInsightDateBounds(
       return {
         startDate,
         endDate,
-        label: `${format(startDate, "MMM d")} – ${format(endDate, "MMM d")}`,
+        label: `${format(startDate, "MMM d", { locale })} – ${format(endDate, "MMM d", { locale })}`,
         queryKey: `weekly-${format(startDate, "yyyy-MM-dd")}_${format(endDate, "yyyy-MM-dd")}`,
       }
     }
@@ -63,7 +65,7 @@ export function resolveInsightDateBounds(
       return {
         startDate,
         endDate,
-        label: format(target, "MMM yyyy"),
+        label: format(target, "MMM yyyy", { locale }),
         queryKey: `monthly-${format(startDate, "yyyy-MM")}_${format(endDate, "yyyy-MM-dd")}`,
       }
     }
@@ -77,8 +79,8 @@ export function resolveInsightDateBounds(
       const startDate = startOfDay(rawStart)
       const endDate = endOfDay(rawEnd)
       const label = isSameDay(startDate, endDate)
-        ? format(startDate, "MMM d, yyyy")
-        : `${format(startDate, "MMM d")} – ${format(endDate, "MMM d")}`
+        ? format(startDate, "MMM d, yyyy", { locale })
+        : `${format(startDate, "MMM d", { locale })} – ${format(endDate, "MMM d", { locale })}`
       return {
         startDate,
         endDate,
@@ -91,7 +93,7 @@ export function resolveInsightDateBounds(
       return {
         startDate: undefined,
         endDate: maxEnd,
-        label: "All time",
+        label: i18n.t("insight:datePicker.allTime"),
         queryKey: "all",
       }
   }
@@ -131,6 +133,7 @@ export function buildInsightBuckets(
   intervalStart: Date,
   intervalEnd: Date
 ): { granularity: InsightGranularity; buckets: InsightBucket[] } {
+  const locale = getDateFnsLocale()
   const granularity = resolveInsightGranularity(mode, intervalStart, intervalEnd)
 
   if (granularity === "2h") {
@@ -156,7 +159,7 @@ export function buildInsightBuckets(
       granularity,
       buckets: weeks.map((weekStart) => ({
         key: format(weekStart, "yyyy-MM-dd"),
-        label: format(weekStart, "MMM d"),
+        label: format(weekStart, "MMM d", { locale }),
       })),
     }
   }
@@ -167,7 +170,7 @@ export function buildInsightBuckets(
       granularity,
       buckets: months.map((monthStart) => ({
         key: format(monthStart, "yyyy-MM"),
-        label: format(monthStart, "MMM yy"),
+        label: format(monthStart, "MMM yy", { locale }),
       })),
     }
   }
@@ -178,7 +181,7 @@ export function buildInsightBuckets(
     granularity,
     buckets: days.map((day) => ({
       key: format(day, "yyyy-MM-dd"),
-      label: format(day, dateFormat),
+      label: format(day, dateFormat, { locale }),
     })),
   }
 }

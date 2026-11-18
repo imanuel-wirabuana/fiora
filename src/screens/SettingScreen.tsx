@@ -12,6 +12,7 @@ import {
   Timer,
   User,
 } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { CustomItem } from "@/components/CustomItem"
 import { useTheme } from "@/components/theme-provider"
 import { Badge } from "@/components/ui/badge"
@@ -23,6 +24,7 @@ import { useRelationship } from "@/hooks/useRelationship"
 import { getAppThemeById } from "@/lib/themes"
 import {
   AnniversarySection,
+  LanguageSection,
   LocationSharingSection,
   NotificationSection,
   PartnerAliasSection,
@@ -33,6 +35,7 @@ import {
 } from "@/components/setting"
 
 export function SettingScreen() {
+  const { t } = useTranslation(["setting", "common"])
   const { user, signOutMutation } = useAuth()
   const { moodOptions, nudgeOptions } = useRelationship()
   const { appTheme } = useTheme()
@@ -43,22 +46,24 @@ export function SettingScreen() {
       {/* 1. Self CustomItem Card */}
       <CustomItem
         icon={<User className="size-3.5 text-primary" />}
-        title="Self"
+        title={t("sections.self")}
         contentClassName="flex flex-col gap-0.5"
       >
         <ProfileSection />
         <Separator />
         <ThemeSection />
         <Separator />
+        <LanguageSection />
+        <Separator />
         <NotificationSection />
         <Separator />
         <SettingRow
           icon={<Timer className="size-3.5" />}
-          title="Mood Reminder Interval"
-          description="Get periodic nudges to log how you feel."
+          title={t("moodReminder.title")}
+          description={t("moodReminder.description")}
           action={
             <span className="inline-flex items-center rounded-full bg-muted/60 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-              Coming soon
+              {t("common:status.comingSoon")}
             </span>
           }
           className="opacity-75"
@@ -67,8 +72,8 @@ export function SettingScreen() {
         <SettingRow
           href="/setting/app-appearance"
           icon={<Palette className="size-3.5" />}
-          title="App Appearance"
-          description="Theme colors, accents, and visual styling."
+          title={t("appAppearance.title")}
+          description={t("appAppearance.description")}
           action={
             <div className="flex items-center gap-1.5">
               <Badge variant="secondary" className="text-[10px] font-medium">
@@ -84,7 +89,7 @@ export function SettingScreen() {
       <CustomItem
         variant="soft"
         icon={<Heart className="size-3.5 text-primary" />}
-        title="Relationship"
+        title={t("sections.relationship")}
         contentClassName="flex flex-col gap-0.5"
       >
         <PartnerAliasSection />
@@ -98,8 +103,8 @@ export function SettingScreen() {
         <SettingRow
           href="/setting/mood"
           icon={<Smile className="size-3.5" />}
-          title="Mood"
-          description="Customize emojis and emotions for you and your partner."
+          title={t("mood.title")}
+          description={t("mood.description")}
           action={
             <div className="flex items-center gap-1.5">
               <Badge variant="default" className="font-mono text-[11px]">
@@ -113,8 +118,8 @@ export function SettingScreen() {
         <SettingRow
           href="/setting/nudge"
           icon={<Send className="size-3.5" />}
-          title="Nudge"
-          description="Manage quick-tap reactions sent across to your partner."
+          title={t("nudge.title")}
+          description={t("nudge.description")}
           action={
             <div className="flex items-center gap-1.5">
               <Badge variant="default" className="font-mono text-[11px]">
@@ -128,12 +133,12 @@ export function SettingScreen() {
         <SettingRow
           href="/setting/important-dates"
           icon={<CalendarHeart className="size-3.5" />}
-          title="Important Dates"
-          description="Special milestones, anniversaries, and couple reminders."
+          title={t("importantDates.title")}
+          description={t("importantDates.description")}
           action={
             <div className="flex items-center gap-1.5">
               <span className="inline-flex items-center rounded-full bg-muted/60 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                Coming soon
+                {t("common:status.comingSoon")}
               </span>
               <ChevronRight className="size-4 text-muted-foreground transition-transform duration-200 group-hover:translate-x-0.5" />
             </div>
@@ -145,18 +150,18 @@ export function SettingScreen() {
       <CustomItem
         variant="outline"
         icon={<ShieldAlert className="size-3.5 text-destructive" />}
-        title="Danger Zone"
+        title={t("sections.dangerZone")}
         headerClassName="text-destructive"
         className="border-destructive/40 text-destructive"
         contentClassName="flex flex-col gap-0.5"
       >
         <SettingRow
           icon={<Flame className="size-3.5 text-amber-500" />}
-          title="Take a Break"
-          description="Temporarily pause shared prompts and notifications."
+          title={t("danger.takeBreakTitle")}
+          description={t("danger.takeBreakDescription")}
           action={
             <span className="inline-flex items-center rounded-full bg-muted/60 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-              Coming soon
+              {t("common:status.comingSoon")}
             </span>
           }
           className="opacity-75"
@@ -164,11 +169,11 @@ export function SettingScreen() {
         <Separator />
         <SettingRow
           icon={<HeartCrack className="size-3.5 text-destructive" />}
-          title="End Relationship"
-          description="Permanently disconnect from your partner and unlink data."
+          title={t("danger.endRelationshipTitle")}
+          description={t("danger.endRelationshipDescription")}
           action={
             <span className="inline-flex items-center rounded-full bg-destructive/10 px-2 py-0.5 text-[10px] font-medium text-destructive">
-              Coming soon
+              {t("common:status.comingSoon")}
             </span>
           }
           className="opacity-75"
@@ -178,8 +183,12 @@ export function SettingScreen() {
       {/* 4. Account CustomItem Card */}
       <CustomItem
         icon={<LogOut className="size-3.5 text-muted-foreground" />}
-        title="Account"
-        description={user?.email ? `Signed in as ${user.email}` : "Signed in"}
+        title={t("sections.account")}
+        description={
+          user?.email
+            ? t("account.signedInAs", { email: user.email })
+            : t("account.signedIn")
+        }
         className="gap-3"
       >
         <Button
@@ -191,7 +200,7 @@ export function SettingScreen() {
           {signOutMutation.isPending ? (
             <Spinner className="size-4" />
           ) : (
-            "Sign Out"
+            t("account.signOut")
           )}
         </Button>
       </CustomItem>

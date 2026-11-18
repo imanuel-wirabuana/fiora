@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from "react"
 import { Heart, Send } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { AnimatedEmoji } from "./AnimatedEmoji"
 import { DrawerScopeContext } from "./AnimationScopeContext"
 import { fireEmojiConfetti } from "../lib/confetti"
@@ -104,6 +105,7 @@ interface MoodDrawerProps {
 }
 
 export function MoodDrawer({ open, onOpenChange, children }: MoodDrawerProps) {
+  const { t } = useTranslation("common")
   useDrawerAnimationPause(open)
   const { moodOptions } = useRelationship()
   const { myLatestMood, logMood, createActivityMutation } = useActivities()
@@ -148,11 +150,11 @@ export function MoodDrawer({ open, onOpenChange, children }: MoodDrawerProps) {
               <div className="flex min-w-0 items-center justify-start">
                 <span
                   className={cn(
-                    "inline-flex shrink-0 items-center rounded-full border px-2.5 py-1 text-xs font-medium leading-none",
+                    "inline-flex shrink-0 items-center rounded-full border px-2.5 py-1 text-xs leading-none font-medium",
                     badge.className
                   )}
                 >
-                  {badge.label}
+                  {t(`moodCategory.${badge.category}`)}
                 </span>
               </div>
 
@@ -165,7 +167,7 @@ export function MoodDrawer({ open, onOpenChange, children }: MoodDrawerProps) {
           ),
         }
       }),
-    [moodOptions]
+    [moodOptions, t]
   )
 
   const handleOpenChange = (nextOpen: boolean) => {
@@ -206,16 +208,16 @@ export function MoodDrawer({ open, onOpenChange, children }: MoodDrawerProps) {
       {children ? <DrawerTrigger>{children}</DrawerTrigger> : null}
 
       {/* Tightly padded Drawer Content docked flush to bottom with safe area */}
-      <DrawerContent className="mx-auto flex flex-col inset-x-0 bottom-0 m-0 rounded-b-none rounded-t-4xl border-b-0 p-4 pt-2 pb-[max(1rem,env(safe-area-inset-bottom))] sm:max-w-md [--drawer-inset:0px]">
+      <DrawerContent className="inset-x-0 bottom-0 m-0 mx-auto flex flex-col rounded-t-4xl rounded-b-none border-b-0 p-4 pt-2 pb-[max(1rem,env(safe-area-inset-bottom))] [--drawer-inset:0px] sm:max-w-md">
         <DrawerScopeContext.Provider value={true}>
           {/* Top Header */}
           <div>
             <DrawerHeader className="items-center pb-1 text-center md:text-center">
               <DrawerTitle className="text-base font-semibold">
-                Quick Mood Check-in
+                {t("moodDrawer.title")}
               </DrawerTitle>
               <DrawerDescription className="text-xs">
-                Let your partner know how you feel right now
+                {t("moodDrawer.description")}
               </DrawerDescription>
             </DrawerHeader>
 
@@ -231,7 +233,7 @@ export function MoodDrawer({ open, onOpenChange, children }: MoodDrawerProps) {
                     visibleCount={8}
                     itemClassName="scale-100"
                     highlightClassName="inset-x-0 rounded-none border-0 bg-popover before:pointer-events-none before:absolute before:inset-x-0 before:inset-y-3 before:z-0 before:rounded-2xl before:border before:border-primary/35 before:bg-primary/10 *:data-rwp-highlight-list:z-10"
-                    ariaLabel="Mood picker"
+                    ariaLabel={t("moodDrawer.pickerAriaLabel")}
                   />
                 </SelectedMoodContext.Provider>
               )}
@@ -241,10 +243,10 @@ export function MoodDrawer({ open, onOpenChange, children }: MoodDrawerProps) {
             <div className="px-1 pt-2 pb-3">
               <input
                 type="text"
-                placeholder="Add a sweet note or what's on your mind... (optional)"
+                placeholder={t("moodDrawer.notePlaceholder")}
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
-                className="h-10 w-full rounded-2xl border border-input bg-muted/20 px-3.5 text-xs outline-none transition placeholder:text-muted-foreground/60 focus:border-primary focus:bg-background focus:ring-2 focus:ring-primary/20"
+                className="h-10 w-full rounded-2xl border border-input bg-muted/20 px-3.5 text-xs transition outline-none placeholder:text-muted-foreground/60 focus:border-primary focus:bg-background focus:ring-2 focus:ring-primary/20"
               />
             </div>
           </div>
@@ -257,25 +259,23 @@ export function MoodDrawer({ open, onOpenChange, children }: MoodDrawerProps) {
               disabled={isSent || isPending}
               className={cn(
                 "flex h-11 w-full items-center justify-center gap-2 rounded-2xl font-medium text-primary-foreground shadow-xs transition active:scale-[0.99]",
-                isSent
-                  ? "bg-emerald-500"
-                  : "bg-primary hover:bg-primary/90"
+                isSent ? "bg-emerald-500" : "bg-primary hover:bg-primary/90"
               )}
             >
               {isSent ? (
                 <>
                   <Heart className="size-4 fill-current" />
-                  <span>Shared with Partner!</span>
+                  <span>{t("moodDrawer.shared")}</span>
                 </>
               ) : isPending ? (
                 <>
                   <Spinner className="size-4" />
-                  <span>Sharing...</span>
+                  <span>{t("moodDrawer.sharing")}</span>
                 </>
               ) : (
                 <>
                   <Send className="size-4" />
-                  <span>Send to Partner</span>
+                  <span>{t("moodDrawer.send")}</span>
                 </>
               )}
             </button>

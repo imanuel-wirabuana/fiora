@@ -1,0 +1,32 @@
+{
+  "filter": {
+    "searchPlaceholder": "Search journals...",
+    "newEntry": "New Entry",
+    "tabs": {
+      "all": "All",
+      "private": "Private",
+      "shared": "Shared"
+    }
+  },
+  "form": {
+    "title": "New Journal",
+    "description": "Give your entry a title to start writing.",
+    "submit": "Create",
+    "success": "Created!",
+    "titleLabel": "Title",
+    "titlePlaceholder": "e.g. Our trip to the beach"
+  },
+  "list": {
+    "you": "You",
+    "partner": "Partner",
+    "emptySearch": "No entries match your search.",
+    "emptyFiltered": "No {{filter}} journals found.",
+    "emptyAll": "No journal entries yet.",
+    "makePrivate": "Make private",
+    "shareWithPartner": "Share with partner",
+    "deleteTitle": "Delete journal",
+    "deleteConfirmTitle": "Delete journal entry?",
+    "deleteConfirmDesc": "Permanently delete \"{{title}}\"?",
+    "deleted": "Deleted!"
+  }
+}

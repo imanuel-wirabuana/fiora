@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { HeartHandshake, UserPlus } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { FormDrawer } from "@/components/FormDrawer"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -7,6 +8,7 @@ import { useRelationship } from "@/hooks/useRelationship"
 import { SettingRow } from "./SettingRow"
 
 export function PartnerAliasSection() {
+  const { t } = useTranslation(["setting", "common"])
   const {
     relationship,
     partnerMember,
@@ -29,11 +31,11 @@ export function PartnerAliasSection() {
     return (
       <SettingRow
         icon={<HeartHandshake className="size-3.5" />}
-        title="Partner Alias"
-        description="Set a special nickname for your partner once they join."
+        title={t("partnerAlias.title")}
+        description={t("partnerAlias.waitingDescription")}
         action={
           <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/25 bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-600 dark:text-amber-400">
-            <UserPlus className="size-3" /> Waiting Partner
+            <UserPlus className="size-3" /> {t("partnerAlias.waitingBadge")}
           </span>
         }
       />
@@ -43,6 +45,8 @@ export function PartnerAliasSection() {
   const isPending = updateRelationshipContentMutation.isPending
   const trimmedAlias = draftAlias.trim()
   const isChanged = trimmedAlias !== savedAlias
+  const partnerName =
+    partnerMember.content?.name || t("partnerAlias.yourPartner")
 
   const handleOpenChange = (next: boolean) => {
     if (next) {
@@ -80,16 +84,18 @@ export function PartnerAliasSection() {
   return (
     <SettingRow
       icon={<HeartHandshake className="size-3.5" />}
-      title="Partner Alias"
-      description={`Nickname for ${partnerMember.content?.name || "your partner"}.`}
+      title={t("partnerAlias.title")}
+      description={t("partnerAlias.description", { name: partnerName })}
       action={
         <FormDrawer
           open={open}
           onOpenChange={handleOpenChange}
-          title="Partner Alias"
-          description={`Give ${partnerMember.content?.name || "your partner"} a nickname visible to both of you.`}
+          title={t("partnerAlias.title")}
+          description={t("partnerAlias.drawerDescription", {
+            name: partnerName,
+          })}
           onSubmit={handleSubmit}
-          submitLabel="Save"
+          submitLabel={t("common:actions.save")}
           isPending={isPending}
           submitDisabled={!isChanged}
           trigger={
@@ -99,13 +105,15 @@ export function PartnerAliasSection() {
               size="sm"
               className="h-7 max-w-[140px] rounded-xl px-2.5 text-xs font-medium"
             >
-              <span className="truncate">{savedAlias || "Set alias"}</span>
+              <span className="truncate">
+                {savedAlias || t("partnerAlias.setAlias")}
+              </span>
             </Button>
           }
         >
           <Input
             type="text"
-            placeholder="e.g. My Honey, Babe"
+            placeholder={t("partnerAlias.placeholder")}
             value={draftAlias}
             onChange={(e) => setDraftAlias(e.target.value)}
             maxLength={30}

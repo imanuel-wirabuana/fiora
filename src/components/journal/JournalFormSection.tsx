@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next"
 import { FormDrawer } from "@/components/FormDrawer"
 import { Field, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
@@ -19,27 +20,29 @@ export function JournalFormSection({
   onSave,
   isSaving,
 }: JournalFormSectionProps) {
+  const { t } = useTranslation("journal")
+
   return (
     <FormDrawer
       open={isOpen}
       onOpenChange={(open) => {
         if (!open) onClose()
       }}
-      title="New Journal"
-      description="Give your entry a title to start writing."
-      submitLabel="Create"
-      successLabel="Created!"
+      title={t("form.title")}
+      description={t("form.description")}
+      submitLabel={t("form.submit")}
+      successLabel={t("form.success")}
       isPending={isSaving}
       submitDisabled={!title.trim()}
       onSubmit={onSave}
     >
       <Field className="gap-1.5">
         <FieldLabel className="text-[11px] font-medium text-muted-foreground">
-          Title
+          {t("form.titleLabel")}
         </FieldLabel>
         <Input
           type="text"
-          placeholder="e.g. Our trip to the beach"
+          placeholder={t("form.titlePlaceholder")}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           maxLength={60}

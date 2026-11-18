@@ -1,5 +1,6 @@
 import { memo, useState } from "react"
 import { subDays } from "date-fns"
+import { useTranslation } from "react-i18next"
 import {
   InsightDatePicker,
   InsightKpiGrid,
@@ -13,6 +14,7 @@ import { useRelationship } from "@/hooks/useRelationship"
 import type { InsightDateFilter } from "@/types/insight"
 
 export const InsightScreen = memo(function InsightScreen() {
+  const { t } = useTranslation("insight")
   const [dateFilter, setDateFilter] = useState<InsightDateFilter>(() => {
     const today = new Date()
     return {
@@ -27,9 +29,9 @@ export const InsightScreen = memo(function InsightScreen() {
   const { moodTrend, nudgeActivity, summary, quizSummary, bounds, isLoading } =
     useInsights(dateFilter)
 
-  const myName = currentMember?.content?.name || "You"
+  const myName = currentMember?.content?.name || t("you")
   const myGender = currentMember?.content?.gender
-  const partnerName = partnerMember?.content?.name || "Partner"
+  const partnerName = partnerMember?.content?.name || t("partner")
   const partnerGender = partnerMember?.content?.gender
 
   if (isLoading) {

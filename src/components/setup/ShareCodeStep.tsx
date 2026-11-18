@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { Check, Copy, RefreshCw, Send } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 
 interface ShareCodeStepProps {
@@ -11,6 +12,7 @@ export function ShareCodeStep({
   inviteCode,
   onRegenerateCode,
 }: ShareCodeStepProps) {
+  const { t } = useTranslation("setup")
   const [copied, setCopied] = useState(false)
 
   const handleCopy = async () => {
@@ -28,7 +30,7 @@ export function ShareCodeStep({
       <div className="flex flex-col items-center justify-center gap-3 rounded-3xl border border-border bg-muted/20 p-6 text-center">
         <div className="flex items-center gap-2 text-xs font-semibold text-primary">
           <Send className="size-3.5" />
-          <span>Your 5-Digit Invite Code</span>
+          <span>{t("shareCodeStep.title")}</span>
         </div>
 
         {/* 5-Digit Display */}
@@ -55,12 +57,12 @@ export function ShareCodeStep({
             {copied ? (
               <>
                 <Check className="size-3.5 text-emerald-600" />
-                Copied!
+                {t("shareCodeStep.copied")}
               </>
             ) : (
               <>
                 <Copy className="size-3.5" />
-                Copy Code
+                {t("shareCodeStep.copyCode")}
               </>
             )}
           </Button>
@@ -73,13 +75,13 @@ export function ShareCodeStep({
             className="rounded-2xl text-xs gap-1.5 text-muted-foreground"
           >
             <RefreshCw className="size-3.5" />
-            Regenerate
+            {t("shareCodeStep.regenerate")}
           </Button>
         </div>
       </div>
 
       <p className="text-center text-[11px] leading-relaxed text-muted-foreground">
-        💡 Your partner simply needs to choose &ldquo;Join Partner&rdquo; during setup and enter this 5-digit code. You can also view this code anytime in Settings.
+        {t("shareCodeStep.hint")}
       </p>
     </div>
   )

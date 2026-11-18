@@ -6,10 +6,12 @@ import {
   startOfWeek,
 } from "date-fns"
 import { Calendar as CalendarIcon, ChevronDown } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { CustomTabs, type CustomTabItem } from "@/components/CustomTabs"
 import { WheelPicker, type WheelOption } from "@/components/pickers"
 import { PickerDrawer } from "@/components/pickers/PickerDrawer"
 import { Button } from "@/components/ui/button"
+import { getDateFnsLocale } from "@/lib/i18n"
 import { resolveInsightDateBounds } from "@/lib/insightDate"
 import { cn } from "@/lib/utils"
 import type { InsightDateFilter, InsightDateMode } from "@/types/insight"
@@ -18,14 +20,6 @@ interface InsightDatePickerProps {
   value: InsightDateFilter
   onChange: (next: InsightDateFilter) => void
 }
-
-const MODE_OPTIONS: CustomTabItem<InsightDateMode>[] = [
-  { value: "daily", label: "Daily" },
-  { value: "weekly", label: "Weekly" },
-  { value: "monthly", label: "Monthly" },
-  { value: "range", label: "Range" },
-  { value: "all", label: "All" },
-]
 
 function buildYearOptions(
   minYear: number,
@@ -38,10 +32,14 @@ function buildYearOptions(
   return options
 }
 
-function buildMonthOptions(maxMonth: number): WheelOption<string>[] {
+function buildMonthOptions(
+  maxMonth: number,
+  language?: string
+): WheelOption<string>[] {
+  const locale = getDateFnsLocale(language)
   return Array.from({ length: maxMonth + 1 }, (_, index) => ({
     value: String(index),
-    label: format(new Date(2024, index, 1), "MMM"),
+    label: format(new Date(2024, index, 1), "MMM", { locale }),
   }))
 }
 
@@ -81,9 +79,22 @@ function clampDateToToday(
 }
 
 export function InsightDatePicker({ value, onChange }: InsightDatePickerProps) {
+  const { t, i18n } = useTranslation("insight")
+  const locale = getDateFnsLocale(i18n.language)
   const [open, setOpen] = useState(false)
   const [draft, setDraft] = useState<InsightDateFilter>(value)
   const [rangeSide, setRangeSide] = useState<"start" | "end">("start")
+
+  const modeOptions = useMemo<CustomTabItem<InsightDateMode>[]>(
+    () => [
+      { value: "daily", label: t("datePicker.modes.daily") },
+      { value: "weekly", label: t("datePicker.modes.weekly") },
+      { value: "monthly", label: t("datePicker.modes.monthly") },
+      { value: "range", label: t("datePicker.modes.range") },
+      { value: "all", label: t("datePicker.modes.all") },
+    ],
+    [t]
+  )
 
   const today = useMemo(() => new Date(), [])
   const currentYear = today.getFullYear()
@@ -95,7 +106,11 @@ export function InsightDatePicker({ value, onChange }: InsightDatePickerProps) {
     [currentYear]
   )
 
-  const resolved = useMemo(() => resolveInsightDateBounds(value), [value])
+  const resolved = useMemo(
+    () => resolveInsightDateBounds(value),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [value, i18n.language]
+  )
 
   const handleOpenChange = (nextOpen: boolean) => {
     if (nextOpen) {
@@ -123,8 +138,12 @@ export function InsightDatePicker({ value, onChange }: InsightDatePickerProps) {
       : activeWheelDate.getDate()
 
   const monthOptions = useMemo(
-    () => buildMonthOptions(activeYear === currentYear ? currentMonth : 11),
-    [activeYear, currentYear, currentMonth]
+    () =>
+      buildMonthOptions(
+        activeYear === currentYear ? currentMonth : 11,
+        i18n.language
+      ),
+    [activeYear, currentYear, currentMonth, i18n.language]
   )
 
   const dayOptions = useMemo(
@@ -160,8 +179,8 @@ export function InsightDatePicker({ value, onChange }: InsightDatePickerProps) {
     const start = startOfWeek(draft.date, { weekStartsOn: 1 })
     const rawEnd = endOfWeek(draft.date, { weekStartsOn: 1 })
     const end = rawEnd > today ? today : rawEnd
-    return `${format(start, "MMM d")} – ${format(end, "MMM d, yyyy")}`
-  }, [draft.date, draft.mode, today])
+    return `${format(start, "MMM d", { locale })} – ${format(end, "MMM d, yyyy", { locale })}`
+  }, [draft.date, draft.mode, today, locale])
 
   const handleConfirm = () => {
     onChange(draft)
@@ -171,11 +190,11 @@ export function InsightDatePicker({ value, onChange }: InsightDatePickerProps) {
     <PickerDrawer
       open={open}
       onOpenChange={handleOpenChange}
-      title="Filter by Date"
-      description="Choose a day, week, month, custom range, or all time."
+      title={t("datePicker.title")}
+      description={t("datePicker.description")}
       onConfirm={handleConfirm}
-      confirmLabel="Apply"
-      successLabel="Applied!"
+      confirmLabel={t("datePicker.apply")}
+      successLabel={t("datePicker.applied")}
       trigger={
         <Button
           type="button"
@@ -193,7 +212,7 @@ export function InsightDatePicker({ value, onChange }: InsightDatePickerProps) {
     >
       <div className="flex flex-col gap-3">
         <CustomTabs
-          items={MODE_OPTIONS}
+          items={modeOptions}
           value={draft.mode}
           onValueChange={(mode) => setDraft((prev) => ({ ...prev, mode }))}
         />
@@ -215,10 +234,10 @@ export function InsightDatePicker({ value, onChange }: InsightDatePickerProps) {
                 )}
               >
                 <span className="text-[10px] font-medium text-muted-foreground">
-                  From
+                  {t("datePicker.from")}
                 </span>
                 <span className="text-xs font-semibold">
-                  {format(draft.rangeStart, "MMM d, yyyy")}
+                  {format(draft.rangeStart, "MMM d, yyyy", { locale })}
                 </span>
               </button>
 
@@ -233,10 +252,10 @@ export function InsightDatePicker({ value, onChange }: InsightDatePickerProps) {
                 )}
               >
                 <span className="text-[10px] font-medium text-muted-foreground">
-                  To
+                  {t("datePicker.to")}
                 </span>
                 <span className="text-xs font-semibold">
-                  {format(draft.rangeEnd, "MMM d, yyyy")}
+                  {format(draft.rangeEnd, "MMM d, yyyy", { locale })}
                 </span>
               </button>
             </div>
@@ -244,13 +263,14 @@ export function InsightDatePicker({ value, onChange }: InsightDatePickerProps) {
 
           {weeklyPreview && (
             <div className="rounded-xl bg-muted/50 px-3 py-1.5 text-center text-xs text-muted-foreground">
-              Week: <strong className="text-foreground">{weeklyPreview}</strong>
+              {t("datePicker.weekLabel")}{" "}
+              <strong className="text-foreground">{weeklyPreview}</strong>
             </div>
           )}
 
           {draft.mode === "all" ? (
             <div className="flex h-36 items-center justify-center rounded-2xl border border-dashed border-border text-xs text-muted-foreground">
-              Showing all recorded moods, nudges, and quizzes.
+              {t("datePicker.allDescription")}
             </div>
           ) : (
             <div

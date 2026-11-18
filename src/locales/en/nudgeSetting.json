@@ -1,0 +1,36 @@
+{
+  "title": "Your Nudges",
+  "saving": "Saving nudges...",
+  "subtitle": "Long-press to reorder • {{pinned}}/{{maxPinned}} pinned",
+  "addButton": "Add",
+  "updateError": "Failed to update nudges. Please try again.",
+  "row": {
+    "pinnedBadge": "Pinned",
+    "unpinTitle": "Unpin nudge",
+    "pinTitle": "Pin nudge",
+    "maxPinnedTitle": "Max {{max}} pinned nudges",
+    "editTitle": "Edit nudge",
+    "removeTitle": "Remove nudge",
+    "minRequired": "At least {{min}} nudges are required"
+  },
+  "editDrawer": {
+    "editTitle": "Edit Nudge",
+    "addTitle": "Add Nudge",
+    "description": "Customize an emoji and quick message to send to your partner.",
+    "saveSubmit": "Save Nudge",
+    "addSubmit": "Add Nudge",
+    "success": "Saved!",
+    "saveError": "Failed to save nudge. Please try again.",
+    "emojiLabel": "Emoji",
+    "messageLabel": "Nudge Message",
+    "messagePlaceholder": "e.g. Thinking of you, Need a hug",
+    "previewTitle": "Lottie Preview",
+    "previewFallback": "Nudge message"
+  },
+  "deleteDrawer": {
+    "title": "Remove nudge?",
+    "description": "Remove \"{{emoji}} {{label}}\" from your nudge list?",
+    "submit": "Remove",
+    "success": "Removed"
+  }
+}

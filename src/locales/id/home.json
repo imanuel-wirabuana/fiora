@@ -1,0 +1,91 @@
+{
+  "mood": {
+    "you": "Kamu",
+    "loading": "Memuat...",
+    "checkedIn": "Sudah check-in",
+    "tapToLog": "Ketuk + untuk catat mood",
+    "noMoodYet": "Belum ada mood hari ini",
+    "waitingPartner": "Menunggu pasangan"
+  },
+  "presence": {
+    "waitingPartner": "Menunggu pasangan",
+    "shareInviteCode": "Bagikan kode undangan di Pengaturan untuk terhubung",
+    "online": "Online",
+    "offline": "Offline",
+    "lastSeen": "Terakhir dilihat {{time}}",
+    "notSeenYet": "Belum terlihat",
+    "lastActive": "Terakhir aktif: {{activity}}",
+    "locationShared": "Lokasi dibagikan",
+    "daysTogether_one": "{{count}} hari bersama",
+    "daysTogether_other": "{{count}} hari bersama"
+  },
+  "location": {
+    "title": "Lokasi",
+    "you": "Kamu",
+    "partner": "Pasangan",
+    "apart": "{{distance}} terpisah",
+    "tapToOpen": "Ketuk untuk buka berbagi lokasi"
+  },
+  "nudge": {
+    "title": "Nudge Cepat",
+    "partnerFallback": "Pasangan",
+    "connectFirst": "Terhubung dengan pasangan dulu untuk kirim nudge.",
+    "youSent": "Kamu kirim: ",
+    "partnerSent": "{{name}} kirim: ",
+    "waitCooldown": "Tunggu {{seconds}}d sebelum kirim \"{{label}}\" lagi",
+    "sent": "Terkirim!",
+    "pinInSettings": "Sematkan nudge di pengaturan",
+    "pinNudge": "Sematkan nudge",
+    "waitCustomCooldown": "Tunggu {{seconds}}d sebelum kirim nudge kustom lagi",
+    "sendCustom": "Kirim nudge kustom",
+    "custom": "Kustom",
+    "drawerTitle": "Kirim Nudge Kustom",
+    "drawerDescription": "Kirim nudge cepat ke {{name}}.",
+    "waitButton": "Tunggu {{seconds}}d",
+    "sendButton": "Kirim Nudge",
+    "iconLabel": "Ikon",
+    "messageLabel": "Pesan",
+    "messagePlaceholder": "Lagi kepikiran kamu..."
+  },
+  "horoscope": {
+    "ariaLabel": "Horoskop Hari Ini",
+    "tapToOpen": "Ketuk untuk buka",
+    "loadError": "Gagal memuat horoskop",
+    "retry": "Coba lagi",
+    "empty": "Belum ada horoskop hari ini",
+    "cardAria": "Horoskop {{category}} ({{current}} dari {{total}}). Ketuk untuk lanjut.",
+    "coverAria": "{{title}} ({{zodiac}}). Ketuk untuk buka.",
+    "setBirthDatePrompt": "Atur tanggal lahir buat lihat horoskopmu",
+    "setBirthDate": "Atur Tanggal Lahir",
+    "openMyHoroscope": "Buka horoskopmu hari ini",
+    "openPartnerHoroscope": "Buka horoskop pasangan hari ini",
+    "partnerNoBirthDate": "Pasanganmu belum mengatur tanggal lahir",
+    "waitingPartner": "Menunggu pasangan",
+    "categories": {
+      "mood": "Mood",
+      "love": "Asmara",
+      "money": "Keuangan",
+      "career": "Karier",
+      "summary": "Ringkasan",
+      "advice": "Saran"
+    }
+  },
+  "quiz": {
+    "title": "Quiz Harian",
+    "partnerFallback": "Pasangan",
+    "allCaughtUp": "Sudah Selesai Semua",
+    "allCaughtUpDesc": "Kamu dan pasangan sudah menyelesaikan semua quiz yang tersedia!",
+    "hour_one": "{{count}} jam",
+    "hour_other": "{{count}} jam",
+    "newQuizIn": "Quiz baru dalam {{time}}",
+    "bothFinished": "Kamu dan {{name}} sudah jawab semua {{total}} pertanyaan! Ringkasan quiz kalian sudah siap.",
+    "waitingPartner": "Semua {{total}} terjawab! Menunggu {{name}} ({{partnerCount}}/{{total}}) untuk buka hasil lengkap.",
+    "viewSummary": "Lihat Ringkasan Quiz",
+    "savedProgress": "Tersimpan! ({{answered}}/{{total}} terjawab)",
+    "progressPrompt": "{{answered}}/{{total}} terjawab · Selesaikan semua buat lihat hasil",
+    "prevQuiz": "Quiz sebelumnya",
+    "nextQuiz": "Quiz berikutnya",
+    "youChoseThis": "Pilihanmu",
+    "you": "Kamu"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "you": "You",
+  "partner": "Partner",
+  "tabs": {
+    "today": "Today",
+    "history": "History"
+  },
+  "todayEmpty": "No daily quizzes for today.",
+  "todayResults": "Today's Results",
+  "matchedBadge": "{{matched}}/{{total}} Matched",
+  "answeredBadge": "{{answered}}/{{total}} Answered",
+  "compatibility": "{{percent}}% Compatibility",
+  "syncPerfect": "Perfect sync! ✨",
+  "syncGreat": "Great connection 🤍",
+  "syncDifferent": "Different minds 💬",
+  "waitingPartnerDesc": "Waiting for {{name}} to finish ({{partnerCount}}/{{total}} answered). Both answers will reveal once done!",
+  "questionTitle": "Question {{number}}",
+  "matched": "Matched ✨",
+  "different": "Different 💬",
+  "waitingFor": "Waiting for {{name}} 🔒",
+  "notAnswered": "Not answered",
+  "lockedUntilPartner": "Locked until {{name}} finishes 🔒",
+  "historyEmpty": "No answered quizzes yet.",
+  "dailyQuizTitle": "{{avatars}} Daily Quiz",
+  "matchShort": "Match ✨",
+  "diffShort": "Diff 💬",
+  "notAnsweredYet": "Not answered yet",
+  "lockedUntilBoth": "Locked until both answer 🔒"
+}

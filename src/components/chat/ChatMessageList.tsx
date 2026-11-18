@@ -8,7 +8,9 @@ import {
   type ReactNode,
 } from "react"
 import { format, isSameDay, isToday, isYesterday, parseISO } from "date-fns"
+import { useTranslation } from "react-i18next"
 import { Check, CheckCheck, MessageCircle, Reply } from "lucide-react"
+import i18n, { getDateFnsLocale } from "@/lib/i18n"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Bubble, BubbleContent, BubbleReactions } from "@/components/ui/bubble"
 import { Button } from "@/components/ui/button"
@@ -85,10 +87,10 @@ function isImageUrl(value?: string): boolean {
   )
 }
 
-function formatDayLabel(date: Date): string {
-  if (isToday(date)) return "Today"
-  if (isYesterday(date)) return "Yesterday"
-  return format(date, "MMM d, yyyy")
+function formatDayLabel(date: Date, language?: string): string {
+  if (isToday(date)) return i18n.t("chat:messageList.today")
+  if (isYesterday(date)) return i18n.t("chat:messageList.yesterday")
+  return format(date, "MMM d, yyyy", { locale: getDateFnsLocale(language) })
 }
 
 function groupReactions(reactions?: Record<string, string>) {
@@ -201,6 +203,7 @@ const ChatMessageRow = memo(function ChatMessageRow({
   onReact,
   onHighlightMessage,
 }: ChatMessageRowProps) {
+  const { t } = useTranslation("chat")
   const { scrollToMessage } = useMessageScroller()
   const isPersisted = item.id > 0
 
@@ -311,7 +314,7 @@ const ChatMessageRow = memo(function ChatMessageRow({
                     variant={myReaction === emoji ? "secondary" : "ghost"}
                     size="icon-xs"
                     onClick={() => handleReactionClick(emoji)}
-                    aria-label={`React with ${emoji}`}
+                    aria-label={t("messageList.reactAria", { emoji })}
                     className="size-7 rounded-full text-base transition-transform hover:scale-110"
                   >
                     {emoji}
@@ -386,7 +389,9 @@ const ChatMessageRow = memo(function ChatMessageRow({
                             e.stopPropagation()
                             handleReactionClick(r.emoji)
                           }}
-                          aria-label={`Toggle ${r.emoji} reaction`}
+                          aria-label={t("messageList.toggleReactionAria", {
+                            emoji: r.emoji,
+                          })}
                           className={cn(
                             "inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-xs leading-none transition-colors hover:bg-muted-foreground/15",
                             isMineReaction &&
@@ -405,19 +410,19 @@ const ChatMessageRow = memo(function ChatMessageRow({
 
             {isLastInRun || isEdited ? (
               <MessageFooter className="gap-1 px-2 text-[10px]">
-                {isEdited ? <span>Edited</span> : null}
+                {isEdited ? <span>{t("messageList.edited")}</span> : null}
                 {isEdited && isLastInRun ? <span>·</span> : null}
                 {isLastInRun ? <span>{timeLabel}</span> : null}
                 {isLastInRun && isMine ? (
                   isRead ? (
                     <CheckCheck
                       className="size-3 text-primary"
-                      aria-label="Read"
+                      aria-label={t("messageList.readAria")}
                     />
                   ) : (
                     <Check
                       className="size-3 text-muted-foreground"
-                      aria-label="Sent"
+                      aria-label={t("messageList.sentAria")}
                     />
                   )
                 ) : null}
@@ -448,6 +453,7 @@ export const ChatMessageList = memo(function ChatMessageList({
   onToggleSelectMessage,
   onReact,
 }: ChatMessageListProps) {
+  const { t, i18n: i18nInstance } = useTranslation("chat")
   const [highlightedMessageId, setHighlightedMessageId] = useState<
     number | null
   >(null)
@@ -484,7 +490,7 @@ export const ChatMessageList = memo(function ChatMessageList({
       if (!daySection || !isSameDay(parseISO(daySection.dayKey), date)) {
         daySection = {
           dayKey,
-          label: formatDayLabel(date),
+          label: formatDayLabel(date, i18nInstance.language),
           runs: [],
         }
         result.push(daySection)
@@ -504,7 +510,7 @@ export const ChatMessageList = memo(function ChatMessageList({
     }
 
     return result
-  }, [messages, currentUserId])
+  }, [messages, currentUserId, i18nInstance.language])
 
   const hasImageAvatar = isImageUrl(partnerAvatar)
   const selectedCount = selectedIds.size
@@ -517,10 +523,9 @@ export const ChatMessageList = memo(function ChatMessageList({
             <EmptyMedia variant="icon">
               <MessageCircle />
             </EmptyMedia>
-            <EmptyTitle>No messages yet</EmptyTitle>
+            <EmptyTitle>{t("messageList.emptyTitle")}</EmptyTitle>
             <EmptyDescription>
-              Start a private conversation with {partnerName}. Messages sync in
-              real time.
+              {t("messageList.emptyDescription", { name: partnerName })}
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
@@ -547,10 +552,10 @@ export const ChatMessageList = memo(function ChatMessageList({
                     {isFetchingNextPage ? (
                       <>
                         <Spinner data-icon="inline-start" />
-                        Loading...
+                        {t("messageList.loadingOlder")}
                       </>
                     ) : (
-                      "Load older messages"
+                      t("messageList.loadOlder")
                     )}
                   </Button>
                 </div>
@@ -568,7 +573,7 @@ export const ChatMessageList = memo(function ChatMessageList({
                 {section.runs.map((run) => (
                   <MessageGroup
                     key={run.runKey}
-                    className="gap-1 [content-visibility:auto] [contain-intrinsic-size:auto_72px]"
+                    className="gap-1 [contain-intrinsic-size:auto_72px] [content-visibility:auto]"
                   >
                     {run.items.map((item, index) => {
                       const isSelected = selectedIds.has(item.id)

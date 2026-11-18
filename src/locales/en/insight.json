@@ -1,0 +1,58 @@
+{
+  "you": "You",
+  "partner": "Partner",
+  "datePicker": {
+    "title": "Filter by Date",
+    "description": "Choose a day, week, month, custom range, or all time.",
+    "apply": "Apply",
+    "applied": "Applied!",
+    "allTime": "All time",
+    "modes": {
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "range": "Range",
+      "all": "All"
+    },
+    "from": "From",
+    "to": "To",
+    "weekLabel": "Week:",
+    "allDescription": "Showing all recorded moods, nudges, and quizzes."
+  },
+  "kpi": {
+    "avgMood": "Avg Mood",
+    "moodLogs_one": "{{count}} log",
+    "moodLogs_other": "{{count}} logs",
+    "nudges": "Nudges",
+    "nudgeBreakdown": "{{sent}}s · {{received}}r",
+    "quizSync": "Quiz Sync",
+    "quizMatch": "{{matched}}/{{total}} match"
+  },
+  "moodTrend": {
+    "title": "Mood Trend",
+    "description": "Score 0.0 – 1.0",
+    "empty": "No mood logs in this range."
+  },
+  "nudgeChart": {
+    "title": "Nudges",
+    "sent": "Sent",
+    "received": "Received",
+    "top": "Top: {{emoji}} {{label}}",
+    "subtitle": "Sent vs. rec",
+    "empty": "No nudges in this range."
+  },
+  "timeline": {
+    "title": "Timeline",
+    "filters": {
+      "all": "All",
+      "mood": "Mood",
+      "nudge": "Nudge"
+    },
+    "groups": {
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "earlier": "Earlier"
+    },
+    "empty": "No mood or nudge activity in this range."
+  }
+}

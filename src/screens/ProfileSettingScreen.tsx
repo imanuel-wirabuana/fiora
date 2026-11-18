@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { format, isValid, parseISO } from "date-fns"
 import { Calendar as CalendarIcon, Smile, User } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { AnimatedEmoji } from "@/components/AnimatedEmoji"
 import { CustomItem } from "@/components/CustomItem"
 import { FormDrawer } from "@/components/FormDrawer"
@@ -10,6 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { useRelationship } from "@/hooks/useRelationship"
+import { getDateFnsLocale } from "@/lib/i18n"
 import {
   getDaysUntilNextBirthday,
   getDefaultAvatar,
@@ -23,6 +25,7 @@ function parseBirthDate(value: string | null | undefined): Date | undefined {
 }
 
 function AvatarSettingRow() {
+  const { t } = useTranslation(["profileSetting", "common"])
   const { currentMember, updateMemberContentMutation } = useRelationship()
   const currentGender = currentMember?.content?.gender || "male"
   const savedAvatar =
@@ -62,16 +65,16 @@ function AvatarSettingRow() {
   return (
     <SettingRow
       icon={<Smile className="size-3.5" />}
-      title="Avatar"
-      description="Choose an emoji that represents you."
+      title={t("avatar.title")}
+      description={t("avatar.description")}
       action={
         <FormDrawer
           open={open}
           onOpenChange={handleOpenChange}
-          title="Edit Avatar"
-          description="Pick an icon or enter a custom emoji."
+          title={t("avatar.drawerTitle")}
+          description={t("avatar.drawerDescription")}
           onSubmit={handleSubmit}
-          submitLabel="Save"
+          submitLabel={t("common:actions.save")}
           isPending={isPending}
           submitDisabled={!trimmedAvatar || !isChanged}
           trigger={
@@ -88,7 +91,7 @@ function AvatarSettingRow() {
                 className="shrink-0"
                 fallbackClassName="text-xs"
               />
-              <span>Change</span>
+              <span>{t("avatar.change")}</span>
             </Button>
           }
         >
@@ -106,6 +109,7 @@ function AvatarSettingRow() {
 }
 
 function NameSettingRow() {
+  const { t } = useTranslation(["profileSetting", "common"])
   const { currentMember, updateMemberContentMutation } = useRelationship()
   const savedName = currentMember?.content?.name || ""
 
@@ -142,16 +146,16 @@ function NameSettingRow() {
   return (
     <SettingRow
       icon={<User className="size-3.5" />}
-      title="Name"
-      description="Display name your partner sees."
+      title={t("name.title")}
+      description={t("name.description")}
       action={
         <FormDrawer
           open={open}
           onOpenChange={handleOpenChange}
-          title="Edit Name"
-          description="Update your display name or nickname."
+          title={t("name.drawerTitle")}
+          description={t("name.drawerDescription")}
           onSubmit={handleSubmit}
-          submitLabel="Save"
+          submitLabel={t("common:actions.save")}
           isPending={isPending}
           submitDisabled={!trimmedName || !isChanged}
           trigger={
@@ -161,13 +165,13 @@ function NameSettingRow() {
               size="sm"
               className="h-7 max-w-[140px] rounded-xl px-2.5 text-xs font-medium"
             >
-              <span className="truncate">{savedName || "Set name"}</span>
+              <span className="truncate">{savedName || t("name.setName")}</span>
             </Button>
           }
         >
           <Input
             type="text"
-            placeholder="Your name or nickname"
+            placeholder={t("name.placeholder")}
             value={draftName}
             onChange={(e) => setDraftName(e.target.value)}
             maxLength={30}
@@ -180,6 +184,7 @@ function NameSettingRow() {
 }
 
 function BirthDateSettingRow() {
+  const { t, i18n } = useTranslation("profileSetting")
   const { currentMember, updateMemberContentMutation } = useRelationship()
 
   if (!currentMember) return null
@@ -200,18 +205,18 @@ function BirthDateSettingRow() {
         const days = getDaysUntilNextBirthday(selectedDate)
         const countdown =
           days === 0
-            ? "Birthday today!"
+            ? t("birthDate.birthdayToday")
             : days === 1
-              ? "Birthday tomorrow"
-              : `Birthday in ${days} days`
+              ? t("birthDate.birthdayTomorrow")
+              : t("birthDate.birthdayInDays", { count: days })
         return `${zodiac} · ${countdown}`
       })()
-    : "Set your birthday."
+    : t("birthDate.setBirthday")
 
   return (
     <SettingRow
       icon={<CalendarIcon className="size-3.5" />}
-      title="Birth Date"
+      title={t("birthDate.title")}
       description={description}
       action={
         <CustomDatePicker
@@ -220,8 +225,8 @@ function BirthDateSettingRow() {
           onChange={handleDateChange}
           minDate={new Date(1920, 0, 1)}
           maxDate={new Date()}
-          title="Birth Date"
-          description="When is your birthday?"
+          title={t("birthDate.drawerTitle")}
+          description={t("birthDate.drawerDescription")}
           trigger={
             <Button
               type="button"
@@ -229,7 +234,11 @@ function BirthDateSettingRow() {
               size="sm"
               className="h-7 rounded-xl px-2.5 text-xs font-medium"
             >
-              {selectedDate ? format(selectedDate, "MMM d, yyyy") : "Set date"}
+              {selectedDate
+                ? format(selectedDate, "MMM d, yyyy", {
+                    locale: getDateFnsLocale(i18n.language),
+                  })
+                : t("birthDate.setDate")}
             </Button>
           }
         />
@@ -239,6 +248,7 @@ function BirthDateSettingRow() {
 }
 
 export function ProfileSettingScreen() {
+  const { t } = useTranslation("profileSetting")
   const { currentMember, hasRelationship } = useRelationship()
 
   if (!hasRelationship || !currentMember) {
@@ -249,7 +259,7 @@ export function ProfileSettingScreen() {
     <div className="mx-auto flex w-full max-w-md flex-col gap-4 px-4 pt-3 pb-20 sm:max-w-2xl">
       <CustomItem
         icon={<User className="size-3.5 text-primary" />}
-        title="Profile"
+        title={t("sectionTitle")}
         contentClassName="flex flex-col gap-0.5"
       >
         <AvatarSettingRow />

@@ -1,0 +1,28 @@
+{
+  "sectionTitle": "Profile",
+  "avatar": {
+    "title": "Avatar",
+    "description": "Choose an emoji that represents you.",
+    "drawerTitle": "Edit Avatar",
+    "drawerDescription": "Pick an icon or enter a custom emoji.",
+    "change": "Change"
+  },
+  "name": {
+    "title": "Name",
+    "description": "Display name your partner sees.",
+    "drawerTitle": "Edit Name",
+    "drawerDescription": "Update your display name or nickname.",
+    "setName": "Set name",
+    "placeholder": "Your name or nickname"
+  },
+  "birthDate": {
+    "title": "Birth Date",
+    "birthdayToday": "Birthday today!",
+    "birthdayTomorrow": "Birthday tomorrow",
+    "birthdayInDays": "Birthday in {{count}} days",
+    "setBirthday": "Set your birthday.",
+    "drawerTitle": "Birth Date",
+    "drawerDescription": "When is your birthday?",
+    "setDate": "Set date"
+  }
+}

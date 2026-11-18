@@ -1,0 +1,17 @@
+{
+  "you": "You",
+  "partner": "Partner",
+  "backTitle": "Back to home",
+  "headerTitle": "Couple Map",
+  "refreshTitle": "Refresh location",
+  "collapseAria": "Collapse locations",
+  "expandAria": "Expand locations",
+  "locations": "Locations",
+  "fitBoth": "Fit both",
+  "fitBothTitle": "Fit both markers",
+  "todayAt": "Today at {{time}}",
+  "locating": "Locating...",
+  "notSharedYet": "Not shared yet",
+  "waitingUpdate": "Waiting for update...",
+  "noPartner": "No partner"
+}

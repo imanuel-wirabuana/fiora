@@ -1,4 +1,5 @@
 import { Sparkles, UserPlus, Users } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import {
   InputOTP,
@@ -22,6 +23,8 @@ export function ConnectionChoiceStep({
   onChangePartnerCode,
   error,
 }: ConnectionChoiceStepProps) {
+  const { t } = useTranslation("setup")
+
   return (
     <div className="flex flex-col gap-4">
       <Tabs
@@ -37,14 +40,14 @@ export function ConnectionChoiceStep({
             className="rounded-xl text-xs font-semibold"
           >
             <UserPlus className="mr-1.5 size-3.5" />
-            Join Partner
+            {t("connectionStep.joinTab")}
           </TabsTrigger>
           <TabsTrigger
             value="create"
             className="rounded-xl text-xs font-semibold"
           >
             <Users className="mr-1.5 size-3.5" />
-            Create Relationship
+            {t("connectionStep.createTab")}
           </TabsTrigger>
         </TabsList>
 
@@ -55,7 +58,7 @@ export function ConnectionChoiceStep({
             data-invalid={!!error}
           >
             <FieldLabel className="text-xs font-medium text-muted-foreground">
-              Enter Partner&apos;s 5-Digit Code
+              {t("connectionStep.enterCodeLabel")}
             </FieldLabel>
             <div className="flex justify-center pt-2">
               <InputOTP
@@ -85,8 +88,7 @@ export function ConnectionChoiceStep({
             )}
           </Field>
           <p className="text-center text-[11px] text-muted-foreground">
-            Enter the 5-digit code generated on your partner&apos;s phone to
-            link together immediately.
+            {t("connectionStep.joinHelp")}
           </p>
         </TabsContent>
 
@@ -98,12 +100,10 @@ export function ConnectionChoiceStep({
             </div>
             <div className="space-y-1">
               <span className="text-sm font-semibold text-foreground">
-                Start a New Relationship
+                {t("connectionStep.createTitle")}
               </span>
               <p className="mx-auto max-w-xs text-xs text-muted-foreground">
-                You&apos;ll be able to customize your anniversary, moods, and
-                nudges next. Your 5-digit invite code will be ready on the final
-                step!
+                {t("connectionStep.createDescription")}
               </p>
             </div>
           </div>

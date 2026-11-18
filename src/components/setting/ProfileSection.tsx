@@ -1,4 +1,5 @@
 import { ChevronRight, User } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { AnimatedEmoji } from "@/components/AnimatedEmoji"
 import { Badge } from "@/components/ui/badge"
 import { useRelationship } from "@/hooks/useRelationship"
@@ -6,6 +7,7 @@ import { getDefaultAvatar } from "@/lib/relationship"
 import { SettingRow } from "./SettingRow"
 
 export function ProfileSection() {
+  const { t } = useTranslation("setting")
   const { currentMember } = useRelationship()
 
   if (!currentMember) {
@@ -21,8 +23,8 @@ export function ProfileSection() {
     <SettingRow
       href="/setting/profile"
       icon={<User className="size-3.5" />}
-      title="Profile"
-      description="Avatar, display name, and birth date."
+      title={t("profile.title")}
+      description={t("profile.description")}
       action={
         <div className="flex items-center gap-1.5">
           <Badge
@@ -36,7 +38,9 @@ export function ProfileSection() {
               className="shrink-0"
               fallbackClassName="text-[11px]"
             />
-            <span className="truncate">{savedName || "Set profile"}</span>
+            <span className="truncate">
+              {savedName || t("profile.setProfile")}
+            </span>
           </Badge>
           <ChevronRight className="size-4 text-muted-foreground transition-transform duration-200 group-hover:translate-x-0.5" />
         </div>

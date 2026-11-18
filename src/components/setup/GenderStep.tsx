@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next"
 import { cn } from "@/lib/utils"
 import type { Gender } from "@/types/relationship"
 
@@ -7,6 +8,8 @@ interface GenderStepProps {
 }
 
 export function GenderStep({ gender, onSelectGender }: GenderStepProps) {
+  const { t } = useTranslation("setup")
+
   return (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-2 gap-3">
@@ -21,7 +24,7 @@ export function GenderStep({ gender, onSelectGender }: GenderStepProps) {
               : "border-border hover:bg-muted/40"
           )}
         >
-          <span className="text-4xl" role="img" aria-label="Male">
+          <span className="text-4xl" role="img" aria-label={t("genderStep.male")}>
             🙋‍♂️
           </span>
           <span
@@ -32,7 +35,7 @@ export function GenderStep({ gender, onSelectGender }: GenderStepProps) {
                 : "text-foreground"
             )}
           >
-            Male
+            {t("genderStep.male")}
           </span>
         </button>
 
@@ -47,7 +50,11 @@ export function GenderStep({ gender, onSelectGender }: GenderStepProps) {
               : "border-border hover:bg-muted/40"
           )}
         >
-          <span className="text-4xl" role="img" aria-label="Female">
+          <span
+            className="text-4xl"
+            role="img"
+            aria-label={t("genderStep.female")}
+          >
             🙋‍♀️
           </span>
           <span
@@ -58,7 +65,7 @@ export function GenderStep({ gender, onSelectGender }: GenderStepProps) {
                 : "text-foreground"
             )}
           >
-            Female
+            {t("genderStep.female")}
           </span>
         </button>
       </div>

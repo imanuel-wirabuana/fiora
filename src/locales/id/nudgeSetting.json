@@ -1,0 +1,36 @@
+{
+  "title": "Nudge Kamu",
+  "saving": "Menyimpan nudge...",
+  "subtitle": "Tekan lama untuk urutkan • {{pinned}}/{{maxPinned}} disematkan",
+  "addButton": "Tambah",
+  "updateError": "Gagal memperbarui nudge. Coba lagi, ya.",
+  "row": {
+    "pinnedBadge": "Disematkan",
+    "unpinTitle": "Lepas sematan",
+    "pinTitle": "Sematkan nudge",
+    "maxPinnedTitle": "Maksimal {{max}} nudge disematkan",
+    "editTitle": "Ubah nudge",
+    "removeTitle": "Hapus nudge",
+    "minRequired": "Minimal perlu {{min}} nudge"
+  },
+  "editDrawer": {
+    "editTitle": "Ubah Nudge",
+    "addTitle": "Tambah Nudge",
+    "description": "Atur emoji dan pesan singkat untuk dikirim ke pasanganmu.",
+    "saveSubmit": "Simpan Nudge",
+    "addSubmit": "Tambah Nudge",
+    "success": "Tersimpan!",
+    "saveError": "Gagal menyimpan nudge. Coba lagi, ya.",
+    "emojiLabel": "Emoji",
+    "messageLabel": "Pesan Nudge",
+    "messagePlaceholder": "contoh: Kangen kamu, Butuh peluk",
+    "previewTitle": "Pratinjau Lottie",
+    "previewFallback": "Pesan nudge"
+  },
+  "deleteDrawer": {
+    "title": "Hapus nudge?",
+    "description": "Hapus \"{{emoji}} {{label}}\" dari daftar nudge kamu?",
+    "submit": "Hapus",
+    "success": "Terhapus!"
+  }
+}

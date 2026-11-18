@@ -18,6 +18,7 @@ import {
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { Pencil, Plus, Smile, Sparkles, Trash2, Wand2 } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { AnimatedEmoji } from "@/components/AnimatedEmoji"
 import { CustomItem } from "@/components/CustomItem"
 import { FormDrawer } from "@/components/FormDrawer"
@@ -54,7 +55,7 @@ function getScoreBadgeStyles(score: number, index: number, total: number) {
   const badge = getMoodCategoryBadge(index, total)
   return {
     text: formatScoreText(score),
-    label: badge.label,
+    category: badge.category,
     className: badge.className,
   }
 }
@@ -78,6 +79,7 @@ const SortableMoodRow = memo(function SortableMoodRow({
   onEdit,
   onDelete,
 }: SortableMoodRowProps) {
+  const { t } = useTranslation(["moodSetting", "common"])
   const {
     attributes,
     listeners,
@@ -143,7 +145,9 @@ const SortableMoodRow = memo(function SortableMoodRow({
             >
               <Sparkles className="size-2.5 opacity-70" />
               {badge.text}
-              <span className="text-[9px] opacity-75">({badge.label})</span>
+              <span className="text-[9px] opacity-75">
+                ({t(`common:moodCategory.${badge.category}`)})
+              </span>
             </span>
           </div>
         </div>
@@ -159,7 +163,7 @@ const SortableMoodRow = memo(function SortableMoodRow({
           size="icon-sm"
           onClick={handleEdit}
           disabled={isSaving}
-          title="Edit mood"
+          title={t("row.editTitle")}
           className="size-8 text-muted-foreground hover:text-foreground"
         >
           <Pencil className="size-3.5" />
@@ -171,7 +175,9 @@ const SortableMoodRow = memo(function SortableMoodRow({
           onClick={handleDelete}
           disabled={!canRemove || isSaving}
           title={
-            canRemove ? "Remove mood" : `At least ${MIN_MOODS} mood is required`
+            canRemove
+              ? t("row.removeTitle")
+              : t("row.minRequired", { min: MIN_MOODS })
           }
           className="size-8 text-muted-foreground hover:bg-destructive/15 hover:text-destructive disabled:opacity-30"
         >
@@ -187,6 +193,7 @@ const SortableMoodRow = memo(function SortableMoodRow({
  * automatically scored (0.1-1.0) and sorted good-to-bad via AI.
  */
 export function MoodSettingScreen() {
+  const { t } = useTranslation("moodSetting")
   const {
     relationship,
     moodOptions,
@@ -441,15 +448,15 @@ export function MoodSettingScreen() {
       <CustomItem
         variant="solid"
         icon={<Smile className="size-4 text-primary-foreground" />}
-        title="Your Moods"
+        title={t("title")}
         description={
           isSaving ? (
             <span className="inline-flex items-center gap-1.5 font-medium text-primary-foreground">
               <Spinner className="size-3" />
-              <span>Rearranging with AI...</span>
+              <span>{t("rearranging")}</span>
             </span>
           ) : (
-            "Auto-scored and arranged from good to bad by AI"
+            t("subtitle")
           )
         }
         topRightActions={
@@ -463,11 +470,11 @@ export function MoodSettingScreen() {
               size="sm"
               onClick={openAiDrawer}
               disabled={isSaving}
-              title="AI Mood Assistant"
+              title={t("aiAssistantTitle")}
               className="h-8 gap-1 rounded-xl px-2.5 text-xs"
             >
               <Sparkles className="size-3.5" />
-              AI
+              {t("aiButton")}
             </Button>
             <Button
               type="button"
@@ -478,7 +485,7 @@ export function MoodSettingScreen() {
               className="h-8 gap-1 rounded-xl px-2.5 text-xs"
             >
               <Plus className="size-3.5" />
-              Add
+              {t("addButton")}
             </Button>
           </div>
         }
@@ -487,8 +494,7 @@ export function MoodSettingScreen() {
       {/* Error Banner */}
       {saveMoodsMutation.isError && (
         <div className="rounded-2xl border border-destructive/40 bg-destructive/10 px-3.5 py-2.5 text-xs text-destructive">
-          {saveMoodsMutation.error.message ||
-            "Failed to rearrange moods. Please try again."}
+          {saveMoodsMutation.error.message || t("rearrangeError")}
         </div>
       )}
 
@@ -526,27 +532,32 @@ export function MoodSettingScreen() {
       <FormDrawer
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
-        title={editingIndex !== null ? "Edit Mood" : "Add Mood"}
-        description="AI will automatically score and sort this mood from good to bad based on its icon and label."
+        title={
+          editingIndex !== null
+            ? t("editDrawer.editTitle")
+            : t("editDrawer.addTitle")
+        }
+        description={t("editDrawer.description")}
         onSubmit={handleApplyDrawer}
         submitLabel={
-          editingIndex !== null ? "Save & Rearrange" : "Add & Rearrange"
+          editingIndex !== null
+            ? t("editDrawer.saveSubmit")
+            : t("editDrawer.addSubmit")
         }
-        successLabel="Rearranged!"
+        successLabel={t("editDrawer.success")}
         isPending={isSaving}
         submitDisabled={!formValid}
       >
         {saveMoodsMutation.isError && (
           <div className="rounded-2xl border border-destructive/40 bg-destructive/10 px-3.5 py-2 text-xs text-destructive">
-            {saveMoodsMutation.error.message ||
-              "Failed to rearrange moods. Please try again."}
+            {saveMoodsMutation.error.message || t("rearrangeError")}
           </div>
         )}
 
         <div className="grid grid-cols-4 gap-2.5">
           <Field className="col-span-1 gap-1.5">
             <FieldLabel className="text-[11px] font-medium text-muted-foreground">
-              Emoji
+              {t("editDrawer.emojiLabel")}
             </FieldLabel>
             <Input
               type="text"
@@ -561,11 +572,11 @@ export function MoodSettingScreen() {
 
           <Field className="col-span-3 gap-1.5">
             <FieldLabel className="text-[11px] font-medium text-muted-foreground">
-              Mood Label
+              {t("editDrawer.moodLabel")}
             </FieldLabel>
             <Input
               type="text"
-              placeholder="e.g. Cozy, Excited, Stressed"
+              placeholder={t("editDrawer.labelPlaceholder")}
               value={formLabel}
               onChange={(e) => setFormLabel(e.target.value)}
               maxLength={20}
@@ -585,10 +596,10 @@ export function MoodSettingScreen() {
             </span>
             <div className="flex min-w-0 flex-col">
               <span className="text-[10px] font-medium text-muted-foreground">
-                Lottie Preview
+                {t("editDrawer.previewTitle")}
               </span>
               <span className="truncate text-xs font-medium text-foreground">
-                {formLabel.trim() || "Mood label"}
+                {formLabel.trim() || t("editDrawer.previewFallback")}
               </span>
             </div>
           </div>
@@ -599,20 +610,21 @@ export function MoodSettingScreen() {
       <FormDrawer
         open={aiDrawerOpen}
         onOpenChange={setAiDrawerOpen}
-        title="AI Mood Assistant"
-        description="Rearrange your current moods or prompt AI to customize your mood list."
+        title={t("aiDrawer.title")}
+        description={t("aiDrawer.description")}
         onSubmit={handleApplyAiDrawer}
         submitLabel={
-          aiMode === "rearrange" ? "Rearrange Moods" : "Apply AI Prompt"
+          aiMode === "rearrange"
+            ? t("aiDrawer.rearrangeSubmit")
+            : t("aiDrawer.promptSubmit")
         }
-        successLabel="Done!"
+        successLabel={t("aiDrawer.success")}
         isPending={isSaving}
         submitDisabled={aiMode === "prompt" && !aiPrompt.trim()}
       >
         {saveMoodsMutation.isError && (
           <div className="rounded-2xl border border-destructive/40 bg-destructive/10 px-3.5 py-2 text-xs text-destructive">
-            {saveMoodsMutation.error.message ||
-              "AI request failed. Please try again."}
+            {saveMoodsMutation.error.message || t("aiDrawer.errorFallback")}
           </div>
         )}
 
@@ -629,10 +641,10 @@ export function MoodSettingScreen() {
           >
             <div className="flex items-center gap-1.5 text-xs font-semibold">
               <Sparkles className="size-3.5 text-primary" />
-              <span>Rearrange Only</span>
+              <span>{t("aiDrawer.rearrangeTitle")}</span>
             </div>
             <span className="text-[11px] leading-snug text-muted-foreground">
-              Re-score & sort current moods good to bad
+              {t("aiDrawer.rearrangeDesc")}
             </span>
           </button>
 
@@ -648,10 +660,10 @@ export function MoodSettingScreen() {
           >
             <div className="flex items-center gap-1.5 text-xs font-semibold">
               <Wand2 className="size-3.5 text-primary" />
-              <span>Prompt AI</span>
+              <span>{t("aiDrawer.promptTitle")}</span>
             </div>
             <span className="text-[11px] leading-snug text-muted-foreground">
-              Add, edit, or remove moods with a prompt
+              {t("aiDrawer.promptDesc")}
             </span>
           </button>
         </div>
@@ -659,10 +671,10 @@ export function MoodSettingScreen() {
         {aiMode === "prompt" && (
           <Field className="gap-1.5">
             <FieldLabel className="text-[11px] font-medium text-muted-foreground">
-              Your Prompt
+              {t("aiDrawer.promptFieldLabel")}
             </FieldLabel>
             <Textarea
-              placeholder="e.g. Add 2 cozy weekend moods, or replace Tired with Sleepy 😪"
+              placeholder={t("aiDrawer.promptPlaceholder")}
               value={aiPrompt}
               onChange={(e) => setAiPrompt(e.target.value)}
               rows={3}
@@ -680,14 +692,17 @@ export function MoodSettingScreen() {
         onOpenChange={(open) => {
           if (!open) setDeleteIndex(null)
         }}
-        title="Remove mood?"
+        title={t("deleteDrawer.title")}
         description={
           deleteIndex !== null && moodsList[deleteIndex]
-            ? `Remove "${moodsList[deleteIndex].emoji} ${moodsList[deleteIndex].label}" from your mood list?`
+            ? t("deleteDrawer.description", {
+                emoji: moodsList[deleteIndex].emoji,
+                label: moodsList[deleteIndex].label,
+              })
             : undefined
         }
-        submitLabel="Remove"
-        successLabel="Removed!"
+        submitLabel={t("deleteDrawer.submit")}
+        successLabel={t("deleteDrawer.success")}
         isPending={isSaving}
         onSubmit={handleConfirmRemoveMood}
       />

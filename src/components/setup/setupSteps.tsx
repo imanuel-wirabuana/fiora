@@ -1,4 +1,5 @@
 import type { ReactNode } from "react"
+import i18n from "@/lib/i18n"
 import { GenderStep } from "./GenderStep"
 import { ProfileStep } from "./ProfileStep"
 import { ConnectionChoiceStep } from "./ConnectionChoiceStep"
@@ -71,13 +72,12 @@ export const SETUP_STEPS: SetupStepConfig[] = [
   // 1. Gender Step
   {
     id: "gender",
-    title: "Gender",
-    question: "Who are you?",
-    description: "Select your gender so we can personalize the experience",
-    subtitle: "Select your identity",
+    title: "steps.gender.title",
+    question: "steps.gender.question",
+    description: "steps.gender.description",
     validate: (state) => {
       if (!state.gender) {
-        return "Please select your gender to continue."
+        return i18n.t("setup:steps.gender.validate")
       }
       return null
     },
@@ -98,13 +98,12 @@ export const SETUP_STEPS: SetupStepConfig[] = [
   // 2. Profile Step (Icon & Name)
   {
     id: "profile",
-    title: "Profile",
-    question: "Your Profile",
-    description: "Choose an avatar icon and set the name your partner sees",
-    subtitle: "Name and icon",
+    title: "steps.profile.title",
+    question: "steps.profile.question",
+    description: "steps.profile.description",
     validate: (state) => {
       if (!state.name.trim()) {
-        return "Please enter your name or nickname."
+        return i18n.t("setup:steps.profile.validate")
       }
       return null
     },
@@ -126,14 +125,12 @@ export const SETUP_STEPS: SetupStepConfig[] = [
   // 3. Connect: Default Join or Create Choice
   {
     id: "connection",
-    title: "Connection",
-    question: "Connect with Partner",
-    description:
-      "Join your partner's existing relationship or create a brand new one",
-    subtitle: "Join or create relationship",
+    title: "steps.connection.title",
+    question: "steps.connection.question",
+    description: "steps.connection.description",
     validate: (state) => {
       if (state.connectionType === "join" && state.partnerCode.trim().length !== 5) {
-        return "Please enter a valid 5-digit partner code."
+        return i18n.t("setup:steps.connection.validate")
       }
       return null
     },
@@ -157,10 +154,9 @@ export const SETUP_STEPS: SetupStepConfig[] = [
   // 4. Anniversary Date (Conditional: Only if Step 3 chose "create")
   {
     id: "anniversary",
-    title: "Anniversary",
-    question: "Anniversary Date (Optional)",
-    description: "When did your story begin? You can change this anytime later.",
-    subtitle: "Special date",
+    title: "steps.anniversary.title",
+    question: "steps.anniversary.question",
+    description: "steps.anniversary.description",
     isVisible: (state) => state.connectionType === "create",
     render: ({ state, updateState }) => (
       <AnniversaryStep
@@ -173,10 +169,9 @@ export const SETUP_STEPS: SetupStepConfig[] = [
   // 5. Moods Override (Conditional: Only if Step 3 chose "create")
   {
     id: "moods",
-    title: "Moods",
-    question: "Customize Moods (Optional)",
-    description: "Tap a mood button to edit its emoji and label",
-    subtitle: "Mood check-ins",
+    title: "steps.moods.title",
+    question: "steps.moods.question",
+    description: "steps.moods.description",
     isVisible: (state) => state.connectionType === "create",
     render: ({ state, updateState }) => (
       <MoodsStep
@@ -189,10 +184,9 @@ export const SETUP_STEPS: SetupStepConfig[] = [
   // 6. Nudges Override (Conditional: Only if Step 3 chose "create")
   {
     id: "nudges",
-    title: "Nudges",
-    question: "Quick Nudges (Optional)",
-    description: "Tap a nudge pill to edit its emoji and message",
-    subtitle: "Quick alerts",
+    title: "steps.nudges.title",
+    question: "steps.nudges.question",
+    description: "steps.nudges.description",
     isVisible: (state) => state.connectionType === "create",
     render: ({ state, updateState }) => (
       <NudgesStep
@@ -205,11 +199,9 @@ export const SETUP_STEPS: SetupStepConfig[] = [
   // 7. Invite Code Step (Conditional: Only if Step 3 chose "create")
   {
     id: "invite-code",
-    title: "Invite Code",
-    question: "Your Relationship is Ready!",
-    description:
-      "Share your 5-digit invite code with your partner to connect your spaces",
-    subtitle: "Share with partner",
+    title: "steps.inviteCode.title",
+    question: "steps.inviteCode.question",
+    description: "steps.inviteCode.description",
     isVisible: (state) => state.connectionType === "create",
     render: ({ state, updateState }) => (
       <ShareCodeStep

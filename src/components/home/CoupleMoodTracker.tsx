@@ -1,5 +1,6 @@
 import type { ReactNode } from "react"
 import { formatDistanceToNow } from "date-fns"
+import { useTranslation } from "react-i18next"
 import {
   ChessKing,
   ChessQueen,
@@ -20,6 +21,7 @@ import { AnimatedEmoji } from "@/components/AnimatedEmoji"
 import { CustomItem } from "@/components/CustomItem"
 import { CustomSkeleton } from "@/components/CustomSkeleton"
 import { OdometerText } from "@/components/OdometerText"
+import { getDateFnsLocale } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 import { useActivities } from "@/hooks/useActivities"
 import { useRelationship } from "@/hooks/useRelationship"
@@ -121,11 +123,12 @@ function MoodCard({
   emptyLabel,
   fallbackIcon,
 }: MoodCardProps) {
+  const { t, i18n } = useTranslation("home")
   const styles = getGenderRingStyles(gender)
   const moodContent = latestMood?.content
 
   const primaryLabel = isLoading
-    ? "Loading..."
+    ? t("mood.loading")
     : moodContent
       ? moodContent.label
       : emptyLabel
@@ -134,13 +137,14 @@ function MoodCard({
     !isLoading && moodContent
       ? moodContent.note
         ? `"${moodContent.note}"`
-        : "Checked in"
+        : t("mood.checkedIn")
       : ""
 
   const timestampText =
     !isLoading && latestMood
       ? formatDistanceToNow(new Date(latestMood.created_at), {
           addSuffix: true,
+          locale: getDateFnsLocale(i18n.language),
         })
       : ""
 
@@ -251,23 +255,25 @@ function MoodCard({
 }
 
 function YourMood() {
+  const { t } = useTranslation("home")
   const { myLatestMood, isLoading } = useActivities()
   const { currentMember, currentAlias } = useRelationship()
 
   return (
     <MoodCard
       avatar={currentMember?.content?.avatar || "💙"}
-      title={<OdometerText items={["You", currentAlias]} />}
+      title={<OdometerText items={[t("mood.you"), currentAlias]} />}
       gender={currentMember?.content?.gender}
       latestMood={myLatestMood}
       isLoading={isLoading}
-      emptyLabel="Tap + to log mood"
+      emptyLabel={t("mood.tapToLog")}
       fallbackIcon={<Smile className="size-7 opacity-75" />}
     />
   )
 }
 
 function PartnerMood() {
+  const { t } = useTranslation("home")
   const { partnerLatestMood, isLoading } = useActivities()
   const { partnerMember, partnerName, partnerAlias } = useRelationship()
 
@@ -278,7 +284,9 @@ function PartnerMood() {
       gender={partnerMember?.content?.gender}
       latestMood={partnerMember ? partnerLatestMood : null}
       isLoading={Boolean(partnerMember && isLoading)}
-      emptyLabel={partnerMember ? "No mood logged yet" : "Waiting for partner"}
+      emptyLabel={
+        partnerMember ? t("mood.noMoodYet") : t("mood.waitingPartner")
+      }
       fallbackIcon={
         partnerMember ? (
           <Heart className="size-7 opacity-75" />

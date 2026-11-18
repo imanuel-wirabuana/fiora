@@ -1,0 +1,47 @@
+{
+  "title": "Mood Kamu",
+  "rearranging": "Menyusun ulang dengan AI...",
+  "subtitle": "Otomatis dinilai dan diurutkan dari baik ke buruk oleh AI",
+  "aiAssistantTitle": "Asisten Mood AI",
+  "aiButton": "AI",
+  "addButton": "Tambah",
+  "rearrangeError": "Gagal menyusun ulang mood. Coba lagi, ya.",
+  "row": {
+    "editTitle": "Ubah mood",
+    "removeTitle": "Hapus mood",
+    "minRequired": "Minimal perlu {{min}} mood"
+  },
+  "editDrawer": {
+    "editTitle": "Ubah Mood",
+    "addTitle": "Tambah Mood",
+    "description": "AI bakal otomatis menilai dan mengurutkan mood ini dari baik ke buruk berdasarkan ikon dan labelnya.",
+    "saveSubmit": "Simpan & Urutkan",
+    "addSubmit": "Tambah & Urutkan",
+    "success": "Berhasil diurutkan!",
+    "emojiLabel": "Emoji",
+    "moodLabel": "Label Mood",
+    "labelPlaceholder": "contoh: Nyaman, Senang, Stres",
+    "previewTitle": "Pratinjau Lottie",
+    "previewFallback": "Label mood"
+  },
+  "aiDrawer": {
+    "title": "Asisten Mood AI",
+    "description": "Urutkan ulang mood yang ada atau beri prompt ke AI buat kustomisasi daftar mood kamu.",
+    "rearrangeSubmit": "Urutkan Mood",
+    "promptSubmit": "Terapkan Prompt AI",
+    "success": "Selesai!",
+    "errorFallback": "Permintaan AI gagal. Coba lagi, ya.",
+    "rearrangeTitle": "Urutkan Saja",
+    "rearrangeDesc": "Nilai ulang & urutkan mood dari baik ke buruk",
+    "promptTitle": "Prompt AI",
+    "promptDesc": "Tambah, ubah, atau hapus mood pakai prompt",
+    "promptFieldLabel": "Prompt Kamu",
+    "promptPlaceholder": "contoh: Tambah 2 mood santai akhir pekan, atau ganti Lelah jadi Ngantuk 😪"
+  },
+  "deleteDrawer": {
+    "title": "Hapus mood?",
+    "description": "Hapus \"{{emoji}} {{label}}\" dari daftar mood kamu?",
+    "submit": "Hapus",
+    "success": "Terhapus!"
+  }
+}

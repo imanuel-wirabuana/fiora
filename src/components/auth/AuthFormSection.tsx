@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { useLocation } from "wouter"
 import {
   AlertCircle,
@@ -33,6 +34,7 @@ interface AuthFormSectionProps {
 export function AuthFormSection({
   defaultTab = "login",
 }: AuthFormSectionProps) {
+  const { t } = useTranslation("auth")
   const [, setLocation] = useLocation()
   const { signInMutation, signUpMutation } = useAuth()
 
@@ -109,7 +111,7 @@ export function AuthFormSection({
     }
 
     if (password !== confirmPassword) {
-      setLocalError("Passwords do not match")
+      setLocalError(t("messages.passwordMismatch"))
       return
     }
 
@@ -118,9 +120,7 @@ export function AuthFormSection({
       {
         onSuccess: (result) => {
           if (result.requiresEmailConfirmation) {
-            setInfoMessage(
-              "Registration successful! Please check your email inbox to confirm your account before signing in."
-            )
+            setInfoMessage(t("messages.registrationSuccess"))
           } else {
             setLocation("/setup")
           }
@@ -148,12 +148,10 @@ export function AuthFormSection({
           />
           <div className="space-y-0.5">
             <h2 className="text-lg font-bold tracking-tight">
-              {isLogin ? "Welcome back" : "Create your space"}
+              {isLogin ? t("welcomeBack") : t("createSpace")}
             </h2>
             <p className="text-xs leading-relaxed text-primary-foreground/85">
-              {isLogin
-                ? "Sign in to sync moments with your partner"
-                : "Sign up to start sharing moods, nudges, and memories"}
+              {isLogin ? t("welcomeSubtitle") : t("createSubtitle")}
             </p>
           </div>
         </div>
@@ -165,13 +163,13 @@ export function AuthFormSection({
           items={[
             {
               value: "login",
-              label: "Sign In",
+              label: t("tabs.signIn"),
               icon: <LogIn className="size-3.5" />,
               disabled: isPending,
             },
             {
               value: "register",
-              label: "Register",
+              label: t("tabs.register"),
               icon: <UserPlus className="size-3.5" />,
               disabled: isPending,
             },
@@ -201,7 +199,7 @@ export function AuthFormSection({
                   htmlFor="auth-email"
                   className="text-xs font-medium text-muted-foreground"
                 >
-                  Email address
+                  {t("fields.email")}
                 </FieldLabel>
                 <InputGroup className="h-11 overflow-hidden rounded-2xl border border-input bg-background focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
                   <InputGroupAddon
@@ -215,7 +213,7 @@ export function AuthFormSection({
                     type="email"
                     required
                     autoComplete="email"
-                    placeholder="you@example.com"
+                    placeholder={t("fields.emailPlaceholder")}
                     value={email}
                     aria-invalid={!!errorMessage}
                     onChange={(e) => {
@@ -232,7 +230,7 @@ export function AuthFormSection({
                   htmlFor="auth-password"
                   className="text-xs font-medium text-muted-foreground"
                 >
-                  Password
+                  {t("fields.password")}
                 </FieldLabel>
                 <InputGroup className="h-11 overflow-hidden rounded-2xl border border-input bg-background focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
                   <InputGroupAddon
@@ -248,7 +246,9 @@ export function AuthFormSection({
                     minLength={isLogin ? undefined : 6}
                     autoComplete={isLogin ? "current-password" : "new-password"}
                     placeholder={
-                      isLogin ? "••••••••" : "At least 6 characters"
+                      isLogin
+                        ? t("fields.passwordPlaceholderLogin")
+                        : t("fields.passwordPlaceholderRegister")
                     }
                     value={password}
                     aria-invalid={!!errorMessage}
@@ -263,7 +263,9 @@ export function AuthFormSection({
                       size="icon-xs"
                       onClick={() => setShowPassword((prev) => !prev)}
                       aria-label={
-                        showPassword ? "Hide password" : "Show password"
+                        showPassword
+                          ? t("fields.hidePassword")
+                          : t("fields.showPassword")
                       }
                       className="size-7 rounded-xl text-muted-foreground/60 hover:text-foreground"
                     >
@@ -283,7 +285,7 @@ export function AuthFormSection({
                     htmlFor="auth-confirm-password"
                     className="text-xs font-medium text-muted-foreground"
                   >
-                    Confirm password
+                    {t("fields.confirmPassword")}
                   </FieldLabel>
                   <InputGroup className="h-11 overflow-hidden rounded-2xl border border-input bg-background focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
                     <InputGroupAddon
@@ -298,7 +300,7 @@ export function AuthFormSection({
                       required
                       minLength={6}
                       autoComplete="new-password"
-                      placeholder="Repeat your password"
+                      placeholder={t("fields.confirmPasswordPlaceholder")}
                       value={confirmPassword}
                       aria-invalid={!!errorMessage}
                       onChange={(e) => {
@@ -313,8 +315,8 @@ export function AuthFormSection({
                         onClick={() => setShowConfirmPassword((prev) => !prev)}
                         aria-label={
                           showConfirmPassword
-                            ? "Hide confirm password"
-                            : "Show confirm password"
+                            ? t("fields.hideConfirmPassword")
+                            : t("fields.showConfirmPassword")
                         }
                         className="size-7 rounded-xl text-muted-foreground/60 hover:text-foreground"
                       >
@@ -351,9 +353,9 @@ export function AuthFormSection({
                 {isPending ? (
                   <Spinner className="size-4" />
                 ) : isLogin ? (
-                  "Sign In"
+                  t("actions.signIn")
                 ) : (
-                  "Create Account"
+                  t("actions.createAccount")
                 )}
               </Button>
             </form>

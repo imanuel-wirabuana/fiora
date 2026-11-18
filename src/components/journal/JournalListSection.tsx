@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { formatDistanceToNow } from "date-fns"
 import { BookOpen, Globe, Lock, Trash2 } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { useLocation } from "wouter"
 import { AnimatedEmoji } from "@/components/AnimatedEmoji"
 import { CustomItem } from "@/components/CustomItem"
@@ -9,6 +10,7 @@ import { CustomSkeleton } from "@/components/CustomSkeleton"
 import { useAuth } from "@/hooks/useAuth"
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll"
 import { useRelationship } from "@/hooks/useRelationship"
+import { getDateFnsLocale } from "@/lib/i18n"
 import type { Activity, JournalActivityContent } from "@/types/activity"
 import type { PrivacyFilter } from "./JournalFilterSection"
 
@@ -35,6 +37,7 @@ export function JournalListSection({
   onTogglePrivacy,
   onDelete,
 }: JournalListSectionProps) {
+  const { t, i18n } = useTranslation(["journal", "common"])
   const [, navigate] = useLocation()
   const { currentMember, partnerMember } = useRelationship()
   const { user } = useAuth()
@@ -53,13 +56,13 @@ export function JournalListSection({
   const getAuthorName = (authorId: string) => {
     if (authorId === user?.id) {
       return {
-        name: "You",
+        name: t("list.you"),
         avatar: currentMember?.content?.avatar || "💙",
         isMe: true,
       }
     }
     return {
-      name: partnerMember?.content?.name || "Partner",
+      name: partnerMember?.content?.name || t("list.partner"),
       avatar: partnerMember?.content?.avatar || "🤍",
       isMe: false,
     }
@@ -85,10 +88,12 @@ export function JournalListSection({
         <BookOpen className="size-8 opacity-40" />
         <p className="text-xs">
           {search
-            ? "No entries match your search."
+            ? t("list.emptySearch")
             : privacyFilter !== "all"
-              ? `No ${privacyFilter} journals found.`
-              : "No journal entries yet."}
+              ? t("list.emptyFiltered", {
+                  filter: t(`filter.tabs.${privacyFilter}`).toLowerCase(),
+                })
+              : t("list.emptyAll")}
         </p>
       </div>
     )
@@ -132,7 +137,11 @@ export function JournalListSection({
                     e.stopPropagation()
                     onTogglePrivacy(journal.id, content)
                   }}
-                  title={isShared ? "Make private" : "Share with partner"}
+                  title={
+                    isShared
+                      ? t("list.makePrivate")
+                      : t("list.shareWithPartner")
+                  }
                   className="rounded p-0.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
                 >
                   {isShared ? (
@@ -153,6 +162,7 @@ export function JournalListSection({
               <span className="truncate text-[10px] text-muted-foreground">
                 {formatDistanceToNow(new Date(journal.created_at), {
                   addSuffix: true,
+                  locale: getDateFnsLocale(i18n.language),
                 })}
               </span>
             }
@@ -165,7 +175,7 @@ export function JournalListSection({
                     setDeleteTarget({ id: journal.id, title: content.title })
                   }}
                   className="rounded p-0.5 text-muted-foreground transition hover:bg-destructive/20 hover:text-destructive"
-                  title="Delete journal"
+                  title={t("list.deleteTitle")}
                 >
                   <Trash2 className="size-3" />
                 </button>
@@ -189,14 +199,14 @@ export function JournalListSection({
         onOpenChange={(open) => {
           if (!open) setDeleteTarget(null)
         }}
-        title="Delete journal entry?"
+        title={t("list.deleteConfirmTitle")}
         description={
           deleteTarget
-            ? `Permanently delete "${deleteTarget.title}"?`
+            ? t("list.deleteConfirmDesc", { title: deleteTarget.title })
             : undefined
         }
-        submitLabel="Delete"
-        successLabel="Deleted!"
+        submitLabel={t("common:actions.delete")}
+        successLabel={t("list.deleted")}
         onSubmit={() => {
           if (!deleteTarget) return false
           onDelete(deleteTarget.id)
