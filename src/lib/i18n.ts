@@ -47,7 +47,7 @@ import enAppAppearanceSetting from "@/locales/en/appAppearanceSetting.json"
 export const LANGUAGE_STORAGE_KEY = "fiora-language"
 export const SUPPORTED_LANGUAGES = ["id", "en"] as const
 export type AppLanguage = (typeof SUPPORTED_LANGUAGES)[number]
-export const DEFAULT_LANGUAGE: AppLanguage = "id"
+export const DEFAULT_LANGUAGE: AppLanguage = "en"
 
 export function isSupportedLanguage(value: string | null): value is AppLanguage {
   return value === "id" || value === "en"
@@ -176,7 +176,7 @@ export function getCurrentLanguage(): AppLanguage {
 
 export function getDateFnsLocale(language?: string): Locale {
   const resolved = language ?? i18n.language
-  return resolved === "en" ? enUS : idLocale
+  return resolved === "id" ? idLocale : enUS
 }
 
 export default i18n
