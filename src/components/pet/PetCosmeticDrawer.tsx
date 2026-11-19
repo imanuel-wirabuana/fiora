@@ -125,7 +125,7 @@ export function PetCosmeticDrawer({
                     </div>
                   )}
 
-                  <div className="grid grid-cols-4 gap-2.5">
+                  <div className="grid max-h-[60svh] grid-cols-4 gap-2.5 overflow-y-auto p-0.5">
                     {/* Free Default / No Room */}
                     <button
                       type="button"
@@ -199,8 +199,8 @@ export function PetCosmeticDrawer({
                   </div>
                 </div>
               ) : (
-                <>
-                  <div className="grid grid-cols-4 gap-2.5 pb-2">
+                <div className="flex flex-col gap-3 pb-2">
+                  <div className="grid max-h-[60svh] grid-cols-4 gap-2.5 overflow-y-auto p-0.5">
                     {/* Free Default / Unequip */}
                     <button
                       type="button"
@@ -209,13 +209,13 @@ export function PetCosmeticDrawer({
                         handleClose()
                       }}
                       className={cn(
-                        "flex aspect-square flex-col items-center justify-center gap-1 rounded-2xl border border-border/50 bg-muted/40 text-xs font-medium select-none transition-transform hover:bg-muted active:scale-95",
+                        "flex aspect-square flex-col items-center justify-center gap-1 rounded-2xl border border-border/50 bg-muted/40 p-1.5 text-xs font-medium select-none transition-transform hover:bg-muted active:scale-95",
                         equippedId === null &&
                           "ring-2 ring-primary ring-offset-1"
                       )}
                     >
                       <Plus className="size-5 opacity-75" />
-                      <span className="text-[10px] text-muted-foreground">
+                      <span className="w-full truncate text-center text-[10px] text-muted-foreground">
                         {t("pet.cosmetics.default")}
                       </span>
                     </button>
@@ -235,18 +235,23 @@ export function PetCosmeticDrawer({
                             handleClose()
                           }}
                           className={cn(
-                            "relative flex aspect-square flex-col items-center justify-center rounded-2xl border border-border/50 bg-muted/40 text-3xl select-none transition-transform",
+                            "relative flex aspect-square items-center justify-center rounded-2xl border border-border/50 bg-muted/40 p-1.5 select-none transition-transform",
                             isUnlocked
                               ? "hover:bg-muted active:scale-95"
-                              : "cursor-not-allowed opacity-45",
+                              : "cursor-not-allowed opacity-55",
                             isEquipped && "ring-2 ring-primary ring-offset-1"
                           )}
                         >
-                          <span className={cn(!isUnlocked && "grayscale")}>
+                          <span
+                            className={cn(
+                              "text-3xl leading-none",
+                              !isUnlocked && "grayscale"
+                            )}
+                          >
                             {item.emoji}
                           </span>
                           {!isUnlocked && (
-                            <span className="mt-0.5 flex items-center gap-0.5 rounded-full bg-background/85 px-1.5 py-0.5 text-[9px] font-semibold text-muted-foreground">
+                            <span className="absolute top-1 right-1 flex items-center gap-0.5 rounded-full bg-background/90 px-1.5 py-0.5 text-[9px] font-semibold text-muted-foreground shadow-xs">
                               <Lock className="size-2.5" />
                               {item.unlockLevel}
                             </span>
@@ -260,7 +265,7 @@ export function PetCosmeticDrawer({
                     <Button
                       type="button"
                       variant="outline"
-                      className="mt-1 w-full gap-2 rounded-2xl"
+                      className="w-full gap-2 rounded-2xl"
                       onClick={() => {
                         handleClose()
                         onAdjustFit(slot)
@@ -270,7 +275,7 @@ export function PetCosmeticDrawer({
                       <span>{t("pet.cosmetics.adjustFit")}</span>
                     </Button>
                   )}
-                </>
+                </div>
               )}
             </>
           )}

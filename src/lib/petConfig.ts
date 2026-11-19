@@ -92,6 +92,8 @@ export const PET_STAT_THRESHOLDS = {
   criticalMin: 20,
   /** Hunger above this triggers chubby/overfed visual */
   overfedHunger: 100,
+  /** Maximum overlimit value for any stat */
+  maxOverlimit: 125,
   /** Energy below this triggers sleepy expression */
   sleepyEnergy: 35,
   /** Minimum stat below this triggers sad expression */

@@ -16,7 +16,7 @@ export function PetStatsPanel({ stats, className }: PetStatsPanelProps) {
   return (
     <div
       className={cn(
-        "grid grid-cols-2 gap-3 rounded-2xl border border-border/60 bg-card/80 p-3.5 shadow-sm backdrop-blur-md",
+        "grid grid-cols-2 gap-x-3 gap-y-1.5 rounded-2xl border border-border/60 bg-card/85 px-3 py-2 shadow-sm backdrop-blur-md",
         className
       )}
     >
@@ -26,15 +26,15 @@ export function PetStatsPanel({ stats, className }: PetStatsPanelProps) {
         const isOverlimit = value > 100
 
         return (
-          <div key={key} className="space-y-1.5">
-            <div className="flex items-center justify-between text-xs">
-              <span className="flex items-center gap-1 font-medium text-foreground">
-                <span>{emoji}</span>
-                <span>{t(`pet.stats.${key}`)}</span>
+          <div key={key} className="space-y-1">
+            <div className="flex items-center justify-between gap-1 text-[11px] leading-tight">
+              <span className="flex min-w-0 items-center gap-1 font-medium text-foreground">
+                <span className="text-xs leading-none">{emoji}</span>
+                <span className="truncate">{t(`pet.stats.${key}`)}</span>
               </span>
               <span
                 className={cn(
-                  "font-semibold tabular-nums",
+                  "shrink-0 font-semibold tabular-nums",
                   isLow
                     ? "text-destructive"
                     : isOverlimit
@@ -47,7 +47,10 @@ export function PetStatsPanel({ stats, className }: PetStatsPanelProps) {
             </div>
             <Progress
               value={Math.min(100, value)}
-              className={cn("h-2 bg-muted/70", barClass)}
+              className={cn(
+                "[&_[data-slot=progress-track]]:h-1.5 [&_[data-slot=progress-track]]:bg-foreground/10 dark:[&_[data-slot=progress-track]]:bg-white/10 [&_[data-slot=progress-indicator]]:rounded-full",
+                barClass
+              )}
             />
           </div>
         )

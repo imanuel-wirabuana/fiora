@@ -154,9 +154,12 @@ export function addPetXp(currentXp: number, reward: number): number {
   return safeCurrent + safeReward
 }
 
-/** Clamps at >= 0 only (allows overlimit > 100) with 0.01 precision */
+/** Clamps between 0 and maxOverlimit (125) with 0.01 precision */
 export function clampStat(value: number): number {
-  return Math.max(0, Math.round(value * 100) / 100)
+  return Math.max(
+    0,
+    Math.min(PET_STAT_THRESHOLDS.maxOverlimit, Math.round(value * 100) / 100)
+  )
 }
 
 export function formatStatValue(value: number): number {
@@ -373,10 +376,10 @@ export function getPetConditionVisuals(stats: PetStats): PetConditionVisuals {
     stats.hunger - PET_STAT_THRESHOLDS.overfedHunger
   )
   const overfedScaleX = isOverfed
-    ? Math.round((1.18 + Math.min(0.47, excessHunger * 0.015)) * 100) / 100
+    ? Math.round((1.18 + Math.min(0.47, excessHunger * 0.0188)) * 100) / 100
     : 1
   const overfedScaleY = isOverfed
-    ? Math.round((1.06 + Math.min(0.19, excessHunger * 0.006)) * 100) / 100
+    ? Math.round((1.06 + Math.min(0.19, excessHunger * 0.0076)) * 100) / 100
     : 1
   const isMelting = stats.energy < PET_STAT_THRESHOLDS.criticalMin
   const isAngry = stats.happiness < PET_STAT_THRESHOLDS.criticalMin
