@@ -188,6 +188,7 @@ export function PetCharacter({
         const scaleX = item.transform.scaleX ?? item.transform.scale ?? 1
         const scaleY = item.transform.scaleY ?? item.transform.scale ?? 1
         const rotateDeg = item.transform.rotate ?? 0
+        const flipX = Boolean(item.transform.flipX)
 
         const getWrapperCenter = (el: HTMLElement | null) => {
           if (!el) return { x: 0, y: 0 }
@@ -238,8 +239,20 @@ export function PetCharacter({
                 }}
                 className="pointer-events-none inline-flex items-center justify-center gap-[0.25em] leading-none"
               >
-                <span className="inline-block leading-none">{item.emoji}</span>
-                <span className="inline-block -scale-x-100 leading-none">
+                <span
+                  className={cn(
+                    "inline-block leading-none",
+                    !flipX && "-scale-x-100"
+                  )}
+                >
+                  {item.emoji}
+                </span>
+                <span
+                  className={cn(
+                    "inline-block leading-none",
+                    flipX && "-scale-x-100"
+                  )}
+                >
                   {item.emoji}
                 </span>
               </span>
@@ -247,7 +260,7 @@ export function PetCharacter({
               <span
                 style={{
                   fontSize: `${baseSize}px`,
-                  transform: `scale(${scaleX}, ${scaleY})`,
+                  transform: `scale(${flipX ? -scaleX : scaleX}, ${scaleY})`,
                 }}
                 className="pointer-events-none inline-block leading-none"
               >

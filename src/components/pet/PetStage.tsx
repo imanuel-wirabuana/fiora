@@ -6,7 +6,7 @@ import {
   type PointerEvent as ReactPointerEvent,
   type TouchEvent as ReactTouchEvent,
 } from "react"
-import { Check, RotateCcw } from "lucide-react"
+import { Check, FlipHorizontal2, RotateCcw } from "lucide-react"
 import { AnimatePresence, motion } from "motion/react"
 import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
@@ -598,6 +598,28 @@ export function PetStage({
                 {Math.round((selectedTransform.scaleY ?? 1) * 100)}% ·{" "}
                 {selectedTransform.rotate ?? 0}°
               </span>
+            )}
+            {selectedWearable && selectedTransform && (
+              <Button
+                type="button"
+                variant={selectedTransform.flipX ? "secondary" : "ghost"}
+                size="icon"
+                className={cn(
+                  "size-8 rounded-full",
+                  selectedTransform.flipX && "text-primary"
+                )}
+                title={t("pet.cosmetics.mirror")}
+                aria-label={t("pet.cosmetics.mirror")}
+                aria-pressed={Boolean(selectedTransform.flipX)}
+                onClick={() =>
+                  onUpdateCosmeticTransform(selectedWearable, {
+                    ...selectedTransform,
+                    flipX: !selectedTransform.flipX,
+                  })
+                }
+              >
+                <FlipHorizontal2 className="size-4" />
+              </Button>
             )}
             {selectedWearable && (
               <Button

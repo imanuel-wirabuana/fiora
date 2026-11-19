@@ -83,6 +83,7 @@
       "editHint": "Drag to move · Pinch or use handles to stretch & tilt",
       "adjustFit": "Adjust Position & Size",
       "size": "Size",
+      "mirror": "Mirror",
       "resetFit": "Reset position & size",
       "done": "Done",
       "yourLevel": "Your level: {{level}}",

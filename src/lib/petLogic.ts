@@ -59,6 +59,7 @@ export function clampCosmeticTransform(
     scaleX: clampNum(transform.scaleX ?? fallbackScale, minScale, maxScale),
     scaleY: clampNum(transform.scaleY ?? fallbackScale, minScale, maxScale),
     rotate: clampedRotate,
+    ...(transform.flipX ? { flipX: true } : {}),
   }
 }
 

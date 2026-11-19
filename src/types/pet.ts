@@ -33,6 +33,8 @@ export interface PetCosmeticTransform {
   scaleY?: number
   /** Tilt/rotation in degrees (-180 to 180) */
   rotate?: number
+  /** Horizontal mirror flip */
+  flipX?: boolean
 }
 
 export interface PetCosmetics {
