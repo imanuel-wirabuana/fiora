@@ -38,6 +38,7 @@ export const DEFAULT_PET_COSMETICS: PetCosmetics = {
   headwear: null,
   facewear: null,
   clothes: null,
+  footwear: null,
 }
 
 export function clampCosmeticTransform(
@@ -215,6 +216,7 @@ export function normalizePetContent(
       headwear: content.cosmetics?.headwear ?? null,
       facewear: content.cosmetics?.facewear ?? null,
       clothes: content.cosmetics?.clothes ?? null,
+      footwear: content.cosmetics?.footwear ?? null,
     },
     cosmeticTransforms: content.cosmeticTransforms
       ? {
@@ -236,6 +238,13 @@ export function normalizePetContent(
             ? {
                 clothes: clampCosmeticTransform(
                   content.cosmeticTransforms.clothes
+                ),
+              }
+            : {}),
+          ...(content.cosmeticTransforms.footwear
+            ? {
+                footwear: clampCosmeticTransform(
+                  content.cosmeticTransforms.footwear
                 ),
               }
             : {}),

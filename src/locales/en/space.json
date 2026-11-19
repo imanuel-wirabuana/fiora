@@ -77,7 +77,8 @@
     },
     "cosmetics": {
       "default": "Default",
-      "drawerDescription": "Unlock new styles every 10 levels!",
+      "drawerDescription": "Unlock new styles every {{interval}} levels!",
+      "drawerDescriptionCustom": "Level up your pet to unlock new styles!",
       "editMode": "Edit Fit",
       "editHint": "Drag to move · Pinch or use handles to stretch & tilt",
       "adjustFit": "Adjust Position & Size",
@@ -90,7 +91,8 @@
         "room": "Room",
         "headwear": "Headwear",
         "facewear": "Facewear",
-        "clothes": "Clothes"
+        "clothes": "Clothes",
+        "footwear": "Footwear"
       }
     },
     "minigames": {

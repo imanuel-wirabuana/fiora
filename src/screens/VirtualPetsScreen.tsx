@@ -109,7 +109,9 @@ export function VirtualPetsScreen() {
         ? "facewear"
         : cosmetics.clothes
           ? "clothes"
-          : null
+          : cosmetics.footwear
+            ? "footwear"
+            : null
     const target = preferredSlot ?? fallbackSlot
     if (!target) return
     setActiveCareDrawer(null)
@@ -141,14 +143,17 @@ export function VirtualPetsScreen() {
 
       {!isEditMode && (
         <>
-          {/* Floating Header */}
-          <PetHeader
-            name={pet.name}
-            xp={content.xp}
-            onRename={renamePet}
-            isUpdating={isUpdating}
-            className="absolute inset-x-3 top-3 z-20 mx-auto max-w-md"
-          />
+          {/* Unified Compact Floating Top HUD (Header + Inline Stats) */}
+          <div className="absolute inset-x-3 top-3 z-20 mx-auto flex max-w-md flex-col gap-1.5 rounded-2xl border border-border/60 bg-card/85 px-3 py-2 shadow-sm backdrop-blur-md">
+            <PetHeader
+              name={pet.name}
+              xp={content.xp}
+              onRename={renamePet}
+              isUpdating={isUpdating}
+              embedded
+            />
+            <PetStatsPanel stats={content.stats} embedded />
+          </div>
 
           {/* Floating Vertical Cosmetic Bar on Left */}
           <PetCosmeticBar
@@ -174,12 +179,6 @@ export function VirtualPetsScreen() {
               })
             }
             className="absolute top-1/2 right-3 z-20 -translate-y-1/2"
-          />
-
-          {/* Floating Stats Panel at Bottom */}
-          <PetStatsPanel
-            stats={content.stats}
-            className="absolute inset-x-3 bottom-18 z-20 mx-auto max-w-md"
           />
         </>
       )}

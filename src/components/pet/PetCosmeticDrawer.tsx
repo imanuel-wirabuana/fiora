@@ -12,8 +12,13 @@ import {
 } from "@/components/ui/drawer"
 import { Progress } from "@/components/ui/progress"
 import { useDrawerAnimationPause } from "@/hooks/useDrawerAnimationPause"
-import { PET_COSMETIC_ITEMS } from "@/lib/petConfig"
-import { PET_ROOM_THEMES, type PetRoomTheme } from "@/lib/petRooms"
+import {
+  PET_COSMETIC_ITEMS,
+  PET_ROOMS,
+  PET_UNLOCK_CONFIG,
+  hasCustomSlotUnlocks,
+  type PetRoomWithUnlock,
+} from "@/lib/petConfig"
 import { cn } from "@/lib/utils"
 import type { PetCosmeticSlot, PetWearableSlot } from "@/types/pet"
 
@@ -37,7 +42,7 @@ export function PetCosmeticDrawer({
   const { t } = useTranslation("space")
   const open = slot !== null
   useDrawerAnimationPause(open)
-  const [previewRoom, setPreviewRoom] = useState<PetRoomTheme | null>(null)
+  const [previewRoom, setPreviewRoom] = useState<PetRoomWithUnlock | null>(null)
 
   const handleClose = () => {
     setPreviewRoom(null)
@@ -63,7 +68,11 @@ export function PetCosmeticDrawer({
                   {t(`pet.cosmetics.slots.${slot}`)}
                 </DrawerTitle>
                 <DrawerDescription className="text-xs">
-                  {t("pet.cosmetics.drawerDescription")}
+                  {hasCustomSlotUnlocks(slot)
+                    ? t("pet.cosmetics.drawerDescriptionCustom")
+                    : t("pet.cosmetics.drawerDescription", {
+                        interval: PET_UNLOCK_CONFIG.globalStep,
+                      })}
                 </DrawerDescription>
               </DrawerHeader>
 
@@ -146,7 +155,7 @@ export function PetCosmeticDrawer({
                       </span>
                     </button>
 
-                    {PET_ROOM_THEMES.map((room) => {
+                    {PET_ROOMS.map((room) => {
                       const isUnlocked = petLevel >= room.unlockLevel
                       const isEquipped = equippedId === room.id
                       const isPreviewing = previewRoom?.id === room.id

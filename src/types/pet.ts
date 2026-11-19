@@ -11,7 +11,12 @@ export type PetActivityType = "eat" | "play" | "bath" | "sleep"
 
 export type PetMinigameId = "fruit-catcher" | "zuma" | "flappy-pet"
 
-export type PetCosmeticSlot = "room" | "headwear" | "facewear" | "clothes"
+export type PetCosmeticSlot =
+  | "room"
+  | "headwear"
+  | "facewear"
+  | "clothes"
+  | "footwear"
 
 export type PetWearableSlot = Exclude<PetCosmeticSlot, "room">
 
@@ -35,6 +40,7 @@ export interface PetCosmetics {
   headwear: string | null
   facewear: string | null
   clothes: string | null
+  footwear: string | null
 }
 
 export interface ActivePetActivity {

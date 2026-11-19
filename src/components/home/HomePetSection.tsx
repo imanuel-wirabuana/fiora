@@ -19,6 +19,7 @@ export function HomePetSection() {
   const headwearItem = getCosmeticItem("headwear", content.cosmetics?.headwear)
   const facewearItem = getCosmeticItem("facewear", content.cosmetics?.facewear)
   const clothesItem = getCosmeticItem("clothes", content.cosmetics?.clothes)
+  const footwearItem = getCosmeticItem("footwear", content.cosmetics?.footwear)
 
   const resolveWearable = (slot: PetWearableSlot, emoji?: string | null) => {
     if (!emoji) return null
@@ -49,6 +50,7 @@ export function HomePetSection() {
             headwear: resolveWearable("headwear", headwearItem?.emoji),
             facewear: resolveWearable("facewear", facewearItem?.emoji),
             clothes: resolveWearable("clothes", clothesItem?.emoji),
+            footwear: resolveWearable("footwear", footwearItem?.emoji),
           }}
         />
         {(content.isSleeping || isNeedsCare) && (

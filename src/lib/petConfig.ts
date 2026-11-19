@@ -7,7 +7,7 @@ import type {
   PetStats,
   PetWearableSlot,
 } from "@/types/pet"
-import { PET_ROOM_THEMES } from "./petRooms"
+import { PET_ROOM_THEMES, type PetRoomTheme } from "./petRooms"
 
 export interface PetActivityInteractionConfig {
   progressStep: number
@@ -235,6 +235,48 @@ export const PET_MINIGAMES: Record<PetMinigameId, PetMinigameConfig> = {
 export const PET_MINIGAME_LIST: PetMinigameConfig[] =
   Object.values(PET_MINIGAMES)
 
+export const PET_UNLOCK_CONFIG: {
+  /** Global level step between any two unlockables across all slots (2 => Lv. 2, 4, 6, ..., 100) */
+  globalStep: number
+  /** Slot rotation order for staggered unlocks (0..4) */
+  slotOrder: PetCosmeticSlot[]
+  /** Optional explicit unlock level per item/room ID (takes highest priority, e.g. { cap: 2, "sunny-meadow": 5 }) */
+  itemLevels?: Record<string, number>
+} = {
+  globalStep: 2,
+  slotOrder: ["room", "headwear", "facewear", "clothes", "footwear"],
+  itemLevels: {},
+}
+
+export function getCosmeticUnlockLevel(
+  slot: PetCosmeticSlot,
+  tierIndex: number
+): number {
+  const safeTier = Math.max(0, Math.floor(tierIndex))
+  const slotCount = Math.max(1, PET_UNLOCK_CONFIG.slotOrder.length)
+  const slotOffset = Math.max(0, PET_UNLOCK_CONFIG.slotOrder.indexOf(slot))
+  return (safeTier * slotCount + slotOffset + 1) * PET_UNLOCK_CONFIG.globalStep
+}
+
+export function resolveItemUnlockLevel(
+  slot: PetCosmeticSlot,
+  id: string,
+  tierIndex: number,
+  inlineUnlockLevel?: number
+): number {
+  const configured = PET_UNLOCK_CONFIG.itemLevels?.[id]
+  if (typeof configured === "number" && Number.isFinite(configured)) {
+    return Math.max(1, Math.floor(configured))
+  }
+  if (
+    typeof inlineUnlockLevel === "number" &&
+    Number.isFinite(inlineUnlockLevel)
+  ) {
+    return Math.max(1, Math.floor(inlineUnlockLevel))
+  }
+  return getCosmeticUnlockLevel(slot, tierIndex)
+}
+
 export interface PetCosmeticItem {
   id: string
   emoji: string
@@ -242,6 +284,20 @@ export interface PetCosmeticItem {
   /** Background gradient classes for "room" slot */
   stageClass?: string
 }
+
+export interface PetRoomWithUnlock extends PetRoomTheme {
+  unlockLevel: number
+}
+
+export const PET_ROOMS: PetRoomWithUnlock[] = PET_ROOM_THEMES.map((room) => ({
+  ...room,
+  unlockLevel: resolveItemUnlockLevel(
+    "room",
+    room.id,
+    room.unlockTier,
+    room.unlockLevel
+  ),
+})).sort((a, b) => a.unlockLevel - b.unlockLevel)
 
 export const PET_COSMETIC_SLOTS: Array<{
   slot: PetCosmeticSlot
@@ -263,51 +319,110 @@ export const PET_COSMETIC_SLOTS: Array<{
     slot: "clothes",
     tint: "bg-rose-50 hover:bg-rose-100/80 text-rose-900 dark:bg-rose-950/40 dark:text-rose-200",
   },
+  {
+    slot: "footwear",
+    tint: "bg-emerald-50 hover:bg-emerald-100/80 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200",
+  },
 ]
 
+interface PetCosmeticSeed {
+  id: string
+  emoji: string
+  /** Optional explicit unlock level override for this item */
+  unlockLevel?: number
+}
+
+function buildTieredCosmetics(
+  slot: Exclude<PetCosmeticSlot, "room">,
+  items: PetCosmeticSeed[]
+): PetCosmeticItem[] {
+  return items
+    .map((item, idx) => ({
+      id: item.id,
+      emoji: item.emoji,
+      unlockLevel: resolveItemUnlockLevel(
+        slot,
+        item.id,
+        idx,
+        item.unlockLevel
+      ),
+    }))
+    .sort((a, b) => a.unlockLevel - b.unlockLevel)
+}
+
+export function hasCustomSlotUnlocks(slot: PetCosmeticSlot): boolean {
+  if (slot === "room") {
+    return PET_ROOM_THEMES.some(
+      (room) =>
+        typeof room.unlockLevel === "number" ||
+        typeof PET_UNLOCK_CONFIG.itemLevels?.[room.id] === "number"
+    )
+  }
+  const items = PET_COSMETIC_ITEMS[slot]
+  return items.some(
+    (item, idx) => item.unlockLevel !== getCosmeticUnlockLevel(slot, idx)
+  )
+}
+
 export const PET_COSMETIC_ITEMS: Record<PetCosmeticSlot, PetCosmeticItem[]> = {
-  room: PET_ROOM_THEMES.map((room) => ({
+  room: PET_ROOMS.map((room) => ({
     id: room.id,
     emoji: room.signatureEmoji,
     unlockLevel: room.unlockLevel,
     stageClass: room.background,
   })),
-  headwear: [
-    { id: "cap", emoji: "🧢", unlockLevel: 10 },
-    { id: "ribbon", emoji: "🎀", unlockLevel: 20 },
-    { id: "sunhat", emoji: "👒", unlockLevel: 30 },
-    { id: "hairpick", emoji: "🪮", unlockLevel: 40 },
-    { id: "rescue-helmet", emoji: "⛑️", unlockLevel: 50 },
-    { id: "military-helmet", emoji: "🪖", unlockLevel: 60 },
-    { id: "gradcap", emoji: "🎓", unlockLevel: 70 },
-    { id: "tophat", emoji: "🎩", unlockLevel: 80 },
-    { id: "candle", emoji: "🕯️", unlockLevel: 90 },
-    { id: "crown", emoji: "👑", unlockLevel: 100 },
-  ],
-  facewear: [
-    { id: "plaster", emoji: "🩹", unlockLevel: 10 },
-    { id: "glasses", emoji: "👓", unlockLevel: 20 },
-    { id: "droplet", emoji: "💧", unlockLevel: 30 },
-    { id: "anger", emoji: "💢", unlockLevel: 40 },
-    { id: "kiss", emoji: "💋", unlockLevel: 50 },
-    { id: "sunglasses", emoji: "🕶️", unlockLevel: 60 },
-    { id: "dizzy", emoji: "💫", unlockLevel: 70 },
-    { id: "boom", emoji: "💥", unlockLevel: 80 },
-    { id: "cigarette", emoji: "🚬", unlockLevel: 90 },
-    { id: "sax", emoji: "🎷", unlockLevel: 100 },
-  ],
-  clothes: [
-    { id: "tshirt", emoji: "👕", unlockLevel: 10 },
-    { id: "shorts", emoji: "🩳", unlockLevel: 20 },
-    { id: "singlet", emoji: "🎽", unlockLevel: 30 },
-    { id: "jeans", emoji: "👖", unlockLevel: 40 },
-    { id: "vest", emoji: "🦺", unlockLevel: 50 },
-    { id: "coat", emoji: "🧥", unlockLevel: 60 },
-    { id: "labcoat", emoji: "🥼", unlockLevel: 70 },
-    { id: "martial", emoji: "🥋", unlockLevel: 80 },
-    { id: "briefs", emoji: "🩲", unlockLevel: 90 },
-    { id: "bikini", emoji: "👙", unlockLevel: 100 },
-  ],
+  // Sentiment-ordered (Lv. 4, 14, 24, 34, 44, 54, 64, 74, 84, 94)
+  headwear: buildTieredCosmetics("headwear", [
+    { id: "military-helmet", emoji: "🪖" },
+    { id: "rescue-helmet", emoji: "⛑️" },
+    { id: "hairpick", emoji: "🪮" },
+    { id: "candle", emoji: "🕯️" },
+    { id: "cap", emoji: "🧢" },
+    { id: "sunhat", emoji: "👒" },
+    { id: "tophat", emoji: "🎩" },
+    { id: "gradcap", emoji: "🎓" },
+    { id: "ribbon", emoji: "🎀" },
+    { id: "crown", emoji: "👑" },
+  ]),
+  // Sentiment-ordered (Lv. 6, 16, 26, 36, 46, 56, 66, 76, 86, 96)
+  facewear: buildTieredCosmetics("facewear", [
+    { id: "anger", emoji: "💢" },
+    { id: "cigarette", emoji: "🚬" },
+    { id: "plaster", emoji: "🩹" },
+    { id: "droplet", emoji: "💧" },
+    { id: "boom", emoji: "💥" },
+    { id: "glasses", emoji: "👓" },
+    { id: "dizzy", emoji: "💫" },
+    { id: "sunglasses", emoji: "🕶️" },
+    { id: "sax", emoji: "🎷" },
+    { id: "kiss", emoji: "💋" },
+  ]),
+  // Sentiment-ordered (Lv. 8, 18, 28, 38, 48, 58, 68, 78, 88, 98)
+  clothes: buildTieredCosmetics("clothes", [
+    { id: "briefs", emoji: "🩲" },
+    { id: "vest", emoji: "🦺" },
+    { id: "shorts", emoji: "🩳" },
+    { id: "jeans", emoji: "👖" },
+    { id: "tshirt", emoji: "👕" },
+    { id: "singlet", emoji: "🎽" },
+    { id: "labcoat", emoji: "🥼" },
+    { id: "coat", emoji: "🧥" },
+    { id: "martial", emoji: "🥋" },
+    { id: "bikini", emoji: "👙" },
+  ]),
+  // Sentiment-ordered (Lv. 10, 20, 30, 40, 50, 60, 70, 80, 90, 100)
+  footwear: buildTieredCosmetics("footwear", [
+    { id: "hiking-boot", emoji: "🥾" },
+    { id: "dress-shoe", emoji: "👞" },
+    { id: "flat", emoji: "🥿" },
+    { id: "sandal", emoji: "👡" },
+    { id: "boot", emoji: "👢" },
+    { id: "sneaker", emoji: "👟" },
+    { id: "heel", emoji: "👠" },
+    { id: "skis", emoji: "🎿" },
+    { id: "ice-skate", emoji: "⛸️" },
+    { id: "roller-skate", emoji: "🛼" },
+  ]),
 }
 
 export const PET_COSMETIC_TRANSFORM_CONFIG: {
@@ -331,5 +446,6 @@ export const PET_COSMETIC_TRANSFORM_CONFIG: {
     headwear: { x: 0, y: -0.46, scaleX: 1, scaleY: 1, rotate: 0 },
     facewear: { x: 0, y: -0.04, scaleX: 1, scaleY: 1, rotate: 0 },
     clothes: { x: 0, y: 0.34, scaleX: 1, scaleY: 1, rotate: 0 },
+    footwear: { x: 0, y: 0.5, scaleX: 1, scaleY: 1, rotate: 0 },
   },
 }

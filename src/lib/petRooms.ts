@@ -19,7 +19,10 @@ export interface PetRoomTheme {
   id: string
   name: string
   description: string
-  unlockLevel: number
+  /** Tier index used with PET_UNLOCK_CONFIG to compute unlockLevel (0 = starter) */
+  unlockTier: number
+  /** Optional explicit unlock level override for this room */
+  unlockLevel?: number
   signatureEmoji: string
   /** Full-bleed background gradient classes */
   background: string
@@ -42,7 +45,7 @@ export const PET_ROOM_THEMES: PetRoomTheme[] = [
     id: "cozy-corner",
     name: "Cozy Corner",
     description: "Warm, comfortable home with soft cushions and afternoon tea.",
-    unlockLevel: 1,
+    unlockTier: 0,
     signatureEmoji: "🛋️",
     background:
       "bg-gradient-to-b from-amber-100 via-orange-50 to-amber-200/90 dark:from-stone-900 dark:via-amber-950/60 dark:to-stone-950",
@@ -76,7 +79,7 @@ export const PET_ROOM_THEMES: PetRoomTheme[] = [
     id: "sunny-meadow",
     name: "Sunny Meadow",
     description: "Bright garden filled with blooming flowers and fluttering wings.",
-    unlockLevel: 10,
+    unlockTier: 6,
     signatureEmoji: "🌻",
     background:
       "bg-gradient-to-b from-sky-300/80 via-amber-50 to-emerald-200 dark:from-sky-950 dark:via-emerald-950/70 dark:to-green-950",
@@ -110,7 +113,7 @@ export const PET_ROOM_THEMES: PetRoomTheme[] = [
     id: "tropical-escape",
     name: "Tropical Escape",
     description: "Turquoise shoreline, warm sand, and playful ocean friends.",
-    unlockLevel: 20,
+    unlockTier: 5,
     signatureEmoji: "🏖️",
     background:
       "bg-gradient-to-b from-sky-300 via-cyan-200 to-amber-200 dark:from-cyan-950 dark:via-teal-950 dark:to-amber-950/70",
@@ -143,7 +146,7 @@ export const PET_ROOM_THEMES: PetRoomTheme[] = [
     id: "sakura-sanctuary",
     name: "Sakura Sanctuary",
     description: "Peaceful blossom garden with lanterns and traditional charm.",
-    unlockLevel: 30,
+    unlockTier: 8,
     signatureEmoji: "🌸",
     background:
       "bg-gradient-to-b from-pink-200 via-rose-100 to-pink-200/90 dark:from-rose-950 dark:via-stone-900 dark:to-pink-950/80",
@@ -177,7 +180,7 @@ export const PET_ROOM_THEMES: PetRoomTheme[] = [
     id: "enchanted-forest",
     name: "Enchanted Forest",
     description: "Mystical moss-covered woods watched over by woodland spirits.",
-    unlockLevel: 40,
+    unlockTier: 1,
     signatureEmoji: "🌲",
     background:
       "bg-gradient-to-b from-slate-900 via-emerald-950 to-stone-950 text-emerald-50",
@@ -210,7 +213,7 @@ export const PET_ROOM_THEMES: PetRoomTheme[] = [
     id: "cosmic-observatory",
     name: "Cosmic Observatory",
     description: "Floating among distant galaxies, planets, and shooting stars.",
-    unlockLevel: 50,
+    unlockTier: 4,
     signatureEmoji: "🌌",
     background:
       "bg-gradient-to-b from-slate-950 via-indigo-950 to-violet-950 text-indigo-50",
@@ -242,7 +245,7 @@ export const PET_ROOM_THEMES: PetRoomTheme[] = [
     id: "pixel-arcade",
     name: "Pixel Arcade",
     description: "Retro neon gaming lounge packed with high-score classics.",
-    unlockLevel: 60,
+    unlockTier: 3,
     signatureEmoji: "🕹️",
     background:
       "bg-gradient-to-b from-purple-950 via-fuchsia-950 to-slate-950 text-fuchsia-50",
@@ -275,7 +278,7 @@ export const PET_ROOM_THEMES: PetRoomTheme[] = [
     id: "cloud-kingdom",
     name: "Cloud Kingdom",
     description: "Dreamy sky sanctuary drifting over rainbows and soft clouds.",
-    unlockLevel: 70,
+    unlockTier: 2,
     signatureEmoji: "☁️",
     background:
       "bg-gradient-to-b from-sky-300/80 via-indigo-100 to-purple-100 dark:from-sky-950 dark:via-indigo-950 dark:to-purple-950",
@@ -308,7 +311,7 @@ export const PET_ROOM_THEMES: PetRoomTheme[] = [
     id: "fairy-tale-castle",
     name: "Fairy Tale Castle",
     description: "Enchanted royal palace sparkling with magic and treasures.",
-    unlockLevel: 80,
+    unlockTier: 9,
     signatureEmoji: "🏰",
     background:
       "bg-gradient-to-b from-pink-200 via-purple-100 to-amber-100 dark:from-purple-950 dark:via-fuchsia-950/75 dark:to-amber-950/60",
@@ -340,7 +343,7 @@ export const PET_ROOM_THEMES: PetRoomTheme[] = [
     id: "mermaid-palace",
     name: "Mermaid Palace",
     description: "Luminous underwater kingdom of glowing coral and pearls.",
-    unlockLevel: 90,
+    unlockTier: 7,
     signatureEmoji: "🧜",
     background:
       "bg-gradient-to-b from-cyan-400/80 via-teal-200/85 to-emerald-200 dark:from-cyan-950 dark:via-teal-950 dark:to-slate-950",

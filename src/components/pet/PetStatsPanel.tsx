@@ -7,16 +7,24 @@ import type { PetStats } from "@/types/pet"
 
 interface PetStatsPanelProps {
   stats: PetStats
+  embedded?: boolean
   className?: string
 }
 
-export function PetStatsPanel({ stats, className }: PetStatsPanelProps) {
+export function PetStatsPanel({
+  stats,
+  embedded = false,
+  className,
+}: PetStatsPanelProps) {
   const { t } = useTranslation("space")
 
   return (
     <div
       className={cn(
-        "grid grid-cols-2 gap-x-3 gap-y-1.5 rounded-2xl border border-border/60 bg-card/85 px-3 py-2 shadow-sm backdrop-blur-md",
+        "grid grid-cols-4 gap-2",
+        embedded
+          ? "border-t border-border/40 pt-1.5"
+          : "rounded-2xl border border-border/60 bg-card/85 px-3 py-2 shadow-sm backdrop-blur-md",
         className
       )}
     >
@@ -24,17 +32,20 @@ export function PetStatsPanel({ stats, className }: PetStatsPanelProps) {
         const value = formatStatValue(stats[key])
         const isLow = value < PET_STAT_THRESHOLDS.lowWarning
         const isOverlimit = value > 100
+        const label = t(`pet.stats.${key}`)
 
         return (
-          <div key={key} className="space-y-1">
-            <div className="flex items-center justify-between gap-1 text-[11px] leading-tight">
-              <span className="flex min-w-0 items-center gap-1 font-medium text-foreground">
-                <span className="text-xs leading-none">{emoji}</span>
-                <span className="truncate">{t(`pet.stats.${key}`)}</span>
-              </span>
+          <div
+            key={key}
+            title={`${label}: ${value}%`}
+            aria-label={`${label}: ${value}%`}
+            className="min-w-0 space-y-1"
+          >
+            <div className="flex items-center justify-between gap-0.5 text-[10px] leading-none">
+              <span className="text-xs leading-none">{emoji}</span>
               <span
                 className={cn(
-                  "shrink-0 font-semibold tabular-nums",
+                  "truncate font-semibold tabular-nums",
                   isLow
                     ? "text-destructive"
                     : isOverlimit

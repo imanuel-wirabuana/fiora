@@ -77,7 +77,8 @@
     },
     "cosmetics": {
       "default": "Bawaan",
-      "drawerDescription": "Buka gaya baru setiap 10 level!",
+      "drawerDescription": "Buka gaya baru setiap {{interval}} level!",
+      "drawerDescriptionCustom": "Naikkan level peliharaanmu untuk membuka gaya baru!",
       "editMode": "Atur Gaya",
       "editHint": "Geser untuk pindah · Cubit atau tarik pegangan untuk ubah ukuran & miringkan",
       "adjustFit": "Atur Posisi & Ukuran",
@@ -90,7 +91,8 @@
         "room": "Ruangan",
         "headwear": "Topi",
         "facewear": "Kacamata",
-        "clothes": "Pakaian"
+        "clothes": "Pakaian",
+        "footwear": "Alas Kaki"
       }
     },
     "minigames": {

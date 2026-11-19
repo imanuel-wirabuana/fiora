@@ -61,7 +61,12 @@ interface PetCharacterProps {
   petRef?: RefObject<HTMLDivElement | null>
 }
 
-const WEARABLE_ORDER: PetWearableSlot[] = ["clothes", "facewear", "headwear"]
+const WEARABLE_ORDER: PetWearableSlot[] = [
+  "footwear",
+  "clothes",
+  "facewear",
+  "headwear",
+]
 
 export function PetCharacter({
   avatarSeed,
@@ -171,11 +176,15 @@ export function PetCharacter({
       </div>
 
       {WEARABLE_ORDER.map((slot) => {
-        if (slot === "clothes" && isSleeping) return null
+        if ((slot === "clothes" || slot === "footwear") && isSleeping) {
+          return null
+        }
         const item = wearables?.[slot]
         if (!item) return null
         const isSelected = isEditMode && selectedWearable === slot
-        const baseSize = Math.round(size * 0.34)
+        const isFootwear = slot === "footwear"
+        const baseSize = Math.round(size * (isFootwear ? 0.26 : 0.34))
+        const boxWidth = isFootwear ? Math.round(baseSize * 2.25) : baseSize
         const scaleX = item.transform.scaleX ?? item.transform.scale ?? 1
         const scaleY = item.transform.scaleY ?? item.transform.scale ?? 1
         const rotateDeg = item.transform.rotate ?? 0
@@ -208,7 +217,7 @@ export function PetCharacter({
             style={{
               left: "50%",
               top: "50%",
-              width: `${Math.round(baseSize * scaleX)}px`,
+              width: `${Math.round(boxWidth * scaleX)}px`,
               height: `${Math.round(baseSize * scaleY)}px`,
               transform: `translate(calc(-50% + ${item.transform.x * size}px), calc(-50% + ${item.transform.y * size}px)) rotate(${rotateDeg}deg)`,
             }}
@@ -221,15 +230,30 @@ export function PetCharacter({
                 "z-20 rounded-xl ring-2 ring-dashed ring-primary ring-offset-4 ring-offset-transparent"
             )}
           >
-            <span
-              style={{
-                fontSize: `${baseSize}px`,
-                transform: `scale(${scaleX}, ${scaleY})`,
-              }}
-              className="pointer-events-none inline-block leading-none"
-            >
-              {item.emoji}
-            </span>
+            {isFootwear ? (
+              <span
+                style={{
+                  fontSize: `${baseSize}px`,
+                  transform: `scale(${scaleX}, ${scaleY})`,
+                }}
+                className="pointer-events-none inline-flex items-center justify-center gap-[0.25em] leading-none"
+              >
+                <span className="inline-block leading-none">{item.emoji}</span>
+                <span className="inline-block -scale-x-100 leading-none">
+                  {item.emoji}
+                </span>
+              </span>
+            ) : (
+              <span
+                style={{
+                  fontSize: `${baseSize}px`,
+                  transform: `scale(${scaleX}, ${scaleY})`,
+                }}
+                className="pointer-events-none inline-block leading-none"
+              >
+                {item.emoji}
+              </span>
+            )}
 
             {isSelected && onWearableGestureStart && (
               <>

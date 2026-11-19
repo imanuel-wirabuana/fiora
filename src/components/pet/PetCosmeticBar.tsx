@@ -24,7 +24,10 @@ export function PetCosmeticBar({
 }: PetCosmeticBarProps) {
   const { t } = useTranslation("space")
   const hasWearables = Boolean(
-    cosmetics.headwear || cosmetics.facewear || cosmetics.clothes
+    cosmetics.headwear ||
+      cosmetics.facewear ||
+      cosmetics.clothes ||
+      cosmetics.footwear
   )
 
   return (
