@@ -15,6 +15,7 @@ import {
   clampCosmeticTransform,
   getCosmeticItem,
   getCosmeticTransform,
+  getLevelFromXp,
   getPetSizeForLevel,
   resolvePetExpression,
 } from "@/lib/petLogic"
@@ -106,7 +107,7 @@ export function PetStage({
 
   const isNightSleep = Boolean(content.isSleeping)
   const activeCareMode = draggingItem?.mode ?? null
-  const petSize = getPetSizeForLevel(content.level)
+  const petSize = getPetSizeForLevel(getLevelFromXp(content.xp))
 
   const effectiveContent: PetContent = activeCareMode
     ? {
@@ -514,6 +515,7 @@ export function PetStage({
           petRef={petRef}
           avatarSeed={avatarSeed}
           size={petSize}
+          stats={content.stats}
           wearables={{
             headwear: resolveWearable("headwear", headwearItem?.emoji),
             facewear: resolveWearable("facewear", facewearItem?.emoji),

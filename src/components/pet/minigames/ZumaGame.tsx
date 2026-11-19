@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Blobatar } from "@blobatar/react"
 import { happy, idle, love, sad, surprised } from "blobatar/expression"
-import { RefreshCw } from "lucide-react"
+import { LogOut, RefreshCw } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { cn } from "@/lib/utils"
 
 interface ZumaGameProps {
   avatarSeed: string
   onFinish: (score: number) => void
+  onLeave?: (score: number) => void
+  onScoreChange?: (score: number) => void
 }
 
 interface Point {
@@ -187,10 +189,16 @@ function buildInitialChain(): ChainOrb[] {
   return orbs.sort((a, b) => b.d - a.d)
 }
 
-export function ZumaGame({ avatarSeed, onFinish }: ZumaGameProps) {
+export function ZumaGame({
+  avatarSeed,
+  onFinish,
+  onLeave,
+  onScoreChange,
+}: ZumaGameProps) {
   const { t } = useTranslation("space")
   const track = useMemo(() => generateZumaTrack(), [])
   const arenaRef = useRef<HTMLDivElement>(null)
+  const onScoreChangeRef = useRef(onScoreChange)
   const chainRef = useRef<ChainOrb[]>(buildInitialChain())
   const nextIdRef = useRef(INITIAL_CHAIN_COUNT + 5)
   const projRef = useRef<Projectile | null>(null)
@@ -199,6 +207,10 @@ export function ZumaGame({ avatarSeed, onFinish }: ZumaGameProps) {
   const scoreRef = useRef(0)
   const comboRef = useRef(0)
   const finishedRef = useRef(false)
+
+  useEffect(() => {
+    onScoreChangeRef.current = onScoreChange
+  }, [onScoreChange])
 
   const [chain, setChain] = useState<ChainOrb[]>(buildInitialChain)
   const [proj, setProj] = useState<Projectile | null>(null)
@@ -268,6 +280,7 @@ export function ZumaGame({ avatarSeed, onFinish }: ZumaGameProps) {
       const gained = count * 15 + comboBonus
       scoreRef.current += gained
       setScore(scoreRef.current)
+      onScoreChangeRef.current?.(scoreRef.current)
 
       if (comboLevel > 1) {
         setComboBanner(`Combo x${comboLevel}! +${comboBonus}`)
@@ -285,19 +298,21 @@ export function ZumaGame({ avatarSeed, onFinish }: ZumaGameProps) {
     [triggerMood]
   )
 
-  // Main game loop
+  // Main game loop with exponential pace scaling
   useEffect(() => {
     let rafId = 0
     let lastTime = performance.now()
+    let elapsedSec = 0
 
     const step = (now: number) => {
       if (finishedRef.current) return
       const dt = Math.min(0.05, (now - lastTime) / 1000)
       lastTime = now
+      elapsedSec += dt
 
       let orbs = chainRef.current.map((o) => ({ ...o }))
-      const currentSpeed =
-        CHAIN_SPEED + Math.min(3.5, scoreRef.current * 0.003)
+      const pace = Math.min(2.8, Math.pow(1.1, elapsedSec / 10))
+      const currentSpeed = CHAIN_SPEED * pace
 
       // 1. Ensure at least 1 orb exists, advance tail-connected segment, & spawn infinitely
       if (orbs.length === 0) {
@@ -509,10 +524,26 @@ export function ZumaGame({ avatarSeed, onFinish }: ZumaGameProps) {
   const endPoint = track.points[track.points.length - 1]
   const startPoint = track.points[0]
 
+  const handleLeaveClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (finishedRef.current) return
+    finishedRef.current = true
+    if (onLeave) {
+      onLeave(scoreRef.current)
+    } else {
+      onFinish(scoreRef.current)
+    }
+  }
+
   return (
-    <div className="flex flex-col gap-3">
-      {/* HUD */}
-      <div className="flex items-center justify-between rounded-2xl border border-border/60 bg-card/80 px-4 py-2.5 text-sm font-semibold">
+    <div
+      ref={arenaRef}
+      onPointerMove={(e) => setAimAngle(computeAngle(e.clientX, e.clientY))}
+      onPointerDown={(e) => handleShoot(e.clientX, e.clientY)}
+      className="relative flex-1 cursor-crosshair touch-none overflow-hidden bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-950 select-none"
+    >
+      {/* Floating HUD */}
+      <div className="pointer-events-none absolute inset-x-3 top-3 z-20 mx-auto flex max-w-md items-center justify-between gap-2 rounded-2xl border border-border/60 bg-card/85 px-3.5 py-2 text-sm font-semibold shadow-sm backdrop-blur-md">
         <span>
           {t("pet.minigames.score")}:{" "}
           <span className="tabular-nums text-primary">{score}</span>
@@ -523,19 +554,20 @@ export function ZumaGame({ avatarSeed, onFinish }: ZumaGameProps) {
               {comboBanner}
             </span>
           )}
-          <span className="rounded-full bg-sky-500/15 px-3 py-0.5 text-xs font-bold text-sky-700 dark:text-sky-300">
+          <span className="rounded-full bg-sky-500/15 px-2.5 py-0.5 text-xs font-bold text-sky-700 dark:text-sky-300">
             {t("pet.minigames.endless")}
           </span>
+          <button
+            type="button"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={handleLeaveClick}
+            className="pointer-events-auto flex items-center gap-1 rounded-full bg-muted/80 px-2.5 py-1 text-xs font-semibold text-foreground transition-colors hover:bg-muted"
+          >
+            <LogOut className="size-3" />
+            <span>{t("pet.minigames.leave")}</span>
+          </button>
         </div>
       </div>
-
-      {/* Arena */}
-      <div
-        ref={arenaRef}
-        onPointerMove={(e) => setAimAngle(computeAngle(e.clientX, e.clientY))}
-        onPointerDown={(e) => handleShoot(e.clientX, e.clientY)}
-        className="relative h-[420px] w-full cursor-crosshair touch-none overflow-hidden rounded-3xl border border-border/60 bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-950 select-none"
-      >
         {/* Randomized Track SVG */}
         <svg
           viewBox="0 0 100 100"
@@ -644,7 +676,7 @@ export function ZumaGame({ avatarSeed, onFinish }: ZumaGameProps) {
           type="button"
           onPointerDown={(e) => e.stopPropagation()}
           onClick={handleSwapColors}
-          className="absolute bottom-3 left-3 flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 text-[11px] font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/25"
+          className="absolute bottom-20 left-3 z-20 flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 text-[11px] font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/25"
         >
           <RefreshCw className="size-3" />
           <span>{t("pet.minigames.swap")}</span>
@@ -655,11 +687,10 @@ export function ZumaGame({ avatarSeed, onFinish }: ZumaGameProps) {
             )}
           />
         </button>
-      </div>
 
-      <p className="text-center text-xs text-muted-foreground">
-        {t("pet.minigames.hints.zuma")}
-      </p>
-    </div>
+        <p className="pointer-events-none absolute inset-x-4 bottom-14 z-20 text-center text-[11px] text-white/60">
+          {t("pet.minigames.hints.zuma")}
+        </p>
+      </div>
   )
 }

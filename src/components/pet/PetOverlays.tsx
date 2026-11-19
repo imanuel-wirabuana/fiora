@@ -1,4 +1,6 @@
 import { motion } from "motion/react"
+import { getPetConditionVisuals } from "@/lib/petLogic"
+import type { PetStats } from "@/types/pet"
 
 interface PetMouthOverlayProps {
   mode: "open" | "chew" | "none"
@@ -73,20 +75,132 @@ export function PetBathFoamOverlay({ progress }: { progress: number }) {
   )
 }
 
-export function PetSleepBlanketOverlay() {
+export function PetSleepBlanketOverlay({ size = 148 }: { size?: number }) {
+  const fontSize = Math.round(size * 0.95)
+  const bottomOffset = Math.round(size * 0.14)
+
   return (
     <motion.div
-      initial={{ y: 30, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      exit={{ y: 30, opacity: 0 }}
+      initial={{ y: 12, opacity: 0, scale: 0.9 }}
+      animate={{ y: 0, opacity: 1, scale: 1 }}
+      exit={{ y: 12, opacity: 0, scale: 0.9 }}
       transition={{ type: "spring", stiffness: 220, damping: 22 }}
-      className="pointer-events-none absolute bottom-0 left-1/2 z-20 h-14 w-32 -translate-x-1/2 rounded-t-2xl rounded-b-3xl border-2 border-indigo-200/80 bg-gradient-to-b from-indigo-200/90 to-indigo-300/90 shadow-sm dark:border-indigo-700/60 dark:from-indigo-900/90 dark:to-indigo-950/90"
+      style={{
+        bottom: `-${bottomOffset}px`,
+        fontSize: `${fontSize}px`,
+      }}
+      className="pointer-events-none absolute left-1/2 -z-10 -translate-x-1/2 leading-none select-none"
     >
-      <div className="mt-1.5 flex justify-center gap-2 text-xs opacity-75">
-        <span>⭐</span>
-        <span>🌙</span>
-        <span>⭐</span>
-      </div>
+      🛏️
     </motion.div>
+  )
+}
+
+export function PetConditionOverlays({
+  stats,
+  size = 148,
+  isSleeping = false,
+}: {
+  stats?: PetStats
+  size?: number
+  isSleeping?: boolean
+}) {
+  if (!stats) return null
+  const { isStarving, isMelting, isAngry, dirtyTier } =
+    getPetConditionVisuals(stats)
+
+  const iconPx = Math.max(11, Math.round(size * 0.17))
+  const smallPx = Math.max(10, Math.round(size * 0.14))
+
+  return (
+    <>
+      {/* Hunger near 0: not feeling well */}
+      {isStarving && !isSleeping && (
+        <motion.span
+          animate={{ y: [0, -3, 0], rotate: [-8, 8, -8] }}
+          transition={{ duration: 0.7, repeat: Infinity, ease: "easeInOut" }}
+          style={{ fontSize: `${iconPx}px` }}
+          className="pointer-events-none absolute -top-1 left-0 z-20 leading-none select-none"
+        >
+          🤢
+        </motion.span>
+      )}
+
+      {/* Happiness near 0: angry vein */}
+      {isAngry && !isSleeping && (
+        <motion.span
+          animate={{ scale: [0.9, 1.2, 0.9] }}
+          transition={{ duration: 0.65, repeat: Infinity, ease: "easeInOut" }}
+          style={{ fontSize: `${iconPx}px` }}
+          className="pointer-events-none absolute -top-1 right-0 z-20 leading-none select-none"
+        >
+          💢
+        </motion.span>
+      )}
+
+      {/* Energy near 0: melting / exhausted sweat drop */}
+      {isMelting && !isSleeping && (
+        <motion.span
+          animate={{ y: [0, 6, 0], opacity: [0.9, 0.4, 0.9] }}
+          transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+          style={{ fontSize: `${smallPx}px` }}
+          className="pointer-events-none absolute top-[22%] right-[6%] z-20 leading-none select-none"
+        >
+          💧
+        </motion.span>
+      )}
+
+      {/* Hygiene dirty tiers (every 1/4 below 100%) */}
+      {dirtyTier >= 1 && (
+        <motion.span
+          animate={{ x: [-3, 4, -3], y: [-4, 2, -4] }}
+          transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+          style={{ fontSize: `${smallPx}px` }}
+          className="pointer-events-none absolute top-[12%] left-[12%] z-20 leading-none select-none"
+        >
+          🪰
+        </motion.span>
+      )}
+
+      {dirtyTier >= 2 && (
+        <>
+          <motion.span
+            animate={{ rotate: [0, 15, -15, 0] }}
+            transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+            style={{ fontSize: `${smallPx}px` }}
+            className="pointer-events-none absolute bottom-[12%] left-[4%] z-20 leading-none select-none"
+          >
+            🦠
+          </motion.span>
+          <span
+            style={{ fontSize: `${iconPx}px` }}
+            className="pointer-events-none absolute -right-1 bottom-0 z-20 leading-none select-none"
+          >
+            💩
+          </span>
+        </>
+      )}
+
+      {dirtyTier >= 3 && (
+        <>
+          <motion.span
+            animate={{ x: [3, -4, 3], y: [2, -4, 2] }}
+            transition={{ duration: 1.3, repeat: Infinity, ease: "easeInOut" }}
+            style={{ fontSize: `${smallPx}px` }}
+            className="pointer-events-none absolute top-[28%] -right-1 z-20 leading-none select-none"
+          >
+            🪰
+          </motion.span>
+          <motion.span
+            animate={{ x: [-2, 3, -2], rotate: [-10, 10, -10] }}
+            transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+            style={{ fontSize: `${smallPx}px` }}
+            className="pointer-events-none absolute bottom-0 left-[2%] z-20 leading-none select-none"
+          >
+            🪳
+          </motion.span>
+        </>
+      )}
+    </>
   )
 }

@@ -23,8 +23,6 @@ export interface PetActivityConfig {
   statDeltas: Partial<PetStats>
   xpReward: number
   cancellable: boolean
-  /** Optional cooldown in minutes before this activity can be done again */
-  cooldownMinutes?: number
   interaction?: PetActivityInteractionConfig
 }
 
@@ -36,16 +34,13 @@ export interface PetStatConfig {
 }
 
 export const PET_PROFILE_CONFIG = {
-  initialLevel: 1,
   initialXp: 0,
   nameMaxLength: 24,
 } as const
 
 export const PET_LEVEL_CONFIG = {
-  /** Base XP needed to level up from level 1 to level 2 */
-  baseXp: 100,
-  /** Exponential growth factor per level: round(baseXp * exponent^(level - 1)) */
-  exponent: 1.35,
+  /** Quadratic XP scale: totalXp(level) = xpScale * (level - 1)^2 (1000 XP => Lv. 5) */
+  xpScale: 60,
   /** Maximum reachable level */
   maxLevel: 100,
 } as const
@@ -93,8 +88,10 @@ export const PET_STAT_THRESHOLDS = {
   lowWarning: 25,
   /** Minimum energy required to play minigames */
   minEnergyToPlay: 20,
-  /** Minimum stat below this triggers sick (hunger/hygiene) or sad expression */
+  /** Stat below this triggers critical visual (shaking/melting/angry/sick) */
   criticalMin: 20,
+  /** Hunger above this triggers chubby/overfed visual */
+  overfedHunger: 100,
   /** Energy below this triggers sleepy expression */
   sleepyEnergy: 35,
   /** Minimum stat below this triggers sad expression */
@@ -116,10 +113,9 @@ export const PET_ACTIVITIES: Record<PetActivityType, PetActivityConfig> = {
     icon: "🍎",
     tint: "bg-amber-50 hover:bg-amber-100/80 text-amber-900 dark:bg-amber-950/40 dark:text-amber-200",
     emojis: ["🍎", "🍕", "🥕", "🍔", "🍓", "🍪", "🍣", "🧁"],
-    statDeltas: { hunger: 8, happiness: 2 },
+    statDeltas: { hunger: 33, happiness: 2, hygiene: -2 },
     xpReward: 3,
     cancellable: true,
-    cooldownMinutes: 60,
     interaction: {
       progressStep: 25,
       completeDelayMs: 450,
@@ -130,7 +126,7 @@ export const PET_ACTIVITIES: Record<PetActivityType, PetActivityConfig> = {
     icon: "🎮",
     tint: "bg-pink-50 hover:bg-pink-100/80 text-pink-900 dark:bg-pink-950/40 dark:text-pink-200",
     emojis: ["🍎", "🔮", "🐦"],
-    statDeltas: { happiness: 7, energy: -4, hunger: -2 },
+    statDeltas: { happiness: 50, energy: -1.5, hunger: -3, hygiene: -2 },
     xpReward: 4,
     cancellable: true,
   },
@@ -139,7 +135,7 @@ export const PET_ACTIVITIES: Record<PetActivityType, PetActivityConfig> = {
     icon: "🧼",
     tint: "bg-emerald-50 hover:bg-emerald-100/80 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200",
     emojis: ["🧼", "🫧", "💦"],
-    statDeltas: { hygiene: 10, happiness: 2 },
+    statDeltas: { hygiene: 33, happiness: 2 },
     xpReward: 3,
     cancellable: true,
     interaction: {
@@ -153,7 +149,7 @@ export const PET_ACTIVITIES: Record<PetActivityType, PetActivityConfig> = {
     icon: "🛏️",
     tint: "bg-sky-50 hover:bg-sky-100/80 text-sky-900 dark:bg-sky-950/40 dark:text-sky-200",
     emojis: ["🛏️", "💤"],
-    statDeltas: { energy: 12, hunger: -2 },
+    statDeltas: {},
     xpReward: 5,
     cancellable: true,
   },
@@ -183,10 +179,31 @@ export interface PetMinigameConfig {
   /** Starting hearts for life-based games */
   initialLives?: number
   tint: string
-  /** Score points needed for +1 bonus XP (capped by maxBonusXp) */
-  pointsPerBonusXp: number
-  maxBonusXp: number
+  /** Score at which sqrt-scaled rewards reach their cap */
+  targetScore: number
+  /** Stable reward ranges (interpolated via sqrt(score / targetScore)) */
+  rewards: {
+    baseXp: number
+    maxBonusXp: number
+    baseHappiness: number
+    maxBonusHappiness: number
+    baseEnergyCost: number
+    maxExtraEnergyCost: number
+    baseHungerCost: number
+    maxExtraHungerCost: number
+  }
 }
+
+const DEFAULT_MINIGAME_REWARDS = {
+  baseXp: 3,
+  maxBonusXp: 7,
+  baseHappiness: 3,
+  maxBonusHappiness: 11,
+  baseEnergyCost: 2,
+  maxExtraEnergyCost: 5,
+  baseHungerCost: 1,
+  maxExtraHungerCost: 3,
+} as const
 
 export const PET_MINIGAMES: Record<PetMinigameId, PetMinigameConfig> = {
   "fruit-catcher": {
@@ -194,22 +211,22 @@ export const PET_MINIGAMES: Record<PetMinigameId, PetMinigameConfig> = {
     icon: "🍎",
     initialLives: 3,
     tint: "bg-amber-50 hover:bg-amber-100/80 text-amber-900 dark:bg-amber-950/40 dark:text-amber-200",
-    pointsPerBonusXp: 20,
-    maxBonusXp: 8,
+    targetScore: 250,
+    rewards: { ...DEFAULT_MINIGAME_REWARDS },
   },
   zuma: {
     id: "zuma",
     icon: "🔮",
     tint: "bg-sky-50 hover:bg-sky-100/80 text-sky-900 dark:bg-sky-950/40 dark:text-sky-200",
-    pointsPerBonusXp: 25,
-    maxBonusXp: 8,
+    targetScore: 400,
+    rewards: { ...DEFAULT_MINIGAME_REWARDS },
   },
   "flappy-pet": {
     id: "flappy-pet",
     icon: "🐦",
     tint: "bg-pink-50 hover:bg-pink-100/80 text-pink-900 dark:bg-pink-950/40 dark:text-pink-200",
-    pointsPerBonusXp: 3,
-    maxBonusXp: 10,
+    targetScore: 20,
+    rewards: { ...DEFAULT_MINIGAME_REWARDS },
   },
 }
 

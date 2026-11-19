@@ -23,6 +23,7 @@ export function PetStatsPanel({ stats, className }: PetStatsPanelProps) {
       {PET_STAT_LIST.map(({ key, emoji, barClass }) => {
         const value = formatStatValue(stats[key])
         const isLow = value < PET_STAT_THRESHOLDS.lowWarning
+        const isOverlimit = value > 100
 
         return (
           <div key={key} className="space-y-1.5">
@@ -34,13 +35,20 @@ export function PetStatsPanel({ stats, className }: PetStatsPanelProps) {
               <span
                 className={cn(
                   "font-semibold tabular-nums",
-                  isLow ? "text-destructive" : "text-muted-foreground"
+                  isLow
+                    ? "text-destructive"
+                    : isOverlimit
+                      ? "text-amber-600 dark:text-amber-400"
+                      : "text-muted-foreground"
                 )}
               >
                 {value}%
               </span>
             </div>
-            <Progress value={value} className={cn("h-2 bg-muted/70", barClass)} />
+            <Progress
+              value={Math.min(100, value)}
+              className={cn("h-2 bg-muted/70", barClass)}
+            />
           </div>
         )
       })}

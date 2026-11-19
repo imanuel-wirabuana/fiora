@@ -44,7 +44,7 @@ export interface ActivePetActivity {
 }
 
 export interface PetContent {
-  level: number
+  /** Total cumulative XP; pet level is derived from this value */
   xp: number
   stats: PetStats
   lastUpdatedAt: string
@@ -54,6 +54,7 @@ export interface PetContent {
   lastAteAt?: string | null
   cosmetics?: PetCosmetics
   cosmeticTransforms?: Partial<Record<PetWearableSlot, PetCosmeticTransform>>
+  highScores?: Partial<Record<PetMinigameId, number>>
 }
 
 export interface Pet {

@@ -1,40 +1,74 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { Blobatar } from "@blobatar/react"
 import { happy, idle, sad, surprised } from "blobatar/expression"
+import { LogOut } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
 interface FlappyPetGameProps {
   avatarSeed: string
   onFinish: (score: number) => void
+  onLeave?: (score: number) => void
+  onScoreChange?: (score: number) => void
 }
 
 interface PipePair {
   id: number
   x: number // 0..100 %
   gapY: number // center of gap (25..72 %)
+  gapHeight: number // % of arena height
   passed: boolean
 }
 
-const PET_X = 24
-const GAP_HEIGHT = 28
-const PIPE_WIDTH = 12
-const GRAVITY = 135 // % / s^2
-const FLAP_VELOCITY = -48 // % / s
-const PIPE_SPEED = 32 // % / s
+const PET_X_PCT = 24
+const PET_SIZE_PX = 54
+const PET_HIT_RADIUS_PX = 20
+const PIPE_WIDTH_PCT = 13
+const BASE_GAP_HEIGHT = 28
+const MIN_GAP_HEIGHT = 19
+const GRAVITY = 128 // % / s^2
+const FLAP_VELOCITY = -45 // % / s
+const BASE_PIPE_SPEED = 29 // % / s
 
-export function FlappyPetGame({ avatarSeed, onFinish }: FlappyPetGameProps) {
+function circleIntersectsRect(
+  cx: number,
+  cy: number,
+  r: number,
+  rx: number,
+  ry: number,
+  rw: number,
+  rh: number
+): boolean {
+  const closestX = Math.max(rx, Math.min(cx, rx + rw))
+  const closestY = Math.max(ry, Math.min(cy, ry + rh))
+  const dx = cx - closestX
+  const dy = cy - closestY
+  return dx * dx + dy * dy < r * r
+}
+
+export function FlappyPetGame({
+  avatarSeed,
+  onFinish,
+  onLeave,
+  onScoreChange,
+}: FlappyPetGameProps) {
   const { t } = useTranslation("space")
+  const arenaRef = useRef<HTMLDivElement>(null)
+  const onScoreChangeRef = useRef(onScoreChange)
   const startedRef = useRef(false)
   const gameOverRef = useRef(false)
-  const petYRef = useRef(48)
+  const petYRef = useRef(46)
   const velYRef = useRef(0)
   const pipesRef = useRef<PipePair[]>([])
   const nextIdRef = useRef(1)
   const scoreRef = useRef(0)
 
+  useEffect(() => {
+    onScoreChangeRef.current = onScoreChange
+  }, [onScoreChange])
+
   const [started, setStarted] = useState(false)
   const [crashed, setCrashed] = useState(false)
-  const [petY, setPetY] = useState(48)
+  const [petY, setPetY] = useState(46)
   const [velY, setVelY] = useState(0)
   const [pipes, setPipes] = useState<PipePair[]>([])
   const [score, setScore] = useState(0)
@@ -61,10 +95,11 @@ export function FlappyPetGame({ avatarSeed, onFinish }: FlappyPetGameProps) {
     return () => window.removeEventListener("keydown", onKeyDown)
   }, [flap])
 
-  // Main game loop
+  // Main game loop with exponential pace & pixel-space circle-vs-AABB collision
   useEffect(() => {
     let rafId = 0
     let lastTime = performance.now()
+    let elapsedSec = 0
     let spawnAccumulator = 0
 
     const endGame = () => {
@@ -82,12 +117,36 @@ export function FlappyPetGame({ avatarSeed, onFinish }: FlappyPetGameProps) {
       lastTime = now
 
       if (startedRef.current) {
+        elapsedSec += dt
+        const pace = Math.min(2.4, Math.pow(1.1, elapsedSec / 10))
+        const pipeSpeed = BASE_PIPE_SPEED * pace
+        const spawnInterval = Math.max(0.8, 1.65 / pace)
+        const currentGap = Math.max(
+          MIN_GAP_HEIGHT,
+          BASE_GAP_HEIGHT - elapsedSec * 0.14
+        )
+
         velYRef.current += GRAVITY * dt
         petYRef.current += velYRef.current * dt
 
-        // Bounds check (ceiling / ground)
-        if (petYRef.current <= 5 || petYRef.current >= 94) {
-          petYRef.current = Math.max(5, Math.min(94, petYRef.current))
+        const rect = arenaRef.current?.getBoundingClientRect()
+        const arenaW = rect?.width || 380
+        const arenaH = rect?.height || 640
+        const petPxX = (PET_X_PCT / 100) * arenaW
+        const petPxY = (petYRef.current / 100) * arenaH
+
+        // Bounds check (ceiling / ground above BottomNav)
+        const groundY = arenaH - 64
+        if (
+          petPxY - PET_HIT_RADIUS_PX <= 4 ||
+          petPxY + PET_HIT_RADIUS_PX >= groundY
+        ) {
+          petYRef.current =
+            Math.max(
+              PET_HIT_RADIUS_PX + 4,
+              Math.min(groundY - PET_HIT_RADIUS_PX, petPxY)
+            ) /
+            (arenaH / 100)
           setPetY(petYRef.current)
           endGame()
           return
@@ -95,46 +154,64 @@ export function FlappyPetGame({ avatarSeed, onFinish }: FlappyPetGameProps) {
 
         // Spawn pipes
         spawnAccumulator += dt
-        if (spawnAccumulator >= 1.55) {
+        if (spawnAccumulator >= spawnInterval) {
           spawnAccumulator = 0
           pipesRef.current.push({
             id: nextIdRef.current++,
             x: 108,
-            gapY: 26 + Math.random() * 44,
+            gapY: 26 + Math.random() * 42,
+            gapHeight: currentGap,
             passed: false,
           })
         }
 
-        // Move & collide pipes
+        // Move & exact pixel-space circle-vs-rect collision
+        const pipeWidthPx = (PIPE_WIDTH_PCT / 100) * arenaW
         const nextPipes: PipePair[] = []
         for (const pipe of pipesRef.current) {
-          const nx = pipe.x - PIPE_SPEED * dt
+          const nx = pipe.x - pipeSpeed * dt
           let passed = pipe.passed
 
-          if (!passed && nx + PIPE_WIDTH / 2 < PET_X) {
+          if (!passed && nx + PIPE_WIDTH_PCT / 2 < PET_X_PCT) {
             passed = true
             scoreRef.current += 1
             setScore(scoreRef.current)
+            onScoreChangeRef.current?.(scoreRef.current)
             setJustScored(true)
             window.setTimeout(() => setJustScored(false), 350)
           }
 
-          // Hitbox check (generous circle inside pet)
-          const inPipeX =
-            PET_X + 4.5 > nx - PIPE_WIDTH / 2 &&
-            PET_X - 4.5 < nx + PIPE_WIDTH / 2
-          if (inPipeX) {
-            const topEdge = pipe.gapY - GAP_HEIGHT / 2
-            const bottomEdge = pipe.gapY + GAP_HEIGHT / 2
-            if (
-              petYRef.current - 4.5 < topEdge ||
-              petYRef.current + 4.5 > bottomEdge
-            ) {
-              setPipes([...pipesRef.current])
-              setPetY(petYRef.current)
-              endGame()
-              return
-            }
+          const pipeLeftPx = (nx / 100) * arenaW - pipeWidthPx / 2
+          const topPipeHeightPx =
+            (Math.max(0, pipe.gapY - pipe.gapHeight / 2) / 100) * arenaH
+          const bottomPipeTopPx =
+            ((pipe.gapY + pipe.gapHeight / 2) / 100) * arenaH
+          const bottomPipeHeightPx = Math.max(0, arenaH - bottomPipeTopPx)
+
+          const hitTop = circleIntersectsRect(
+            petPxX,
+            petPxY,
+            PET_HIT_RADIUS_PX,
+            pipeLeftPx,
+            0,
+            pipeWidthPx,
+            topPipeHeightPx
+          )
+          const hitBottom = circleIntersectsRect(
+            petPxX,
+            petPxY,
+            PET_HIT_RADIUS_PX,
+            pipeLeftPx,
+            bottomPipeTopPx,
+            pipeWidthPx,
+            bottomPipeHeightPx
+          )
+
+          if (hitTop || hitBottom) {
+            setPipes([...pipesRef.current])
+            setPetY(petYRef.current)
+            endGame()
+            return
           }
 
           if (nx > -15) {
@@ -165,82 +242,101 @@ export function FlappyPetGame({ avatarSeed, onFinish }: FlappyPetGameProps) {
 
   const tiltDeg = started ? Math.max(-28, Math.min(35, velY * 0.6)) : 0
 
+  const handleLeaveClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (gameOverRef.current) return
+    gameOverRef.current = true
+    if (onLeave) {
+      onLeave(scoreRef.current)
+    } else {
+      onFinish(scoreRef.current)
+    }
+  }
+
   return (
-    <div className="flex flex-col gap-3">
-      {/* HUD */}
-      <div className="flex items-center justify-between rounded-2xl border border-border/60 bg-card/80 px-4 py-2.5 text-sm font-semibold">
+    <div
+      ref={arenaRef}
+      onPointerDown={flap}
+      className="relative flex-1 cursor-pointer touch-none overflow-hidden bg-gradient-to-b from-sky-200 via-sky-100 to-emerald-200/80 select-none dark:from-slate-900 dark:via-sky-950/60 dark:to-emerald-950/50"
+    >
+      {/* Floating HUD */}
+      <div className="pointer-events-none absolute inset-x-3 top-3 z-20 mx-auto flex max-w-md items-center justify-between gap-2 rounded-2xl border border-border/60 bg-card/80 px-3.5 py-2 text-sm font-semibold shadow-sm backdrop-blur-md">
         <span>
           {t("pet.minigames.score")}:{" "}
-          <span className="text-primary tabular-nums">{score}</span>
+          <span className="tabular-nums text-primary">{score}</span>
         </span>
-        <span className="rounded-full bg-pink-500/15 px-3 py-0.5 text-xs font-bold text-pink-700 dark:text-pink-300">
-          {t("pet.minigames.endless")}
-        </span>
-      </div>
-
-      {/* Arena */}
-      <div
-        onPointerDown={flap}
-        className="relative h-[420px] w-full cursor-pointer touch-none overflow-hidden rounded-3xl border border-border/60 bg-gradient-to-b from-sky-200 via-sky-100 to-emerald-200/80 select-none dark:from-slate-900 dark:via-sky-950/60 dark:to-emerald-950/50"
-      >
-        {/* Pipes */}
-        {pipes.map((pipe) => {
-          const topHeight = Math.max(0, pipe.gapY - GAP_HEIGHT / 2)
-          const bottomTop = pipe.gapY + GAP_HEIGHT / 2
-          return (
-            <div key={pipe.id}>
-              <div
-                style={{
-                  left: `${pipe.x}%`,
-                  top: 0,
-                  width: `${PIPE_WIDTH}%`,
-                  height: `${topHeight}%`,
-                }}
-                className="pointer-events-none absolute -translate-x-1/2 rounded-b-xl border-2 border-emerald-600/40 bg-emerald-500/85 shadow-sm"
-              />
-              <div
-                style={{
-                  left: `${pipe.x}%`,
-                  top: `${bottomTop}%`,
-                  width: `${PIPE_WIDTH}%`,
-                  bottom: 0,
-                }}
-                className="pointer-events-none absolute -translate-x-1/2 rounded-t-xl border-2 border-emerald-600/40 bg-emerald-500/85 shadow-sm"
-              />
-            </div>
-          )
-        })}
-
-        {/* Pet as the Bird */}
-        <div
-          style={{
-            left: `${PET_X}%`,
-            top: `${petY}%`,
-            transform: `translate(-50%, -50%) rotate(${tiltDeg}deg)`,
-          }}
-          className="pointer-events-none absolute transition-transform duration-75"
-        >
-          <Blobatar
-            name={avatarSeed}
-            size={54}
-            expression={expression}
-            animate="always"
-          />
+        <div className="flex items-center gap-2">
+          <span className="rounded-full bg-pink-500/15 px-2.5 py-0.5 text-xs font-bold text-pink-700 dark:text-pink-300">
+            {t("pet.minigames.endless")}
+          </span>
+          <button
+            type="button"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={handleLeaveClick}
+            className="pointer-events-auto flex items-center gap-1 rounded-full bg-muted/80 px-2.5 py-1 text-xs font-semibold text-foreground transition-colors hover:bg-muted"
+          >
+            <LogOut className="size-3" />
+            <span>{t("pet.minigames.leave")}</span>
+          </button>
         </div>
-
-        {/* Tap to start prompt */}
-        {!started && (
-          <div className="pointer-events-none absolute inset-x-0 bottom-12 flex justify-center">
-            <span className="rounded-full bg-background/85 px-4 py-1.5 text-xs font-semibold text-foreground shadow-sm backdrop-blur-sm">
-              {t("pet.minigames.tapToFlap")}
-            </span>
-          </div>
-        )}
       </div>
 
-      <p className="text-center text-xs text-muted-foreground">
-        {t("pet.minigames.hints.flappy-pet")}
-      </p>
+      {/* Pipes */}
+      {pipes.map((pipe) => {
+        const topHeight = Math.max(0, pipe.gapY - pipe.gapHeight / 2)
+        const bottomTop = pipe.gapY + pipe.gapHeight / 2
+        return (
+          <div key={pipe.id}>
+            <div
+              style={{
+                left: `${pipe.x}%`,
+                top: 0,
+                width: `${PIPE_WIDTH_PCT}%`,
+                height: `${topHeight}%`,
+              }}
+              className="pointer-events-none absolute -translate-x-1/2 rounded-b-xl border-2 border-emerald-600/40 bg-emerald-500/85 shadow-sm"
+            />
+            <div
+              style={{
+                left: `${pipe.x}%`,
+                top: `${bottomTop}%`,
+                width: `${PIPE_WIDTH_PCT}%`,
+                bottom: 0,
+              }}
+              className="pointer-events-none absolute -translate-x-1/2 rounded-t-xl border-2 border-emerald-600/40 bg-emerald-500/85 shadow-sm"
+            />
+          </div>
+        )
+      })}
+
+      {/* Pet as the Bird */}
+      <div
+        style={{
+          left: `${PET_X_PCT}%`,
+          top: `${petY}%`,
+          transform: `translate(-50%, -50%) rotate(${tiltDeg}deg)`,
+        }}
+        className="pointer-events-none absolute transition-transform duration-75"
+      >
+        <Blobatar
+          name={avatarSeed}
+          size={PET_SIZE_PX}
+          expression={expression}
+          animate="always"
+        />
+      </div>
+
+      {/* Tap to start prompt */}
+      {!started && (
+        <div className="pointer-events-none absolute inset-x-0 bottom-24 z-20 flex flex-col items-center gap-1.5">
+          <span className="rounded-full bg-background/85 px-4 py-1.5 text-xs font-semibold text-foreground shadow-sm backdrop-blur-sm">
+            {t("pet.minigames.tapToFlap")}
+          </span>
+          <span className="text-[11px] font-medium text-muted-foreground/85">
+            {t("pet.minigames.hints.flappy-pet")}
+          </span>
+        </div>
+      )}
     </div>
   )
 }

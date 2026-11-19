@@ -2,6 +2,7 @@ import {
   happy,
   idle,
   love,
+  mad,
   sad,
   shy,
   sick,
@@ -88,32 +89,74 @@ export function getPetSizeForLevel(level: number): number {
   )
 }
 
-export function getEatCooldownRemainingMs(
-  content: PetContent,
-  now = Date.now()
-): number {
-  const cooldownMin = PET_ACTIVITIES.eat.cooldownMinutes ?? 0
-  if (cooldownMin <= 0 || !content.lastAteAt) return 0
-  const ateMs = Date.parse(content.lastAteAt)
-  if (Number.isNaN(ateMs)) return 0
-  const endsAt = ateMs + cooldownMin * 60_000
-  return Math.max(0, endsAt - now)
-}
-
 export function canPetPlay(content: PetContent): boolean {
   return content.stats.energy >= PET_STAT_THRESHOLDS.minEnergyToPlay
 }
 
-export function getXpForLevel(level: number): number {
+export function getTotalXpForLevel(level: number): number {
   const safeLevel = Math.max(1, Math.floor(level))
-  return Math.round(
-    PET_LEVEL_CONFIG.baseXp *
-      Math.pow(PET_LEVEL_CONFIG.exponent, safeLevel - 1)
-  )
+  return PET_LEVEL_CONFIG.xpScale * Math.pow(safeLevel - 1, 2)
 }
 
+export function getLevelFromXp(totalXp: number): number {
+  const safeXp = Math.max(0, Number.isFinite(totalXp) ? totalXp : 0)
+  const rawLevel = Math.floor(Math.sqrt(safeXp / PET_LEVEL_CONFIG.xpScale)) + 1
+  return PET_LEVEL_CONFIG.maxLevel !== null
+    ? Math.min(PET_LEVEL_CONFIG.maxLevel, rawLevel)
+    : rawLevel
+}
+
+export function getPetLevelProgress(totalXp: number): {
+  level: number
+  totalXp: number
+  currentLevelXp: number
+  nextLevelXp: number
+  xpIntoLevel: number
+  xpNeededForNext: number
+  progressPct: number
+  isMaxLevel: boolean
+} {
+  const safeXp = Math.max(0, Math.floor(Number.isFinite(totalXp) ? totalXp : 0))
+  const level = getLevelFromXp(safeXp)
+  const isMaxLevel =
+    PET_LEVEL_CONFIG.maxLevel !== null && level >= PET_LEVEL_CONFIG.maxLevel
+  const currentLevelXp = getTotalXpForLevel(level)
+  const nextLevelXp = isMaxLevel
+    ? currentLevelXp
+    : getTotalXpForLevel(level + 1)
+  const xpIntoLevel = Math.max(0, safeXp - currentLevelXp)
+  const xpNeededForNext = Math.max(1, nextLevelXp - currentLevelXp)
+  const progressPct = isMaxLevel
+    ? 100
+    : Math.min(100, Math.round((xpIntoLevel / xpNeededForNext) * 100))
+
+  return {
+    level,
+    totalXp: safeXp,
+    currentLevelXp,
+    nextLevelXp,
+    xpIntoLevel,
+    xpNeededForNext,
+    progressPct,
+    isMaxLevel,
+  }
+}
+
+export function addPetXp(currentXp: number, reward: number): number {
+  const safeCurrent = Math.max(
+    0,
+    Math.floor(Number.isFinite(currentXp) ? currentXp : 0)
+  )
+  const safeReward = Math.max(
+    0,
+    Math.round(Number.isFinite(reward) ? reward : 0)
+  )
+  return safeCurrent + safeReward
+}
+
+/** Clamps at >= 0 only (allows overlimit > 100) with 0.01 precision */
 export function clampStat(value: number): number {
-  return Math.max(0, Math.min(100, Math.round(value * 100) / 100))
+  return Math.max(0, Math.round(value * 100) / 100)
 }
 
 export function formatStatValue(value: number): number {
@@ -122,7 +165,6 @@ export function formatStatValue(value: number): number {
 
 export function createInitialPetContent(now = Date.now()): PetContent {
   return {
-    level: PET_PROFILE_CONFIG.initialLevel,
     xp: PET_PROFILE_CONFIG.initialXp,
     stats: getInitialPetStats(),
     lastUpdatedAt: new Date(now).toISOString(),
@@ -138,14 +180,24 @@ export function normalizePetContent(
   content: PetContent | null | undefined
 ): PetContent {
   if (!content) return createInitialPetContent()
-  const maxLevel = PET_LEVEL_CONFIG.maxLevel
-  const clampedLevel =
-    maxLevel !== null
-      ? Math.max(1, Math.min(maxLevel, content.level))
-      : Math.max(1, content.level)
+
+  // Migrate legacy records that stored a separate `level` alongside per-level `xp`
+  const legacy = content as PetContent & { level?: number }
+  const { level: legacyLevel, ...rest } = legacy
+  const rawXp = Math.max(
+    0,
+    Math.floor(Number.isFinite(content.xp) ? content.xp : 0)
+  )
+  const cumulativeXp =
+    typeof legacyLevel === "number" &&
+    Number.isFinite(legacyLevel) &&
+    legacyLevel > 1
+      ? Math.max(rawXp, getTotalXpForLevel(legacyLevel) + rawXp)
+      : rawXp
+
   return {
-    ...content,
-    level: clampedLevel,
+    ...rest,
+    xp: cumulativeXp,
     stats: {
       hunger: clampStat(content.stats.hunger),
       happiness: clampStat(content.stats.happiness),
@@ -206,24 +258,6 @@ export function applyStatDeltas(
   }
 }
 
-export function applyXpAndLevel(
-  level: number,
-  xp: number,
-  reward: number
-): { level: number; xp: number } {
-  let nextLevel = level
-  let nextXp = xp + reward
-  while (
-    (PET_LEVEL_CONFIG.maxLevel === null ||
-      nextLevel < PET_LEVEL_CONFIG.maxLevel) &&
-    nextXp >= getXpForLevel(nextLevel)
-  ) {
-    nextXp -= getXpForLevel(nextLevel)
-    nextLevel += 1
-  }
-  return { level: nextLevel, xp: nextXp }
-}
-
 export function completeActivityNow(
   content: PetContent,
   now = Date.now()
@@ -234,13 +268,12 @@ export function completeActivityNow(
   }
   const config = PET_ACTIVITIES[active.type]
   const nextStats = applyStatDeltas(content.stats, config.statDeltas)
-  const leveled = applyXpAndLevel(content.level, content.xp, config.xpReward)
+  const nextXp = addPetXp(content.xp, config.xpReward)
 
   return {
     content: {
       ...content,
-      level: leveled.level,
-      xp: leveled.xp,
+      xp: nextXp,
       stats: nextStats,
       lastUpdatedAt: new Date(now).toISOString(),
       activeActivity: null,
@@ -249,18 +282,35 @@ export function completeActivityNow(
   }
 }
 
+function getMinigameScoreRatio(gameId: PetMinigameId, score: number): number {
+  const game = PET_MINIGAMES[gameId]
+  const safeScore = Math.max(0, Math.floor(score))
+  return Math.min(1, Math.sqrt(safeScore / Math.max(1, game.targetScore)))
+}
+
 export function calculateMinigameXp(
   gameId: PetMinigameId,
   score: number
 ): number {
-  const baseXp = PET_ACTIVITIES.play.xpReward
-  const game = PET_MINIGAMES[gameId]
-  const safeScore = Math.max(0, Math.floor(score))
-  const bonusXp = Math.min(
-    game.maxBonusXp,
-    Math.floor(safeScore / game.pointsPerBonusXp)
-  )
-  return baseXp + bonusXp
+  const { baseXp, maxBonusXp } = PET_MINIGAMES[gameId].rewards
+  const ratio = getMinigameScoreRatio(gameId, score)
+  return baseXp + Math.round(maxBonusXp * ratio)
+}
+
+export function calculateMinigameStatDeltas(
+  gameId: PetMinigameId,
+  score: number
+): Partial<PetStats> {
+  const r = PET_MINIGAMES[gameId].rewards
+  const ratio = getMinigameScoreRatio(gameId, score)
+  const happiness = r.baseHappiness + Math.round(r.maxBonusHappiness * ratio)
+  const energyCost = r.baseEnergyCost + Math.round(r.maxExtraEnergyCost * ratio)
+  const hungerCost = r.baseHungerCost + Math.round(r.maxExtraHungerCost * ratio)
+  return {
+    happiness,
+    energy: -energyCost,
+    hunger: -hungerCost,
+  }
 }
 
 export function applyMinigameReward(
@@ -268,23 +318,79 @@ export function applyMinigameReward(
   gameId: PetMinigameId,
   score: number,
   now = Date.now()
-): { content: PetContent; earnedXp: number; statDeltas: Partial<PetStats> } {
-  const playConfig = PET_ACTIVITIES.play
-  const earnedXp = calculateMinigameXp(gameId, score)
-  const nextStats = applyStatDeltas(content.stats, playConfig.statDeltas)
-  const leveled = applyXpAndLevel(content.level, content.xp, earnedXp)
+): {
+  content: PetContent
+  earnedXp: number
+  statDeltas: Partial<PetStats>
+  isNewBest: boolean
+  bestScore: number
+} {
+  const safeScore = Math.max(0, Math.floor(score))
+  const earnedXp = calculateMinigameXp(gameId, safeScore)
+  const statDeltas = calculateMinigameStatDeltas(gameId, safeScore)
+  const nextStats = applyStatDeltas(content.stats, statDeltas)
+  const nextXp = addPetXp(content.xp, earnedXp)
+
+  const prevBest = content.highScores?.[gameId] ?? 0
+  const isNewBest = safeScore > prevBest
+  const bestScore = Math.max(prevBest, safeScore)
 
   return {
     content: {
       ...content,
-      level: leveled.level,
-      xp: leveled.xp,
+      xp: nextXp,
       stats: nextStats,
       lastUpdatedAt: new Date(now).toISOString(),
       activeActivity: null,
+      highScores: {
+        ...(content.highScores ?? {}),
+        [gameId]: bestScore,
+      },
     },
     earnedXp,
-    statDeltas: playConfig.statDeltas,
+    statDeltas,
+    isNewBest,
+    bestScore,
+  }
+}
+
+export interface PetConditionVisuals {
+  isStarving: boolean
+  isOverfed: boolean
+  overfedScaleX: number
+  overfedScaleY: number
+  isMelting: boolean
+  isAngry: boolean
+  /** 0: clean (75%+), 1: 50-74%, 2: 25-49%, 3: <25% */
+  dirtyTier: 0 | 1 | 2 | 3
+}
+
+export function getPetConditionVisuals(stats: PetStats): PetConditionVisuals {
+  const isStarving = stats.hunger < PET_STAT_THRESHOLDS.criticalMin
+  const isOverfed = stats.hunger > PET_STAT_THRESHOLDS.overfedHunger
+  const excessHunger = Math.max(
+    0,
+    stats.hunger - PET_STAT_THRESHOLDS.overfedHunger
+  )
+  const overfedScaleX = isOverfed
+    ? Math.round((1.18 + Math.min(0.47, excessHunger * 0.015)) * 100) / 100
+    : 1
+  const overfedScaleY = isOverfed
+    ? Math.round((1.06 + Math.min(0.19, excessHunger * 0.006)) * 100) / 100
+    : 1
+  const isMelting = stats.energy < PET_STAT_THRESHOLDS.criticalMin
+  const isAngry = stats.happiness < PET_STAT_THRESHOLDS.criticalMin
+  const dirtyTier: 0 | 1 | 2 | 3 =
+    stats.hygiene < 25 ? 3 : stats.hygiene < 50 ? 2 : stats.hygiene < 75 ? 1 : 0
+
+  return {
+    isStarving,
+    isOverfed,
+    overfedScaleX,
+    overfedScaleY,
+    isMelting,
+    isAngry,
+    dirtyTier,
   }
 }
 
@@ -319,9 +425,12 @@ export function resolvePetExpression(
   const { hunger, happiness, energy, hygiene } = content.stats
   const minStat = Math.min(hunger, happiness, energy, hygiene)
 
-  if (minStat < PET_STAT_THRESHOLDS.criticalMin) {
-    if (hygiene === minStat || hunger === minStat) return sick
-    return sad
+  if (happiness < PET_STAT_THRESHOLDS.criticalMin) return mad
+  if (
+    hunger < PET_STAT_THRESHOLDS.criticalMin ||
+    hygiene < PET_STAT_THRESHOLDS.criticalMin
+  ) {
+    return sick
   }
   if (energy < PET_STAT_THRESHOLDS.sleepyEnergy) return sleepy
   if (minStat < PET_STAT_THRESHOLDS.sadMin) return sad

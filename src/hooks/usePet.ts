@@ -2,13 +2,14 @@ import { useCallback, useMemo } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { PET_ACTIVITIES, PET_MINIGAMES } from "@/lib/petConfig"
 import {
+  addPetXp,
   applyMinigameReward,
   applyStatDeltas,
-  applyXpAndLevel,
   clampCosmeticTransform,
   completeActivityNow,
   createInitialPetContent,
   DEFAULT_PET_COSMETICS,
+  getLevelFromXp,
   normalizePetContent,
   pickActivityEmoji,
 } from "@/lib/petLogic"
@@ -100,7 +101,12 @@ export function usePet() {
         name: trimmed,
         content: initialContent,
       })
-      await logPetActivity(created, "adopt", "🐾", initialContent.level)
+      await logPetActivity(
+        created,
+        "adopt",
+        "🐾",
+        getLevelFromXp(initialContent.xp)
+      )
       return created
     },
     onSuccess: (created) => {
@@ -131,15 +137,16 @@ export function usePet() {
         name: nextName,
         content: nextContent,
       })
+      const nextLevel = getLevelFromXp(nextContent.xp)
       if (completed) {
         await logPetActivity(
           updated,
           completed.type,
           completed.emoji,
-          nextContent.level
+          nextLevel
         )
       } else if (renamed) {
-        await logPetActivity(updated, "rename", "✏️", nextContent.level)
+        await logPetActivity(updated, "rename", "✏️", nextLevel)
       }
       return updated
     },
@@ -238,11 +245,7 @@ export function usePet() {
       const config = PET_ACTIVITIES[mode]
       const nowIso = new Date().toISOString()
       const nextStats = applyStatDeltas(liveContent.stats, config.statDeltas)
-      const leveled = applyXpAndLevel(
-        liveContent.level,
-        liveContent.xp,
-        config.xpReward
-      )
+      const nextXp = addPetXp(liveContent.xp, config.xpReward)
       const usedEmoji = emoji ?? pickActivityEmoji(mode)
 
       triggerCelebration(usedEmoji)
@@ -250,8 +253,7 @@ export function usePet() {
 
       const nextContent: PetContent = {
         ...liveContent,
-        level: leveled.level,
-        xp: leveled.xp,
+        xp: nextXp,
         stats: nextStats,
         lastUpdatedAt: nowIso,
         activeActivity: null,

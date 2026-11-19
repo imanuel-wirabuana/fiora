@@ -3,13 +3,12 @@ import { Check, Pencil, X } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { PET_LEVEL_CONFIG, PET_PROFILE_CONFIG } from "@/lib/petConfig"
-import { getXpForLevel } from "@/lib/petLogic"
+import { PET_PROFILE_CONFIG } from "@/lib/petConfig"
+import { getPetLevelProgress } from "@/lib/petLogic"
 import { cn } from "@/lib/utils"
 
 interface PetHeaderProps {
   name: string
-  level: number
   xp: number
   onRename: (name: string) => Promise<void>
   isUpdating: boolean
@@ -18,7 +17,6 @@ interface PetHeaderProps {
 
 export function PetHeader({
   name,
-  level,
   xp,
   onRename,
   isUpdating,
@@ -27,6 +25,7 @@ export function PetHeader({
   const { t } = useTranslation("space")
   const [isEditing, setIsEditing] = useState(false)
   const [draft, setDraft] = useState(name)
+  const { level, totalXp, nextLevelXp, isMaxLevel } = getPetLevelProgress(xp)
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -101,11 +100,8 @@ export function PetHeader({
         <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
           {t("pet.level", { level })}
         </span>
-        <span className="text-[11px] font-medium text-muted-foreground">
-          {PET_LEVEL_CONFIG.maxLevel !== null &&
-          level >= PET_LEVEL_CONFIG.maxLevel
-            ? "MAX"
-            : `${xp}/${getXpForLevel(level)} XP`}
+        <span className="text-[11px] font-medium tabular-nums text-muted-foreground">
+          {isMaxLevel ? `${totalXp} XP · MAX` : `${totalXp}/${nextLevelXp} XP`}
         </span>
       </div>
     </div>

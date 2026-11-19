@@ -7,7 +7,6 @@ import type { PetActivityType } from "@/types/pet"
 interface PetActivityBarProps {
   activeType: PetActivityType | null
   isSleeping: boolean
-  eatCooldownMinutes?: number
   canPlay?: boolean
   onSelect: (type: PetActivityType) => void
   onStartBathDrag?: (x: number, y: number) => void
@@ -17,7 +16,6 @@ interface PetActivityBarProps {
 export function PetActivityBar({
   activeType,
   isSleeping,
-  eatCooldownMinutes = 0,
   canPlay = true,
   onSelect,
   onStartBathDrag,
@@ -29,16 +27,12 @@ export function PetActivityBar({
     <div className={cn("flex flex-col gap-2.5", className)}>
       {PET_ACTIVITY_LIST.map(({ type, icon, tint }) => {
         const isCurrent = activeType === type
-        const isEatCooldown = type === "eat" && eatCooldownMinutes > 0
         const isPlayTired = type === "play" && !canPlay
-        const isDisabled =
-          (isSleeping && type !== "sleep") || isEatCooldown || isPlayTired
+        const isDisabled = (isSleeping && type !== "sleep") || isPlayTired
         const label =
           type === "sleep" && isSleeping
             ? t("pet.interactive.wakeUp")
-            : isEatCooldown
-              ? `${t("pet.activities.eat")} (${eatCooldownMinutes}m)`
-              : t(`pet.activities.${type}`)
+            : t(`pet.activities.${type}`)
 
         return (
           <Button
@@ -65,11 +59,6 @@ export function PetActivityBar({
             )}
           >
             <span className="text-xl leading-none">{icon}</span>
-            {isEatCooldown && (
-              <span className="absolute -bottom-1 rounded-full bg-background/90 px-1 text-[9px] font-bold text-muted-foreground shadow-xs">
-                {eatCooldownMinutes}m
-              </span>
-            )}
           </Button>
         )
       })}

@@ -8,10 +8,16 @@ import {
   RotateCw,
 } from "lucide-react"
 import { AnimatePresence, motion } from "motion/react"
+import { getPetConditionVisuals } from "@/lib/petLogic"
 import { cn } from "@/lib/utils"
-import type { PetCosmeticTransform, PetWearableSlot } from "@/types/pet"
+import type {
+  PetCosmeticTransform,
+  PetStats,
+  PetWearableSlot,
+} from "@/types/pet"
 import {
   PetBathFoamOverlay,
+  PetConditionOverlays,
   PetMouthOverlay,
   PetSleepBlanketOverlay,
 } from "./PetOverlays"
@@ -40,6 +46,7 @@ interface PetCharacterProps {
   isSleeping?: boolean
   petLeanX?: number
   size?: number
+  stats?: PetStats
   wearables?: Partial<Record<PetWearableSlot, PetWearableRenderItem | null>>
   isEditMode?: boolean
   selectedWearable?: PetWearableSlot | null
@@ -68,6 +75,7 @@ export function PetCharacter({
   isSleeping = false,
   petLeanX = 0,
   size = 164,
+  stats,
   wearables,
   isEditMode = false,
   selectedWearable = null,
@@ -76,6 +84,58 @@ export function PetCharacter({
   onTap,
   petRef,
 }: PetCharacterProps) {
+  const condition = stats ? getPetConditionVisuals(stats) : null
+  const overfedScaleX = condition?.isOverfed ? condition.overfedScaleX : 1
+  const overfedScaleY = condition?.isOverfed ? condition.overfedScaleY : 1
+
+  const animateState = isChewing
+    ? {
+        scaleX: [1, 1.12, 0.94, 1.06, 1],
+        scaleY: [1, 0.9, 1.08, 0.96, 1],
+      }
+    : isPetting
+      ? {
+          scale: [1, 1.1, 0.96, 1],
+          rotate: [-4, 4, 0],
+        }
+      : isBathing && isNearPet
+        ? {
+            rotate: [-6, 6, -6],
+            scale: [1, 1.04, 1],
+          }
+        : isSleeping
+          ? {
+              y: [0, 3, 0],
+              scale: [1, 0.98, 1],
+            }
+          : condition?.isStarving
+            ? {
+                x: [-2.5, 2.5, -2, 2, 0],
+                y: [0, 1, -1, 0],
+              }
+            : condition?.isMelting
+              ? {
+                  scaleX: [1.2, 1.26, 1.2],
+                  scaleY: [0.74, 0.68, 0.74],
+                  y: [
+                    Math.round(size * 0.08),
+                    Math.round(size * 0.11),
+                    Math.round(size * 0.08),
+                  ],
+                }
+              : {
+                  x: petLeanX * 14,
+                  rotate: petLeanX * 6,
+                  y: [0, -5, 0],
+                }
+
+  const transitionConfig =
+    isChewing || isPetting
+      ? { duration: 0.45 }
+      : condition?.isStarving && !isSleeping
+        ? { duration: 0.45, repeat: Infinity, ease: "easeInOut" as const }
+        : { duration: 2.2, repeat: Infinity, ease: "easeInOut" as const }
+
   return (
     <motion.div
       ref={petRef}
@@ -87,29 +147,8 @@ export function PetCharacter({
             }
           : undefined
       }
-      animate={
-        isChewing
-          ? {
-              scaleX: [1, 1.12, 0.94, 1.06, 1],
-              scaleY: [1, 0.9, 1.08, 0.96, 1],
-            }
-          : isPetting
-            ? { scale: [1, 1.1, 0.96, 1], rotate: [-4, 4, 0] }
-            : isBathing && isNearPet
-              ? { rotate: [-6, 6, -6], scale: [1, 1.04, 1] }
-              : isSleeping
-                ? { y: [0, 3, 0], scale: [1, 0.98, 1] }
-                : {
-                    x: petLeanX * 14,
-                    rotate: petLeanX * 6,
-                    y: [0, -5, 0],
-                  }
-      }
-      transition={
-        isChewing || isPetting
-          ? { duration: 0.45 }
-          : { duration: 2.2, repeat: Infinity, ease: "easeInOut" }
-      }
+      animate={animateState}
+      transition={transitionConfig}
       className={cn(
         "relative z-10 flex items-center justify-center select-none",
         interactive
@@ -117,12 +156,19 @@ export function PetCharacter({
           : "pointer-events-none"
       )}
     >
-      <Blobatar
-        name={avatarSeed}
-        size={size}
-        expression={expression}
-        animate="always"
-      />
+      <div
+        style={{
+          transform: `scale(${overfedScaleX}, ${overfedScaleY})`,
+        }}
+        className="flex items-center justify-center transition-transform duration-500 ease-out"
+      >
+        <Blobatar
+          name={avatarSeed}
+          size={size}
+          expression={expression}
+          animate="always"
+        />
+      </div>
 
       {WEARABLE_ORDER.map((slot) => {
         if (slot === "clothes" && isSleeping) return null
@@ -267,8 +313,14 @@ export function PetCharacter({
       <AnimatePresence>
         <PetMouthOverlay mode={mouthMode} />
         {isBathing && <PetBathFoamOverlay progress={bathProgress} />}
-        {isSleeping && <PetSleepBlanketOverlay />}
+        {isSleeping && <PetSleepBlanketOverlay size={size} />}
       </AnimatePresence>
+
+      <PetConditionOverlays
+        stats={stats}
+        size={size}
+        isSleeping={isSleeping}
+      />
     </motion.div>
   )
 }

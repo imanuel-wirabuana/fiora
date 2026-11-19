@@ -102,9 +102,11 @@
       "swap": "Swap",
       "tapToFlap": "Tap anywhere to flap!",
       "finishedTitle": "Great Game!",
+      "newBest": "New Best!",
       "finalScore": "Final Score: {{score}}",
       "backToPet": "Back to Pet",
       "playAgain": "Play Again",
+      "leave": "End",
       "unavailable": "Minigame unavailable right now.",
       "items": {
         "fruit-catcher": {

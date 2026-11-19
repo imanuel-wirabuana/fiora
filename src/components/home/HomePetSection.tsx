@@ -5,6 +5,7 @@ import { PET_STAT_THRESHOLDS } from "@/lib/petConfig"
 import {
   getCosmeticItem,
   getCosmeticTransform,
+  getLevelFromXp,
   resolvePetExpression,
 } from "@/lib/petLogic"
 import type { PetWearableSlot } from "@/types/pet"
@@ -40,6 +41,7 @@ export function HomePetSection() {
         <PetCharacter
           avatarSeed={pet.unique_name}
           size={42}
+          stats={content.stats}
           expression={expression}
           isSleeping={Boolean(content.isSleeping)}
           interactive={false}
@@ -61,7 +63,7 @@ export function HomePetSection() {
           {pet.name}
         </span>
         <span className="text-[10px] font-medium text-primary-foreground/80">
-          Lv. {content.level}
+          Lv. {getLevelFromXp(content.xp)}
         </span>
       </div>
     </Link>

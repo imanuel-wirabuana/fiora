@@ -17,7 +17,7 @@ import { PET_STAGE_CONFIG } from "@/lib/petConfig"
 import {
   DEFAULT_PET_COSMETICS,
   canPetPlay,
-  getEatCooldownRemainingMs,
+  getLevelFromXp,
 } from "@/lib/petLogic"
 import { usePetStore } from "@/stores/petStore"
 import type {
@@ -55,16 +55,8 @@ export function VirtualPetsScreen() {
   const celebrationEmoji = usePetStore((s) => s.celebrationEmoji)
   const clearCelebration = usePetStore((s) => s.clearCelebration)
 
-  const [nowMs, setNowMs] = useState(() => Date.now())
-  const eatCooldownMs = getEatCooldownRemainingMs(content, nowMs)
-  const eatCooldownMinutes = Math.ceil(eatCooldownMs / 60_000)
   const playAllowed = canPetPlay(content)
-
-  useEffect(() => {
-    if (eatCooldownMs <= 0) return
-    const id = window.setInterval(() => setNowMs(Date.now()), 15_000)
-    return () => window.clearInterval(id)
-  }, [eatCooldownMs])
+  const petLevel = getLevelFromXp(content.xp)
 
   useEffect(() => {
     if (!celebrationEmoji) return
@@ -105,7 +97,6 @@ export function VirtualPetsScreen() {
       return
     }
     if (type === "eat") {
-      if (eatCooldownMs > 0) return
       setActiveCareDrawer("eat")
     }
   }
@@ -153,7 +144,6 @@ export function VirtualPetsScreen() {
           {/* Floating Header */}
           <PetHeader
             name={pet.name}
-            level={content.level}
             xp={content.xp}
             onRename={renamePet}
             isUpdating={isUpdating}
@@ -173,7 +163,6 @@ export function VirtualPetsScreen() {
           <PetActivityBar
             activeType={content.isSleeping ? "sleep" : activeCareDrawer}
             isSleeping={Boolean(content.isSleeping)}
-            eatCooldownMinutes={eatCooldownMinutes}
             canPlay={playAllowed}
             onSelect={handleSelectActivity}
             onStartBathDrag={(x, y) =>
@@ -204,6 +193,7 @@ export function VirtualPetsScreen() {
       {/* Custom Minigame Picker Drawer (Play) */}
       <PetMinigamePickerDrawer
         open={minigamePickerOpen}
+        highScores={content.highScores}
         onOpenChange={setMinigamePickerOpen}
         onSelect={(gameId) => navigate(`/space/virtual-pets/play/${gameId}`)}
       />
@@ -218,7 +208,7 @@ export function VirtualPetsScreen() {
               ] ?? null)
             : null
         }
-        petLevel={content.level}
+        petLevel={petLevel}
         onClose={() => setActiveCosmeticSlot(null)}
         onSelect={(slot, itemId) => {
           equipCosmetic(slot, itemId)

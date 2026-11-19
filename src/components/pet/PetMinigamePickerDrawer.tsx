@@ -14,12 +14,14 @@ import type { PetMinigameId } from "@/types/pet"
 
 interface PetMinigamePickerDrawerProps {
   open: boolean
+  highScores?: Partial<Record<PetMinigameId, number>>
   onOpenChange: (open: boolean) => void
   onSelect: (gameId: PetMinigameId) => void
 }
 
 export function PetMinigamePickerDrawer({
   open,
+  highScores,
   onOpenChange,
   onSelect,
 }: PetMinigamePickerDrawerProps) {
@@ -64,10 +66,8 @@ export function PetMinigamePickerDrawer({
                     </div>
                   </div>
                 </div>
-                <span className="shrink-0 rounded-full bg-background/70 px-2.5 py-0.5 text-[11px] font-semibold">
-                  {game.initialLives
-                    ? `${game.initialLives} ❤️`
-                    : t("pet.minigames.endless")}
+                <span className="shrink-0 rounded-full bg-background/70 px-2.5 py-0.5 text-[11px] font-semibold tabular-nums">
+                  🏆 {highScores?.[game.id] ?? 0}
                 </span>
               </button>
             ))}

@@ -102,9 +102,11 @@
       "swap": "Tukar",
       "tapToFlap": "Ketuk di mana saja untuk terbang!",
       "finishedTitle": "Permainan Selesai!",
+      "newBest": "Rekor Baru!",
       "finalScore": "Skor Akhir: {{score}}",
       "backToPet": "Kembali",
       "playAgain": "Main Lagi",
+      "leave": "Selesai",
       "unavailable": "Minigame tidak tersedia saat ini.",
       "items": {
         "fruit-catcher": {
